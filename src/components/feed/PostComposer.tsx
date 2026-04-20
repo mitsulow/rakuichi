@@ -141,7 +141,7 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
           alt={user.user_metadata?.full_name ?? "あなた"}
           size="md"
         />
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           {isExpanded ? (
             <>
               {/* Main text area */}
