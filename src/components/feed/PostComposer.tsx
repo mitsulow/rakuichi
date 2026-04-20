@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { createPost } from "@/lib/data";
+import { EmbedCard } from "./EmbedCard";
 import { SOCIAL_PLATFORMS } from "@/lib/constants";
 import type { Post, OGPEmbed } from "@/lib/types";
 import type { User } from "@supabase/supabase-js";
@@ -160,33 +161,15 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
                 </div>
               )}
               {embed && !loadingOGP && (
-                <div className="mt-2 border border-accent/40 bg-accent/5 rounded-xl overflow-hidden relative">
-                  <div className="px-2.5 py-1 text-[10px] text-accent font-medium bg-accent/10">
+                <div className="relative mt-2">
+                  <div className="px-2.5 py-1 text-[10px] text-accent font-medium">
                     ✓ 取り込みました
                   </div>
-                  {embed.image && (
-                    <img src={embed.image} alt="" className="w-full h-32 object-cover" />
-                  )}
-                  <div className="p-2.5">
-                    <div className="text-xs font-medium line-clamp-1">{embed.title}</div>
-                    {embed.description && (
-                      <div className="text-xs text-text-mute line-clamp-2 mt-0.5">
-                        {embed.description}
-                      </div>
-                    )}
-                    <div className="text-xs text-text-mute mt-1 flex items-center gap-1">
-                      {embed.platform && (
-                        <span className="capitalize px-1.5 py-0.5 bg-bg rounded">
-                          {embed.platform}
-                        </span>
-                      )}
-                      <span className="truncate">{new URL(embed.url).hostname}</span>
-                    </div>
-                  </div>
+                  <EmbedCard embed={embed} />
                   <button
                     type="button"
                     onClick={removeEmbed}
-                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black/80"
+                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/80 z-10"
                   >
                     ✕
                   </button>

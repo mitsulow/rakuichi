@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { CategoryTag } from "@/components/ui/CategoryTag";
 import { formatRelativeTime } from "@/lib/utils";
 import { toggleLike } from "@/lib/data";
+import { EmbedCard } from "./EmbedCard";
 import type { Post } from "@/lib/types";
 
 interface PostCardProps {
@@ -71,29 +72,8 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled }
         {post.body}
       </p>
 
-      {/* OGP Embed */}
-      {post.embed && (
-        <a
-          href={post.embed.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 block border border-border rounded-xl overflow-hidden hover:bg-bg transition-colors no-underline"
-        >
-          {post.embed.image && (
-            <img src={post.embed.image} alt="" className="w-full h-36 object-cover" />
-          )}
-          <div className="p-2.5">
-            <div className="text-xs font-medium line-clamp-2">{post.embed.title}</div>
-            {post.embed.description && (
-              <div className="text-xs text-text-mute line-clamp-2 mt-0.5">{post.embed.description}</div>
-            )}
-            <div className="text-xs text-text-mute mt-1">
-              {post.embed.platform && <span className="capitalize mr-1">{post.embed.platform}</span>}
-              {new URL(post.embed.url).hostname}
-            </div>
-          </div>
-        </a>
-      )}
+      {/* Platform embed (Instagram iframe, YouTube, Tweet, or OGP fallback) */}
+      {post.embed && <EmbedCard embed={post.embed} />}
 
       {/* Images */}
       {post.image_urls.length > 0 && (
