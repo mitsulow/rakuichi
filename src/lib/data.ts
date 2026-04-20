@@ -341,7 +341,7 @@ export async function updateShop(shopId: string, input: Partial<ShopInput>) {
 }
 
 /**
- * Fetch all profiles that have lat/long set, with their shops (for the map page).
+ * Fetch all profiles that have lat/long set AND show_on_map=true, with their shops.
  */
 export async function fetchMapVillageShops() {
   const supabase = createClient();
@@ -349,11 +349,117 @@ export async function fetchMapVillageShops() {
     .from("profiles")
     .select("*, shops(*)")
     .not("latitude", "is", null)
-    .not("longitude", "is", null);
+    .not("longitude", "is", null)
+    .eq("show_on_map", true);
   if (!profiles) return [];
   return profiles
     .filter((p) => Array.isArray(p.shops) && p.shops.length > 0)
     .map((p) => ({ profile: p as Profile, shops: p.shops }));
+}
+
+// ============================================================
+// Recommended shops (みんなの推薦店)
+// ============================================================
+
+export interface RecommendedShopInput {
+  name: string;
+  address?: string | null;
+  latitude: number;
+  longitude: number;
+  category: string;
+  description?: string | null;
+  image_url?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  prefecture?: string | null;
+  city?: string | null;
+}
+
+export async function fetchRecommendedShops(options?: {
+  category?: string | null;
+  prefecture?: string | null;
+  limit?: number;
+}) {
+  const supabase = createClient();
+  let query = supabase
+    .from("recommended_shops")
+    .select("*, recommendations(id)")
+    .order("created_at", { ascending: false });
+  if (options?.category) query = query.eq("category", options.category);
+  if (options?.prefecture) query = query.eq("prefecture", options.prefecture);
+  if (options?.limit) query = query.limit(options.limit);
+  const { data } = await query;
+  if (!data) return [];
+  return data.map((r) => ({
+    ...r,
+    recommendation_count: Array.isArray(r.recommendations) ? r.recommendations.length : 0,
+  }));
+}
+
+export async function createRecommendedShop(
+  input: RecommendedShopInput,
+  userId: string
+) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("recommended_shops")
+    .insert({
+      name: input.name,
+      address: input.address ?? null,
+      latitude: input.latitude,
+      longitude: input.longitude,
+      category: input.category,
+      description: input.description ?? null,
+      image_url: input.image_url ?? null,
+      phone: input.phone ?? null,
+      website: input.website ?? null,
+      prefecture: input.prefecture ?? null,
+      city: input.city ?? null,
+      added_by: userId,
+      is_seed: false,
+    })
+    .select()
+    .single();
+  if (error) {
+    console.error("createRecommendedShop error:", error.message);
+    return { data: null, error: error.message };
+  }
+  return { data, error: null };
+}
+
+export async function toggleRecommendation(
+  shopId: string,
+  userId: string,
+  comment?: string | null
+) {
+  const supabase = createClient();
+  const { data: existing } = await supabase
+    .from("recommendations")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("recommended_shop_id", shopId)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase.from("recommendations").delete().eq("id", existing.id);
+    return { recommended: false };
+  }
+
+  await supabase.from("recommendations").insert({
+    user_id: userId,
+    recommended_shop_id: shopId,
+    comment: comment ?? null,
+  });
+  return { recommended: true };
+}
+
+export async function fetchUserRecommendations(userId: string) {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("recommendations")
+    .select("recommended_shop_id")
+    .eq("user_id", userId);
+  return new Set((data ?? []).map((r) => r.recommended_shop_id));
 }
 
 /**

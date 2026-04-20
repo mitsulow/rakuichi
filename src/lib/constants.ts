@@ -42,6 +42,48 @@ export const SOCIAL_PLATFORMS = [
 ] as const;
 
 // ============================================================
+// おすすめ店（自然派・本格派・ナチュラル）
+// ============================================================
+export const NATURAL_CATEGORIES = [
+  {
+    id: "natural_food",
+    emoji: "🌾",
+    label: "自然食",
+    description: "自然栽培・オーガニック・マクロビ・発酵食品",
+  },
+  {
+    id: "alt_medicine",
+    emoji: "🪷",
+    label: "代替医療",
+    description: "整体・鍼灸・カイロプラクティック・漢方",
+  },
+  {
+    id: "natural_therapy",
+    emoji: "🌿",
+    label: "自然療法",
+    description: "アロマ・ホメオパシー・ハーブ・レイキ",
+  },
+  {
+    id: "natural_goods",
+    emoji: "🧺",
+    label: "ナチュラル雑貨",
+    description: "オーガニック衣料・木の玩具・自然素材",
+  },
+  {
+    id: "natural_cafe",
+    emoji: "☕",
+    label: "自然派カフェ",
+    description: "有機コーヒー・ヴィーガン・グルテンフリー",
+  },
+] as const;
+
+export type NaturalCategoryId = (typeof NATURAL_CATEGORIES)[number]["id"];
+
+export function getNaturalCategory(id: string) {
+  return NATURAL_CATEGORIES.find((c) => c.id === id);
+}
+
+// ============================================================
 // 楽市楽座の世界観 ── 用語辞書
 // 一般的な言葉を楽市楽座らしい言葉に置き換える
 // ============================================================

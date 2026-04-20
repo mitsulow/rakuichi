@@ -158,8 +158,15 @@ export interface RecommendedShop {
   address: string | null;
   latitude: number;
   longitude: number;
-  category: CategoryId;
+  category: string; // natural_food, alt_medicine, natural_therapy, natural_goods, natural_cafe
   description: string | null;
+  image_url: string | null;
+  phone: string | null;
+  website: string | null;
+  prefecture: string | null;
+  city: string | null;
+  added_by: string | null;
+  is_seed: boolean;
   created_at: string;
   recommendation_count?: number;
 }
