@@ -12,6 +12,7 @@ import { QRModal } from "./QRModal";
 import { MigrationBar } from "./MigrationBar";
 import { SeedStage } from "./SeedStage";
 import { MentorshipSection } from "./MentorshipSection";
+import { AspireButton } from "./AspireButton";
 import type { Profile, Badge, ExternalLink, Shop } from "@/lib/types";
 
 interface MyzaStorefrontProps {
@@ -183,6 +184,9 @@ export function MyzaStorefront({
             </div>
           </div>
         )}
+
+        {/* Aspirations */}
+        <AspireButton profile={profile} isOwner={isOwner} />
 
         {/* Mentorships */}
         <MentorshipSection profile={profile} isOwner={isOwner} />

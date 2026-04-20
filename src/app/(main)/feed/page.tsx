@@ -60,7 +60,16 @@ export default function FeedPage() {
       <FeedFilterTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Post composer - only visible when logged in */}
-      {user && <PostComposer user={user} onPostCreated={handlePostCreated} />}
+      {user ? (
+        <PostComposer user={user} onPostCreated={handlePostCreated} />
+      ) : (
+        <a
+          href="/login"
+          className="block p-4 bg-accent/10 border-2 border-dashed border-accent/40 rounded-xl text-center text-sm text-accent font-medium no-underline hover:bg-accent/15 transition-colors"
+        >
+          🪧 立て札を立てるには → ログイン
+        </a>
+      )}
 
       {/* Posts */}
       <div className="space-y-4">

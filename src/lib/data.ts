@@ -358,6 +358,68 @@ export async function fetchMapVillageShops() {
 }
 
 // ============================================================
+// Aspirations (私もやってみたい)
+// ============================================================
+
+export async function fetchAspirationCount(inspirerId: string): Promise<number> {
+  const supabase = createClient();
+  const { count } = await supabase
+    .from("aspirations")
+    .select("id", { count: "exact", head: true })
+    .eq("inspirer_id", inspirerId);
+  return count ?? 0;
+}
+
+export async function hasAspired(
+  inspiredId: string,
+  inspirerId: string
+): Promise<boolean> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("aspirations")
+    .select("id")
+    .eq("inspired_id", inspiredId)
+    .eq("inspirer_id", inspirerId)
+    .maybeSingle();
+  return !!data;
+}
+
+export async function toggleAspiration(
+  inspiredId: string,
+  inspirerId: string,
+  lifeWork?: string | null
+): Promise<{ aspired: boolean }> {
+  const supabase = createClient();
+  const { data: existing } = await supabase
+    .from("aspirations")
+    .select("id")
+    .eq("inspired_id", inspiredId)
+    .eq("inspirer_id", inspirerId)
+    .maybeSingle();
+  if (existing) {
+    await supabase.from("aspirations").delete().eq("id", existing.id);
+    return { aspired: false };
+  }
+  await supabase.from("aspirations").insert({
+    inspired_id: inspiredId,
+    inspirer_id: inspirerId,
+    life_work: lifeWork ?? null,
+  });
+  return { aspired: true };
+}
+
+export async function fetchAspirers(inspirerId: string, limit = 6) {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("aspirations")
+    .select("inspired:profiles!aspirations_inspired_id_fkey(*)")
+    .eq("inspirer_id", inspirerId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return (data ?? []).map((r) => r.inspired as unknown as Profile);
+}
+
+// ============================================================
 // Recommended shops (みんなの推薦店)
 // ============================================================
 
