@@ -119,9 +119,24 @@ export function MyzaStorefront({
         </div>
 
         {/* Shops — the actual storefront */}
-        {shops.length > 0 && (
+        {(shops.length > 0 || isOwner) && (
           <div className="mt-4 pt-4 border-t border-border">
-            <div className="text-xs text-text-mute mb-2">🏪 出品中の屋台</div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-xs text-text-mute">🏪 出品中の屋台</div>
+              {isOwner && (
+                <Link href="/settings/shops" className="text-xs text-accent no-underline hover:underline">
+                  {shops.length > 0 ? "管理" : "+ 屋台を出す"}
+                </Link>
+              )}
+            </div>
+            {shops.length === 0 && isOwner && (
+              <div className="text-center py-4 border border-dashed border-border rounded-xl">
+                <p className="text-xs text-text-mute mb-2">まだ屋台がありません</p>
+                <Link href="/settings/shops" className="no-underline">
+                  <span className="text-xs text-accent">🌱 お試しで1つ出してみる →</span>
+                </Link>
+              </div>
+            )}
             <div className="space-y-2">
               {shops.slice(0, 3).map((shop) => (
                 <div

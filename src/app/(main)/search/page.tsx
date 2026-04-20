@@ -1,92 +1,87 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
-import { BadgeList } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { CategoryTag } from "@/components/ui/CategoryTag";
 import { CATEGORIES } from "@/lib/constants";
-import { mockProfiles, mockShops, mockBadges } from "@/lib/mock-data";
+import { fetchAllShops } from "@/lib/data";
+import type { Shop, Profile } from "@/lib/types";
+
+interface ShopWithOwner extends Shop {
+  owner?: Profile | null;
+}
 
 const suggestions = [
-  "自然栽培のお米",
+  "お米",
   "整体",
-  "手作り味噌",
   "ヨガ",
+  "味噌",
   "音楽",
   "物々交換",
+  "お試し",
 ];
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [shops, setShops] = useState<ShopWithOwner[]>([]);
 
-  const results = useMemo(() => {
-    const q = query.toLowerCase();
-    return mockProfiles
-      .filter((p) => p.is_paid)
-      .map((profile) => {
-        const shops = mockShops.filter((s) => s.owner_id === profile.id);
-        const badges = mockBadges.filter((b) => b.user_id === profile.id);
-        return { profile, shops, badges };
-      })
-      .filter(({ profile, shops }) => {
-        if (selectedCategory) {
-          return shops.some((s) => s.category === selectedCategory);
-        }
-        if (!q) return true;
-        return (
-          profile.display_name.toLowerCase().includes(q) ||
-          profile.bio?.toLowerCase().includes(q) ||
-          profile.prefecture?.includes(q) ||
-          profile.life_work?.toLowerCase().includes(q) ||
-          shops.some(
-            (s) =>
-              s.name.toLowerCase().includes(q) ||
-              s.description?.toLowerCase().includes(q)
-          )
-        );
-      })
-      .sort((a, b) => {
-        // みつろう認定 first
-        const aHasCert = a.badges.some(
-          (b) => b.badge_type === "mitsuro_certified"
-        );
-        const bHasCert = b.badges.some(
-          (b) => b.badge_type === "mitsuro_certified"
-        );
-        if (aHasCert && !bHasCert) return -1;
-        if (!aHasCert && bHasCert) return 1;
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      const data = await fetchAllShops(selectedCategory);
+      setShops(data as ShopWithOwner[]);
+      setLoading(false);
+    }
+    load();
+  }, [selectedCategory]);
 
-        // Then by level
-        const levelOrder = { 一人前: 0, 歩み中: 1, 修行中: 2 };
-        const aLevel =
-          levelOrder[a.profile.life_work_level as keyof typeof levelOrder] ?? 3;
-        const bLevel =
-          levelOrder[b.profile.life_work_level as keyof typeof levelOrder] ?? 3;
-        return aLevel - bLevel;
-      });
-  }, [query, selectedCategory]);
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return shops;
+    return shops.filter((s) => {
+      if (s.name.toLowerCase().includes(q)) return true;
+      if (s.description?.toLowerCase().includes(q)) return true;
+      if (s.owner?.display_name.toLowerCase().includes(q)) return true;
+      if (s.owner?.prefecture?.toLowerCase().includes(q)) return true;
+      if (q === "お試し" && s.is_trial) return true;
+      if (q === "物々交換" && s.accepts_barter) return true;
+      return false;
+    });
+  }, [shops, query]);
+
+  // Group by category when no filter/query
+  const grouped = useMemo(() => {
+    if (selectedCategory || query) return null;
+    const map = new Map<string, ShopWithOwner[]>();
+    for (const s of filtered) {
+      const list = map.get(s.category) ?? [];
+      list.push(s);
+      map.set(s.category, list);
+    }
+    return map;
+  }, [filtered, selectedCategory, query]);
 
   return (
     <div className="space-y-4">
+      <h1 className="text-lg font-bold">🏪 屋台を探す</h1>
+
       {/* Search bar */}
       <div className="relative">
         <input
           type="text"
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setSelectedCategory(null);
-          }}
-          placeholder="🔍 自然栽培のお米、札幌 整体、物々交換..."
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="🔍 陶芸、整体、沖縄、物々交換..."
           className="w-full bg-card rounded-2xl border border-border px-4 py-3 text-sm focus:border-accent focus:outline-none"
         />
       </div>
 
       {/* Quick suggestions */}
-      {!query && !selectedCategory && (
+      {!query && (
         <div className="flex flex-wrap gap-2">
           {suggestions.map((s) => (
             <button
@@ -100,15 +95,24 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* Category filter */}
+      {/* Category tabs */}
       <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pb-1">
+        <button
+          onClick={() => setSelectedCategory(null)}
+          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors ${
+            !selectedCategory
+              ? "bg-accent text-white"
+              : "bg-card text-text-sub border border-border hover:bg-bg"
+          }`}
+        >
+          <span>🏮</span>
+          <span>すべて</span>
+        </button>
         {CATEGORIES.map((cat) => (
           <button
             key={cat.id}
             onClick={() =>
-              setSelectedCategory(
-                selectedCategory === cat.id ? null : cat.id
-              )
+              setSelectedCategory(selectedCategory === cat.id ? null : cat.id)
             }
             className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors ${
               selectedCategory === cat.id
@@ -123,67 +127,111 @@ export default function SearchPage() {
       </div>
 
       {/* Results */}
-      <div className="space-y-3">
-        {results.map(({ profile, shops, badges }) => (
-          <Link
-            key={profile.id}
-            href={`/u/${profile.username}`}
-            className="no-underline"
-          >
-            <Card className="hover:shadow-md transition-shadow">
-              <div className="flex items-start gap-3">
-                <Avatar
-                  src={profile.avatar_url}
-                  alt={profile.display_name}
-                  size="lg"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-bold text-sm">
-                      {profile.display_name}
-                    </span>
-                    <BadgeList badges={badges.slice(0, 4)} />
-                  </div>
-                  {profile.life_work_level && (
-                    <p className="text-xs text-text-sub mt-0.5">
-                      {profile.life_work_level}
-                      {profile.life_work
-                        ? `・${profile.life_work}`
-                        : ""}
-                      {profile.life_work_years
-                        ? `${profile.life_work_years}年`
-                        : ""}
-                    </p>
-                  )}
-                  {profile.prefecture && (
-                    <p className="text-xs text-text-mute mt-0.5">
-                      📍 {profile.prefecture}
-                      {profile.city ? ` ${profile.city}` : ""}
-                    </p>
-                  )}
-                  {shops.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {shops.slice(0, 3).map((shop) => (
-                        <CategoryTag
-                          key={shop.id}
-                          categoryId={shop.category}
-                          size="sm"
-                        />
-                      ))}
-                    </div>
-                  )}
+      {loading ? (
+        <div className="text-center py-12 text-text-mute text-sm">読み込み中...</div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-12 text-text-mute">
+          <p className="text-4xl mb-3">🌱</p>
+          <p className="text-sm">まだ屋台がここに並んでいません</p>
+          <p className="text-xs mt-2">
+            あなたが最初の屋台を出してみませんか？
+          </p>
+        </div>
+      ) : grouped ? (
+        // Grouped by category
+        <div className="space-y-6">
+          {CATEGORIES.map((cat) => {
+            const catShops = grouped.get(cat.id);
+            if (!catShops || catShops.length === 0) return null;
+            return (
+              <div key={cat.id}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-base">{cat.emoji}</span>
+                  <h2 className="text-sm font-bold">{cat.label}</h2>
+                  <span className="text-xs text-text-mute">
+                    ({catShops.length})
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {catShops.slice(0, 4).map((shop) => (
+                    <ShopCard key={shop.id} shop={shop} />
+                  ))}
                 </div>
               </div>
-            </Card>
-          </Link>
-        ))}
-        {results.length === 0 && (
-          <div className="text-center py-12 text-text-mute">
-            <p className="text-4xl mb-3">🔍</p>
-            <p className="text-sm">検索結果がありません</p>
-          </div>
-        )}
-      </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map((shop) => (
+            <ShopCard key={shop.id} shop={shop} />
+          ))}
+        </div>
+      )}
     </div>
+  );
+}
+
+function ShopCard({ shop }: { shop: ShopWithOwner }) {
+  const href = shop.owner ? `/u/${shop.owner.username}` : "#";
+  return (
+    <Link href={href} className="no-underline block">
+      <Card className="hover:shadow-md transition-shadow">
+        <div className="flex items-start gap-3">
+          {shop.owner && (
+            <Avatar
+              src={shop.owner.avatar_url}
+              alt={shop.owner.display_name}
+              size="md"
+            />
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <CategoryTag categoryId={shop.category} size="sm" />
+              <span className="text-sm font-medium">{shop.name}</span>
+              {shop.is_trial && (
+                <span className="text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded-full">
+                  お試し
+                </span>
+              )}
+            </div>
+            {shop.description && (
+              <p className="text-xs text-text-mute line-clamp-2 mt-1">
+                {shop.description}
+              </p>
+            )}
+            <div className="flex items-center gap-2 mt-1.5 text-xs">
+              {shop.owner && (
+                <span className="text-text-sub">
+                  {shop.owner.display_name}
+                </span>
+              )}
+              {shop.owner?.prefecture && (
+                <span className="text-text-mute">
+                  📍{shop.owner.prefecture}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="text-right flex-shrink-0">
+            {shop.is_trial ? (
+              <span className="text-sm text-accent font-medium">0円〜</span>
+            ) : shop.price_jpy != null ? (
+              <span className="text-sm text-accent font-medium">
+                ¥{shop.price_jpy.toLocaleString()}
+              </span>
+            ) : shop.price_text ? (
+              <span className="text-sm text-accent font-medium">
+                {shop.price_text}
+              </span>
+            ) : null}
+            <div className="flex gap-0.5 text-xs justify-end mt-0.5">
+              {shop.accepts_barter && <span title="物々交換可">🔄</span>}
+              {shop.accepts_tip && <span title="投げ銭可">🪙</span>}
+            </div>
+          </div>
+        </div>
+      </Card>
+    </Link>
   );
 }

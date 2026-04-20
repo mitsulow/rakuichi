@@ -9,6 +9,7 @@ import { MyzaStorefront } from "@/components/profile/MyzaStorefront";
 import { StorySection } from "@/components/profile/StorySection";
 import { WishList } from "@/components/profile/WishList";
 import { RecentPosts } from "@/components/profile/RecentPosts";
+import { TradeRecords } from "@/components/profile/TradeRecords";
 import {
   fetchProfileByUsername,
   fetchBadges,
@@ -105,6 +106,10 @@ export default function ProfilePage() {
               <StorySection story={profile.story} />
             </Card>
           )}
+
+          <Card>
+            <TradeRecords userId={profile.id} />
+          </Card>
 
           {wishes.length > 0 && (
             <Card>
