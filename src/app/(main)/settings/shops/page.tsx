@@ -12,6 +12,7 @@ import {
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { CategoryTag } from "@/components/ui/CategoryTag";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { CATEGORIES } from "@/lib/constants";
 import type { Shop } from "@/lib/types";
 
@@ -113,7 +114,15 @@ export default function ShopsSettingsPage() {
           {shops.map((shop) => (
             <Card key={shop.id}>
               <div className="flex items-start gap-2">
-                <CategoryTag categoryId={shop.category} size="sm" />
+                {shop.image_urls && shop.image_urls.length > 0 ? (
+                  <img
+                    src={shop.image_urls[0]}
+                    alt={shop.name}
+                    className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
+                  />
+                ) : (
+                  <CategoryTag categoryId={shop.category} size="sm" />
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-sm font-medium">{shop.name}</span>
@@ -195,6 +204,7 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
     price_jpy: initial?.price_jpy?.toString() ?? "",
     accepts_barter: initial?.accepts_barter ?? true,
     accepts_tip: initial?.accepts_tip ?? false,
+    image_urls: initial?.image_urls ?? [],
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -210,6 +220,7 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
       price_jpy: form.is_trial ? null : form.price_jpy ? parseInt(form.price_jpy) : null,
       accepts_barter: form.accepts_barter,
       accepts_tip: form.accepts_tip,
+      image_urls: form.image_urls,
     };
 
     const result = initial
@@ -261,6 +272,26 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
               </button>
             ))}
           </div>
+        </div>
+      </Card>
+
+      {/* Images */}
+      <Card>
+        <div className="space-y-2">
+          <label className="text-xs text-text-mute block">📸 商品・サービスの画像</label>
+          <p className="text-[10px] text-text-mute">
+            どんな物・サービスを提供するか写真で伝えよう。最大4枚
+          </p>
+          <ImageUpload
+            bucket="shop-images"
+            userId={userId}
+            values={form.image_urls}
+            onChangeMany={(urls) => setForm((p) => ({ ...p, image_urls: urls }))}
+            multiple
+            maxCount={4}
+            placeholder="写真を追加"
+            aspect="square"
+          />
         </div>
       </Card>
 

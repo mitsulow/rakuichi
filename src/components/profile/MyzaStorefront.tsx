@@ -46,13 +46,17 @@ export function MyzaStorefront({
 
   return (
     <>
-      <Card className="overflow-hidden">
-        {/* Cover */}
-        {profile.cover_url && (
-          <div className="h-24 -mx-4 -mt-4 mb-3 overflow-hidden">
-            <img src={profile.cover_url} alt="" className="w-full h-full object-cover opacity-70" />
+      <Card className="overflow-hidden !p-0">
+        {/* Cover image - prominent store banner */}
+        {profile.cover_url ? (
+          <div className="h-40 overflow-hidden">
+            <img src={profile.cover_url} alt="" className="w-full h-full object-cover" />
           </div>
+        ) : (
+          <div className="h-28 bg-gradient-to-br from-accent/20 via-accent/10 to-transparent" />
         )}
+
+        <div className="p-4 -mt-8 relative">
 
         {/* Top row: Avatar + actions */}
         <div className="flex items-start justify-between">
@@ -142,9 +146,17 @@ export function MyzaStorefront({
               {shops.slice(0, 3).map((shop) => (
                 <div
                   key={shop.id}
-                  className="border border-border rounded-xl p-2.5 flex items-center gap-2"
+                  className="border border-border rounded-xl p-2.5 flex items-center gap-2.5"
                 >
-                  <CategoryTag categoryId={shop.category} size="sm" />
+                  {shop.image_urls && shop.image_urls.length > 0 ? (
+                    <img
+                      src={shop.image_urls[0]}
+                      alt={shop.name}
+                      className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <CategoryTag categoryId={shop.category} size="sm" />
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium line-clamp-1">{shop.name}</div>
                     {shop.description && (
@@ -193,6 +205,7 @@ export function MyzaStorefront({
               💬 連絡を取る
             </Button>
           )}
+        </div>
         </div>
       </Card>
 

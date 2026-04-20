@@ -57,7 +57,7 @@ export async function fetchPosts(): Promise<Post[]> {
 /**
  * Insert a new post. Returns the inserted post or null on failure.
  */
-export async function createPost(body: string, userId: string, embed?: OGPEmbed | null): Promise<Post | null> {
+export async function createPost(body: string, userId: string, embed?: OGPEmbed | null, imageUrls: string[] = []): Promise<Post | null> {
   const supabase = createClient();
 
   const { data, error } = await supabase
@@ -65,7 +65,7 @@ export async function createPost(body: string, userId: string, embed?: OGPEmbed 
     .insert({
       user_id: userId,
       body,
-      image_urls: [],
+      image_urls: imageUrls,
       embed: embed ?? null,
       likes_count: 0,
       comments_count: 0,
@@ -178,6 +178,9 @@ export async function updateProfile(userId: string, fields: {
   life_work_years?: number | null;
   life_work_level?: string;
   migration_percent?: number;
+  avatar_url?: string | null;
+  cover_url?: string | null;
+  show_on_map?: boolean;
 }) {
   const supabase = createClient();
 

@@ -1,19 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { fetchProfile, updateProfile } from "@/lib/data";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { MigrationBar } from "@/components/profile/MigrationBar";
 import { PREFECTURES } from "@/lib/constants";
 
-export default function ProfileSettingsPage() {
+function ProfileSettingsInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isOnboarding = searchParams.get("onboarding") === "1";
+
   const [userId, setUserId] = useState<string | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [googleAvatarUrl, setGoogleAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -30,12 +34,17 @@ export default function ProfileSettingsPage() {
     life_work_years: "",
     life_work_level: "",
     migration_percent: 0,
+    avatar_url: null as string | null,
+    cover_url: null as string | null,
+    show_on_map: true,
   });
 
   useEffect(() => {
     async function init() {
       const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (!session) {
         router.replace("/login");
@@ -43,7 +52,7 @@ export default function ProfileSettingsPage() {
       }
 
       setUserId(session.user.id);
-      setAvatarUrl(session.user.user_metadata?.avatar_url ?? null);
+      setGoogleAvatarUrl(session.user.user_metadata?.avatar_url ?? null);
 
       const profile = await fetchProfile(session.user.id);
       if (profile) {
@@ -59,8 +68,11 @@ export default function ProfileSettingsPage() {
           life_work_years: profile.life_work_years?.toString() || "",
           life_work_level: profile.life_work_level || "",
           migration_percent: profile.migration_percent ?? 0,
+          avatar_url:
+            profile.avatar_url ?? session.user.user_metadata?.avatar_url ?? null,
+          cover_url: profile.cover_url ?? null,
+          show_on_map: profile.show_on_map ?? true,
         });
-        if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
       }
 
       setLoading(false);
@@ -84,22 +96,40 @@ export default function ProfileSettingsPage() {
       city: formData.city || undefined,
       rice_work: formData.rice_work || undefined,
       life_work: formData.life_work || undefined,
-      life_work_years: formData.life_work_years ? parseInt(formData.life_work_years) : null,
+      life_work_years: formData.life_work_years
+        ? parseInt(formData.life_work_years)
+        : null,
       life_work_level: formData.life_work_level || undefined,
       migration_percent: formData.migration_percent,
+      avatar_url: formData.avatar_url,
+      cover_url: formData.cover_url,
+      show_on_map: formData.show_on_map,
     });
 
     setSaving(false);
 
     if (error) {
       alert(`保存に失敗しました: ${error}`);
+      return;
+    }
+
+    setSaved(true);
+
+    if (isOnboarding) {
+      setTimeout(() => router.push("/feed"), 800);
     } else {
-      setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     }
   };
 
   const updateField = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const setField = <K extends keyof typeof formData>(
+    field: K,
+    value: (typeof formData)[K]
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -112,123 +142,114 @@ export default function ProfileSettingsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="w-9 h-9 rounded-full hover:bg-bg-card flex items-center justify-center text-lg -ml-1"
-          aria-label="戻る"
-        >
-          ←
-        </button>
-        <h1 className="text-lg font-bold">プロフィール編集</h1>
+        {!isOnboarding && (
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="w-11 h-11 rounded-full hover:bg-bg-card flex items-center justify-center text-lg -ml-1"
+            aria-label="戻る"
+          >
+            ←
+          </button>
+        )}
+        <h1 className="text-lg font-bold">
+          {isOnboarding ? "🏮 ようこそ、楽市楽座へ" : "プロフィール編集"}
+        </h1>
       </div>
+
+      {isOnboarding && (
+        <Card className="border-2 border-accent/40 bg-accent/5">
+          <div className="text-sm space-y-1">
+            <p className="font-medium">まずはMY座を整えよう。</p>
+            <p className="text-text-sub text-xs">
+              これが「あなたの名刺」兼「お店」になります。
+              <br />
+              ライフワーク・都道府県・ステータスだけでも入れればOK。
+            </p>
+          </div>
+        </Card>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Avatar */}
         <Card>
-          <div className="flex items-center gap-4">
-            <Avatar
-              src={avatarUrl}
-              alt={formData.display_name}
-              size="lg"
-            />
-            <div className="text-xs text-text-mute">
-              アバターはGoogleアカウントの画像が使用されます
-            </div>
-          </div>
-        </Card>
-
-        {/* Basic info */}
-        <Card>
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-text-sub">基本情報</h3>
-
-            <div>
-              <label className="text-xs text-text-mute block mb-1">表示名</label>
-              <input
-                type="text"
-                value={formData.display_name}
-                onChange={(e) => updateField("display_name", e.target.value)}
-                className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm focus:border-accent focus:outline-none"
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold text-text-sub">🪞 アバター</h3>
+            <div className="flex items-start gap-4">
+              <Avatar
+                src={formData.avatar_url}
+                alt={formData.display_name}
+                size="lg"
               />
-            </div>
-
-            <div>
-              <label className="text-xs text-text-mute block mb-1">自己紹介（短め）</label>
-              <textarea
-                value={formData.bio}
-                onChange={(e) => updateField("bio", e.target.value)}
-                rows={2}
-                className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm resize-none focus:border-accent focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs text-text-mute block mb-1">今やってること（ステータス）</label>
-              <input
-                type="text"
-                value={formData.status_line}
-                onChange={(e) => updateField("status_line", e.target.value)}
-                placeholder="例：5月の予約あと3枠"
-                className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm focus:border-accent focus:outline-none"
-              />
-            </div>
-          </div>
-        </Card>
-
-        {/* Location */}
-        <Card>
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-text-sub">住んでいる場所</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-text-mute block mb-1">都道府県</label>
-                <select
-                  value={formData.prefecture}
-                  onChange={(e) => updateField("prefecture", e.target.value)}
-                  className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm focus:border-accent focus:outline-none"
-                >
-                  <option value="">選択</option>
-                  {PREFECTURES.map((pref) => (
-                    <option key={pref} value={pref}>{pref}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-text-mute block mb-1">市区町村</label>
-                <input
-                  type="text"
-                  value={formData.city}
-                  onChange={(e) => updateField("city", e.target.value)}
-                  className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm focus:border-accent focus:outline-none"
+              <div className="flex-1 space-y-2">
+                <ImageUpload
+                  bucket="avatars"
+                  userId={userId!}
+                  value={formData.avatar_url}
+                  onChange={(url) => setField("avatar_url", url)}
+                  placeholder="顔写真など"
+                  aspect="square"
                 />
+                {googleAvatarUrl && formData.avatar_url !== googleAvatarUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setField("avatar_url", googleAvatarUrl)}
+                    className="text-xs text-accent underline"
+                  >
+                    Googleの画像に戻す
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </Card>
 
-        {/* Work */}
+        {/* Cover image - store banner */}
+        <Card>
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold text-text-sub">
+              🎨 カバー画像（宣伝用）
+            </h3>
+            <p className="text-xs text-text-mute">
+              商品・作品・サービスのイメージが伝わる1枚を。MY座の一番上に大きく表示されます。
+            </p>
+            <ImageUpload
+              bucket="covers"
+              userId={userId!}
+              value={formData.cover_url}
+              onChange={(url) => setField("cover_url", url)}
+              placeholder="カバー画像を追加"
+              aspect="wide"
+            />
+          </div>
+        </Card>
+
+        {/* Work (moved up for onboarding priority) */}
         <Card>
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-text-sub">ワーク</h3>
+            <h3 className="text-sm font-bold text-text-sub">💪 ワーク</h3>
             <div>
-              <label className="text-xs text-text-mute block mb-1">ライスワーク（生活のための仕事）</label>
-              <input
-                type="text"
-                value={formData.rice_work}
-                onChange={(e) => updateField("rice_work", e.target.value)}
-                placeholder="例：会社員、パート"
-                className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm focus:border-accent focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-text-mute block mb-1">ライフワーク（本当にやりたいこと）</label>
+              <label className="text-xs text-text-mute block mb-1">
+                ライフワーク（本当にやりたいこと）
+              </label>
               <input
                 type="text"
                 value={formData.life_work}
                 onChange={(e) => updateField("life_work", e.target.value)}
                 placeholder="例：陶芸家、ヨガインストラクター"
-                className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm focus:border-accent focus:outline-none"
+                className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-sm focus:border-accent focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-text-mute block mb-1">
+                ライスワーク（生活のための仕事）
+              </label>
+              <input
+                type="text"
+                value={formData.rice_work}
+                onChange={(e) => updateField("rice_work", e.target.value)}
+                placeholder="例：会社員、パート（なければ空欄でOK）"
+                className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-sm focus:border-accent focus:outline-none"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -239,7 +260,7 @@ export default function ProfileSettingsPage() {
                   value={formData.life_work_years}
                   onChange={(e) => updateField("life_work_years", e.target.value)}
                   min="0"
-                  className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm focus:border-accent focus:outline-none"
+                  className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-sm focus:border-accent focus:outline-none"
                 />
               </div>
               <div>
@@ -247,7 +268,7 @@ export default function ProfileSettingsPage() {
                 <select
                   value={formData.life_work_level}
                   onChange={(e) => updateField("life_work_level", e.target.value)}
-                  className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm focus:border-accent focus:outline-none"
+                  className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-sm focus:border-accent focus:outline-none"
                 >
                   <option value="">選択</option>
                   <option value="修行中">修行中</option>
@@ -257,7 +278,6 @@ export default function ProfileSettingsPage() {
               </div>
             </div>
 
-            {/* Migration slider */}
             <div className="pt-2 border-t border-border">
               <label className="text-xs text-text-mute block mb-2">
                 🌾 ライフワーク移行度
@@ -270,30 +290,163 @@ export default function ProfileSettingsPage() {
                 riceWork={formData.rice_work || null}
                 lifeWork={formData.life_work || null}
                 editable
-                onChange={(p) => setFormData((prev) => ({ ...prev, migration_percent: p }))}
+                onChange={(p) => setField("migration_percent", p)}
               />
             </div>
           </div>
         </Card>
 
-        {/* Story */}
+        {/* Basic info */}
         <Card>
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-text-sub">ストーリー</h3>
+            <h3 className="text-sm font-bold text-text-sub">📝 基本情報</h3>
+
+            <div>
+              <label className="text-xs text-text-mute block mb-1">表示名</label>
+              <input
+                type="text"
+                value={formData.display_name}
+                onChange={(e) => updateField("display_name", e.target.value)}
+                className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-sm focus:border-accent focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-text-mute block mb-1">
+                今やってること（ステータス）
+              </label>
+              <input
+                type="text"
+                value={formData.status_line}
+                onChange={(e) => updateField("status_line", e.target.value)}
+                placeholder="例：5月の予約あと3枠"
+                className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-sm focus:border-accent focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-text-mute block mb-1">
+                自己紹介（短め）
+              </label>
+              <textarea
+                value={formData.bio}
+                onChange={(e) => updateField("bio", e.target.value)}
+                rows={2}
+                className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-sm resize-none focus:border-accent focus:outline-none"
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* Location + map visibility */}
+        <Card>
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-text-sub">📍 住んでいる場所</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-text-mute block mb-1">
+                  都道府県
+                </label>
+                <select
+                  value={formData.prefecture}
+                  onChange={(e) => updateField("prefecture", e.target.value)}
+                  className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-sm focus:border-accent focus:outline-none"
+                >
+                  <option value="">選択</option>
+                  {PREFECTURES.map((pref) => (
+                    <option key={pref} value={pref}>
+                      {pref}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-text-mute block mb-1">
+                  市区町村
+                </label>
+                <input
+                  type="text"
+                  value={formData.city}
+                  onChange={(e) => updateField("city", e.target.value)}
+                  className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-sm focus:border-accent focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <label className="flex items-start gap-3 p-3 rounded-xl border border-border bg-bg cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.show_on_map}
+                onChange={(e) => setField("show_on_map", e.target.checked)}
+                className="mt-0.5 w-4 h-4"
+              />
+              <div className="flex-1">
+                <div className="text-sm font-medium">
+                  🗺 マップにMY座を表示する
+                </div>
+                <div className="text-xs text-text-mute mt-0.5">
+                  あなたの都道府県のマップ上に、あなたの屋台が表示されます。
+                  オフにすると非表示になります。
+                </div>
+              </div>
+            </label>
+          </div>
+        </Card>
+
+        {/* Story */}
+        <Card>
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold text-text-sub">📖 ストーリー</h3>
             <textarea
               value={formData.story}
               onChange={(e) => updateField("story", e.target.value)}
               rows={4}
               placeholder="なぜその仕事をしているのか、あなたの物語を…"
-              className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm resize-none focus:border-accent focus:outline-none"
+              className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-sm resize-none focus:border-accent focus:outline-none"
             />
           </div>
         </Card>
 
-        <Button variant="primary" size="lg" className="w-full" type="submit" disabled={saving}>
-          {saving ? "保存中..." : saved ? "✓ 保存しました" : "保存する"}
+        <Button
+          variant="primary"
+          size="lg"
+          className="w-full"
+          type="submit"
+          disabled={saving}
+        >
+          {saving
+            ? "保存中..."
+            : saved
+            ? "✓ 保存しました"
+            : isOnboarding
+            ? "🪧 MY座を開く"
+            : "保存する"}
         </Button>
+
+        {isOnboarding && (
+          <button
+            type="button"
+            onClick={() => router.push("/feed")}
+            className="w-full text-xs text-text-mute underline py-2"
+          >
+            あとで設定する
+          </button>
+        )}
       </form>
     </div>
+  );
+}
+
+export default function ProfileSettingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="text-center py-12 text-text-mute text-sm">
+          読み込み中...
+        </div>
+      }
+    >
+      <ProfileSettingsInner />
+    </Suspense>
   );
 }

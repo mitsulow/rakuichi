@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { createPost } from "@/lib/data";
 import { EmbedCard } from "./EmbedCard";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { SOCIAL_PLATFORMS } from "@/lib/constants";
 import type { Post, OGPEmbed } from "@/lib/types";
 import type { User } from "@supabase/supabase-js";
@@ -56,6 +57,7 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [embed, setEmbed] = useState<OGPEmbed | null>(null);
   const [loadingOGP, setLoadingOGP] = useState(false);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const lastFetchedUrl = useRef<string | null>(null);
 
   // Detect URL from either the dedicated link input or the body text
@@ -84,10 +86,10 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
   }, [body, linkUrl]);
 
   const handleSubmit = async () => {
-    if ((!body.trim() && !embed) || isSubmitting) return;
+    if ((!body.trim() && !embed && imageUrls.length === 0) || isSubmitting) return;
 
     setIsSubmitting(true);
-    const newPost = await createPost(body.trim(), user.id, embed);
+    const newPost = await createPost(body.trim(), user.id, embed, imageUrls);
     setIsSubmitting(false);
 
     if (newPost) {
@@ -114,6 +116,7 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
           life_work_years: null,
           life_work_level: null,
           migration_percent: 0,
+          show_on_map: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
@@ -123,6 +126,7 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
       setBody("");
       setLinkUrl("");
       setEmbed(null);
+      setImageUrls([]);
       lastFetchedUrl.current = null;
       setIsExpanded(false);
     }
@@ -153,6 +157,20 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
                 className="w-full bg-bg rounded-xl p-3 text-sm resize-none border border-border focus:border-accent focus:outline-none min-h-[90px]"
                 maxLength={500}
               />
+
+              {/* Image upload */}
+              <div className="mt-2">
+                <ImageUpload
+                  bucket="post-images"
+                  userId={user.id}
+                  values={imageUrls}
+                  onChangeMany={setImageUrls}
+                  multiple
+                  maxCount={4}
+                  placeholder="📷 写真"
+                  aspect="square"
+                />
+              </div>
 
               {/* OGP Preview */}
               {loadingOGP && (
@@ -219,6 +237,7 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
                       setIsExpanded(false);
                       setBody("");
                       setLinkUrl("");
+                      setImageUrls([]);
                       removeEmbed();
                     }}
                   >
@@ -227,7 +246,7 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
                   <Button
                     variant="primary"
                     size="sm"
-                    disabled={(!body.trim() && !embed) || isSubmitting}
+                    disabled={(!body.trim() && !embed && imageUrls.length === 0) || isSubmitting}
                     onClick={handleSubmit}
                   >
                     {isSubmitting ? "立てかけ中..." : "🪧 立て札を立てる"}
