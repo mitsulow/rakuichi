@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { WeeklyMarket } from "@/components/feed/WeeklyMarket";
+import { WelcomeBanner } from "@/components/feed/WelcomeBanner";
 import { MigrationDashboard } from "@/components/feed/MigrationDashboard";
 import { FeedFilterTabs } from "@/components/feed/FeedFilterTabs";
 import { PostComposer } from "@/components/feed/PostComposer";
@@ -50,6 +51,9 @@ export default function FeedPage() {
 
   return (
     <div className="space-y-4">
+      {/* Welcome banner for new users */}
+      <WelcomeBanner />
+
       {/* 全体の移行度ダッシュボード */}
       <MigrationDashboard />
 

@@ -1,0 +1,56 @@
+"use client";
+
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Card } from "@/components/ui/Card";
+
+function WelcomeBannerInner() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    if (params.get("welcome") === "1") {
+      setShow(true);
+    }
+  }, [params]);
+
+  if (!show) return null;
+
+  return (
+    <Card className="!p-0 overflow-hidden bg-gradient-to-br from-accent/20 via-accent/5 to-transparent border-2 border-accent/30">
+      <div className="p-4">
+        <div className="flex items-start gap-3">
+          <span className="text-3xl">🪧</span>
+          <div className="flex-1">
+            <h2 className="text-sm font-bold mb-1">MY座が整いました！</h2>
+            <p className="text-xs text-text-sub leading-relaxed">
+              これでフィードで立て札を立てたり、屋台を出したり、
+              他の座の民と交流できます。
+              <br />
+              まずは最初の立て札を立ててみよう。
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setShow(false);
+              router.replace("/feed");
+            }}
+            className="text-text-mute text-lg -mt-1"
+            aria-label="閉じる"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+export function WelcomeBanner() {
+  return (
+    <Suspense fallback={null}>
+      <WelcomeBannerInner />
+    </Suspense>
+  );
+}

@@ -129,6 +129,28 @@ export function AuthButton() {
           >
             🏪 MY屋台
           </Link>
+          <button
+            onClick={async () => {
+              const url = `${window.location.origin}${myzaHref}`;
+              try {
+                if (navigator.share) {
+                  await navigator.share({
+                    title: `${name}のMY座 - 楽市楽座`,
+                    url,
+                  });
+                } else {
+                  await navigator.clipboard.writeText(url);
+                  alert("MY座のURLをコピーしました");
+                }
+              } catch {
+                // user cancelled
+              }
+              setMenuOpen(false);
+            }}
+            className="block w-full text-left px-4 py-2.5 text-sm text-text hover:bg-bg"
+          >
+            📤 MY座を共有
+          </button>
           <div className="my-1 border-t border-border" />
           <button
             onClick={handleLogout}

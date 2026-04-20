@@ -116,7 +116,9 @@ function ProfileSettingsInner() {
     setSaved(true);
 
     if (isOnboarding) {
-      setTimeout(() => router.push("/feed"), 800);
+      // Mark onboarding done in sessionStorage so gate doesn't loop
+      if (userId) sessionStorage.setItem(`onb:${userId}`, "done");
+      setTimeout(() => router.push("/feed?welcome=1"), 800);
     } else {
       setTimeout(() => setSaved(false), 3000);
     }
