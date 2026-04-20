@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/client";
-import { getPostsWithProfiles as getMockPostsWithProfiles } from "@/lib/mock-data";
 import type { Post, OGPEmbed, Profile } from "@/lib/types";
 
 /**
@@ -336,6 +335,22 @@ export async function updateShop(shopId: string, input: Partial<ShopInput>) {
     return { data: null, error: error.message };
   }
   return { data, error: null };
+}
+
+/**
+ * Fetch all profiles that have lat/long set, with their shops (for the map page).
+ */
+export async function fetchMapVillageShops() {
+  const supabase = createClient();
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("*, shops(*)")
+    .not("latitude", "is", null)
+    .not("longitude", "is", null);
+  if (!profiles) return [];
+  return profiles
+    .filter((p) => Array.isArray(p.shops) && p.shops.length > 0)
+    .map((p) => ({ profile: p as Profile, shops: p.shops }));
 }
 
 /**

@@ -1,58 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { CATEGORIES } from "@/lib/constants";
-import { mockProfiles, mockShops, mockRecommendedShops } from "@/lib/mock-data";
+import { fetchMapVillageShops } from "@/lib/data";
+import type { Profile, Shop } from "@/lib/types";
 
 const MapView = dynamic(
   () => import("@/components/map/MapView").then((mod) => mod.MapView),
   { ssr: false, loading: () => <div className="w-full h-[400px] bg-bg rounded-2xl animate-pulse" /> }
 );
 
-export default function MapPage() {
-  const [showVillage, setShowVillage] = useState(true);
-  const [showRecommended, setShowRecommended] = useState(true);
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+interface VillageShop {
+  profile: Profile;
+  shops: Shop[];
+}
 
-  const villageShops = mockProfiles
-    .filter((p) => p.is_paid)
-    .map((profile) => ({
-      profile,
-      shops: mockShops.filter((s) => s.owner_id === profile.id),
-    }))
-    .filter((vs) => vs.shops.length > 0);
+export default function MapPage() {
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [villageShops, setVillageShops] = useState<VillageShop[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      const data = await fetchMapVillageShops();
+      setVillageShops(data as VillageShop[]);
+      setLoading(false);
+    }
+    load();
+  }, []);
 
   return (
     <div className="space-y-4">
       <h1 className="text-lg font-bold">🗾 楽市楽座マップ</h1>
       <p className="text-xs text-text-sub">
-        みんなで育てる自然派マップ
+        どこで屋台がオープンしているか一目で分かるマップ
       </p>
-
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2">
-        <button
-          onClick={() => setShowVillage(!showVillage)}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs transition-colors ${
-            showVillage
-              ? "bg-accent text-white"
-              : "bg-card text-text-sub border border-border"
-          }`}
-        >
-          🏡 村人の店
-        </button>
-        <button
-          onClick={() => setShowRecommended(!showRecommended)}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs transition-colors ${
-            showRecommended
-              ? "bg-gold text-white"
-              : "bg-card text-text-sub border border-border"
-          }`}
-        >
-          🌟 推薦店
-        </button>
-      </div>
 
       {/* Category filter */}
       <div className="flex gap-1.5 overflow-x-auto hide-scrollbar">
@@ -86,15 +69,27 @@ export default function MapPage() {
       </div>
 
       {/* Map */}
-      <div className="h-[calc(100vh-320px)] min-h-[400px] rounded-2xl overflow-hidden border border-border">
-        <MapView
-          villageShops={villageShops}
-          recommendedShops={mockRecommendedShops}
-          showVillage={showVillage}
-          showRecommended={showRecommended}
-          categoryFilter={categoryFilter}
-        />
-      </div>
+      {loading ? (
+        <div className="w-full h-[400px] bg-bg rounded-2xl animate-pulse" />
+      ) : villageShops.length === 0 ? (
+        <div className="text-center py-12 text-text-mute border border-border rounded-2xl">
+          <p className="text-4xl mb-3">🗺</p>
+          <p className="text-sm">まだマップに屋台が並んでいません</p>
+          <p className="text-xs mt-1">
+            MY座で都道府県を設定して、屋台を出すとここに並びます
+          </p>
+        </div>
+      ) : (
+        <div className="h-[calc(100vh-320px)] min-h-[400px] rounded-2xl overflow-hidden border border-border">
+          <MapView
+            villageShops={villageShops}
+            recommendedShops={[]}
+            showVillage={true}
+            showRecommended={false}
+            categoryFilter={categoryFilter}
+          />
+        </div>
+      )}
     </div>
   );
 }
