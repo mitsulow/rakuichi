@@ -8,7 +8,7 @@ interface FeedFilterTabsProps {
 const tabs = [
   { id: "region", emoji: "🗾", label: "地域から" },
   { id: "category", emoji: "🗂", label: "カテゴリ" },
-  { id: "following", emoji: "👥", label: "フォロー中" },
+  { id: "following", emoji: "🏮", label: "のれんをくぐった" },
   { id: "featured", emoji: "⭐", label: "新着注目" },
 ];
 

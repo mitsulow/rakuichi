@@ -125,24 +125,28 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled }
         <button
           onClick={handleLikeClick}
           disabled={!currentUserId || likeLoading}
+          title={isLiked ? "種をまいた" : "種をまく"}
           className={`flex items-center gap-1 text-sm transition-colors ${
             isLiked
               ? "text-accent font-medium"
               : "text-text-sub hover:text-accent"
           } ${!currentUserId ? "opacity-50 cursor-default" : ""}`}
         >
-          <span>{isLiked ? "🌾" : "🌾"}</span>
+          <span>{isLiked ? "🌱" : "🌱"}</span>
           <span>{post.likes_count}</span>
         </button>
-        <button className="flex items-center gap-1 text-sm text-text-sub hover:text-accent transition-colors">
-          <span>💬</span>
+        <button
+          title="文を寄せる"
+          className="flex items-center gap-1 text-sm text-text-sub hover:text-accent transition-colors"
+        >
+          <span>📜</span>
           <span>{post.comments_count}</span>
         </button>
-        <button className="flex items-center gap-1 text-sm text-text-sub hover:text-accent transition-colors">
+        <button
+          title="共有"
+          className="flex items-center gap-1 text-sm text-text-sub hover:text-accent transition-colors"
+        >
           <span>🔗</span>
-        </button>
-        <button className="flex items-center gap-1 text-sm text-text-sub hover:text-accent transition-colors ml-auto">
-          <span>📖</span>
         </button>
       </div>
     </Card>

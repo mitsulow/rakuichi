@@ -190,6 +190,7 @@ export async function updateProfile(userId: string, fields: {
   life_work?: string;
   life_work_years?: number | null;
   life_work_level?: string;
+  migration_percent?: number;
 }) {
   const supabase = createClient();
 
@@ -260,6 +261,19 @@ export async function fetchExternalLinks(userId: string) {
     .eq("user_id", userId)
     .order("sort_order", { ascending: true });
   return data ?? [];
+}
+
+/**
+ * Sum up the total seeds (likes) received across all posts by a user.
+ */
+export async function fetchTotalSeeds(userId: string): Promise<number> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("posts")
+    .select("likes_count")
+    .eq("user_id", userId);
+  if (!data) return 0;
+  return data.reduce((sum, p) => sum + (p.likes_count ?? 0), 0);
 }
 
 /**

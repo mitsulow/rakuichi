@@ -7,6 +7,7 @@ import { fetchProfile, updateProfile } from "@/lib/data";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
+import { MigrationBar } from "@/components/profile/MigrationBar";
 import { PREFECTURES } from "@/lib/constants";
 
 export default function ProfileSettingsPage() {
@@ -28,6 +29,7 @@ export default function ProfileSettingsPage() {
     life_work: "",
     life_work_years: "",
     life_work_level: "",
+    migration_percent: 0,
   });
 
   useEffect(() => {
@@ -56,6 +58,7 @@ export default function ProfileSettingsPage() {
           life_work: profile.life_work || "",
           life_work_years: profile.life_work_years?.toString() || "",
           life_work_level: profile.life_work_level || "",
+          migration_percent: profile.migration_percent ?? 0,
         });
         if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
       }
@@ -83,6 +86,7 @@ export default function ProfileSettingsPage() {
       life_work: formData.life_work || undefined,
       life_work_years: formData.life_work_years ? parseInt(formData.life_work_years) : null,
       life_work_level: formData.life_work_level || undefined,
+      migration_percent: formData.migration_percent,
     });
 
     setSaving(false);
@@ -107,7 +111,17 @@ export default function ProfileSettingsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-bold">プロフィール編集</h1>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="w-9 h-9 rounded-full hover:bg-bg-card flex items-center justify-center text-lg -ml-1"
+          aria-label="戻る"
+        >
+          ←
+        </button>
+        <h1 className="text-lg font-bold">プロフィール編集</h1>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Avatar */}
@@ -241,6 +255,23 @@ export default function ProfileSettingsPage() {
                   <option value="一人前">一人前</option>
                 </select>
               </div>
+            </div>
+
+            {/* Migration slider */}
+            <div className="pt-2 border-t border-border">
+              <label className="text-xs text-text-mute block mb-2">
+                🌾 ライフワーク移行度
+                <span className="block text-[10px] text-text-mute mt-0.5">
+                  今の収入のうち、ライフワークが何割？（目安でOK）
+                </span>
+              </label>
+              <MigrationBar
+                percent={formData.migration_percent}
+                riceWork={formData.rice_work || null}
+                lifeWork={formData.life_work || null}
+                editable
+                onChange={(p) => setFormData((prev) => ({ ...prev, migration_percent: p }))}
+              />
             </div>
           </div>
         </Card>

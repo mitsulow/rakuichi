@@ -41,6 +41,48 @@ export const SOCIAL_PLATFORMS = [
   { id: "website", label: "サイト", icon: "🌐" },
 ] as const;
 
+// ============================================================
+// 楽市楽座の世界観 ── 用語辞書
+// 一般的な言葉を楽市楽座らしい言葉に置き換える
+// ============================================================
+export const WORDS = {
+  // アクション
+  like: { label: "種をまく", past: "種をまいた", emoji: "🌱" },
+  follow: { label: "のれんをくぐる", past: "のれんをくぐった", emoji: "🏮" },
+  post: { label: "立て札を立てる", item: "立て札", emoji: "🪧" },
+  message: { label: "文を送る", item: "文（ふみ）", emoji: "📜" },
+  trade: { label: "交換する", item: "交換", emoji: "🔄" },
+  // モノ
+  user: "座の民",
+  profile: "MY座",
+  shop: "屋台",
+  chat: "文（ふみ）",
+  review: "交換日記",
+} as const;
+
+// 🌱 種の成長ステージ（もらった種の数に応じて変化）
+export const SEED_STAGES = [
+  { min: 0, emoji: "🌱", label: "芽吹き", description: "種が芽を出したばかり" },
+  { min: 10, emoji: "🌿", label: "若葉", description: "葉が広がってきた" },
+  { min: 50, emoji: "🌷", label: "つぼみ", description: "花が咲く準備" },
+  { min: 200, emoji: "🌸", label: "開花", description: "みんなに愛されている" },
+  { min: 1000, emoji: "🌾", label: "実り", description: "豊かな実をつけた" },
+] as const;
+
+export function getSeedStage(count: number) {
+  return [...SEED_STAGES].reverse().find((s) => count >= s.min) ?? SEED_STAGES[0];
+}
+
+// 移行度の段階ラベル
+export function getMigrationLabel(percent: number): string {
+  if (percent === 0) return "ライスワーク100%";
+  if (percent < 25) return "一歩踏み出した";
+  if (percent < 50) return "移行中";
+  if (percent < 75) return "半分以上ライフワーク";
+  if (percent < 100) return "もうすぐ完全移行";
+  return "完全ライフワーク化！";
+}
+
 export const PREFECTURES = [
   "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
   "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",

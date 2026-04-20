@@ -20,6 +20,7 @@ export interface Profile {
   life_work: string | null;
   life_work_years: number | null;
   life_work_level: "修行中" | "歩み中" | "一人前" | null;
+  migration_percent: number;
   created_at: string;
   updated_at: string;
 }
@@ -31,9 +32,64 @@ export interface Shop {
   name: string;
   description: string | null;
   price_text: string | null;
+  price_jpy: number | null;
+  is_trial: boolean;
+  accepts_barter: boolean;
+  accepts_tip: boolean;
   image_urls: string[];
   created_at: string;
   updated_at: string;
+}
+
+export interface TradeProposal {
+  id: string;
+  chat_id: string;
+  proposer_id: string;
+  recipient_id: string;
+  shop_id: string | null;
+  trade_type: "cash" | "barter" | "tip";
+  amount_jpy: number | null;
+  barter_offer: string | null;
+  note: string | null;
+  status: "pending" | "accepted" | "rejected" | "completed" | "cancelled";
+  created_at: string;
+  responded_at: string | null;
+  completed_at: string | null;
+}
+
+export interface TradeRecord {
+  id: string;
+  proposal_id: string | null;
+  author_id: string;
+  partner_id: string;
+  title: string;
+  diary: string;
+  created_at: string;
+  author?: Profile;
+  partner?: Profile;
+}
+
+export interface Mentorship {
+  id: string;
+  mentor_id: string;
+  apprentice_id: string;
+  craft: string | null;
+  status: "pending" | "active" | "graduated" | "declined";
+  proposed_by: string;
+  created_at: string;
+  started_at: string | null;
+  ended_at: string | null;
+  mentor?: Profile;
+  apprentice?: Profile;
+}
+
+export interface WeeklyPickup {
+  id: string;
+  week_start: string;
+  user_id: string;
+  reason: string | null;
+  sort_order: number;
+  user?: Profile;
 }
 
 export interface Badge {
