@@ -3,11 +3,12 @@
 interface AvatarProps {
   src: string | null;
   alt: string;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
   className?: string;
 }
 
 const sizeMap = {
+  xs: "w-6 h-6",
   sm: "w-8 h-8",
   md: "w-12 h-12",
   lg: "w-20 h-20",

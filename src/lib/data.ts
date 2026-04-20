@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import { getPostsWithProfiles as getMockPostsWithProfiles } from "@/lib/mock-data";
-import type { Post, OGPEmbed } from "@/lib/types";
+import type { Post, OGPEmbed, Profile } from "@/lib/types";
 
 /**
  * Fetch posts with joined profile and badge data from Supabase.
@@ -574,6 +574,228 @@ export async function createTradeRecord(
     return { data: null, error: error.message };
   }
   return { data, error: null };
+}
+
+// ============================================================
+// Dashboard & rankings
+// ============================================================
+
+/**
+ * Aggregate: total users, average migration_percent, users with active life work
+ */
+export async function fetchMigrationStats() {
+  const supabase = createClient();
+  const { data, count } = await supabase
+    .from("profiles")
+    .select("migration_percent", { count: "exact" });
+  if (!data) return { total: 0, avg: 0, fullyMigrated: 0 };
+  const total = count ?? data.length;
+  const sum = data.reduce((s, p) => s + (p.migration_percent ?? 0), 0);
+  const fullyMigrated = data.filter((p) => (p.migration_percent ?? 0) >= 100).length;
+  return {
+    total,
+    avg: total > 0 ? Math.round(sum / total) : 0,
+    fullyMigrated,
+  };
+}
+
+/**
+ * Top seed receivers (total likes across their posts).
+ */
+export async function fetchSeedRanking(limit = 10) {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("posts")
+    .select("user_id, likes_count, profile:profiles(*)")
+    .order("likes_count", { ascending: false });
+  if (!data) return [];
+
+  const map = new Map<string, { profile: Profile; total: number }>();
+  for (const p of data) {
+    const profile = p.profile as unknown as Profile | null;
+    if (!profile) continue;
+    const existing = map.get(p.user_id);
+    if (existing) {
+      existing.total += p.likes_count ?? 0;
+    } else {
+      map.set(p.user_id, { profile, total: p.likes_count ?? 0 });
+    }
+  }
+
+  return Array.from(map.values())
+    .sort((a, b) => b.total - a.total)
+    .slice(0, limit);
+}
+
+/**
+ * Top exchangers (most completed trades).
+ */
+export async function fetchExchangeRanking(limit = 10) {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("trade_records")
+    .select("author_id, partner_id");
+  if (!data) return [];
+
+  const counts = new Map<string, number>();
+  for (const r of data) {
+    counts.set(r.author_id, (counts.get(r.author_id) ?? 0) + 1);
+    counts.set(r.partner_id, (counts.get(r.partner_id) ?? 0) + 1);
+  }
+
+  const userIds = Array.from(counts.keys());
+  if (userIds.length === 0) return [];
+
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("*")
+    .in("id", userIds);
+
+  const result = (profiles ?? [])
+    .map((p) => ({ profile: p as Profile, total: counts.get(p.id) ?? 0 }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, limit);
+
+  return result;
+}
+
+/**
+ * Top mentors (most active apprentices).
+ */
+export async function fetchMentorRanking(limit = 10) {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("mentorships")
+    .select("mentor_id, mentor:profiles!mentorships_mentor_id_fkey(*)")
+    .eq("status", "active");
+  if (!data) return [];
+
+  const map = new Map<string, { profile: Profile; total: number }>();
+  for (const m of data) {
+    const mentor = m.mentor as unknown as Profile | null;
+    if (!mentor) continue;
+    const existing = map.get(m.mentor_id);
+    if (existing) existing.total += 1;
+    else map.set(m.mentor_id, { profile: mentor, total: 1 });
+  }
+
+  return Array.from(map.values())
+    .sort((a, b) => b.total - a.total)
+    .slice(0, limit);
+}
+
+// ============================================================
+// Weekly pickups (週イチ楽座)
+// ============================================================
+
+/**
+ * Get the Monday of the current week as YYYY-MM-DD.
+ */
+export function getCurrentWeekStart(): string {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  const diff = day === 0 ? -6 : 1 - day; // shift to Monday
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday.toISOString().split("T")[0];
+}
+
+/**
+ * Fetch pickups for the current week, falling back to newest posts owners if none set.
+ */
+export async function fetchCurrentWeekPickups() {
+  const supabase = createClient();
+  const weekStart = getCurrentWeekStart();
+  const { data } = await supabase
+    .from("weekly_pickups")
+    .select("*, user:profiles(*)")
+    .eq("week_start", weekStart)
+    .order("sort_order", { ascending: true });
+  if (data && data.length > 0) return data;
+
+  // Fallback: 5 recent active users (by latest post)
+  const { data: recentPosts } = await supabase
+    .from("posts")
+    .select("user_id, profile:profiles(*)")
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (!recentPosts) return [];
+  const seen = new Set<string>();
+  const fallback: { user: unknown; reason: string; sort_order: number }[] = [];
+  for (const p of recentPosts) {
+    if (seen.has(p.user_id) || fallback.length >= 5) continue;
+    seen.add(p.user_id);
+    fallback.push({
+      user: p.profile,
+      reason: "今週の活発な座の民",
+      sort_order: fallback.length,
+    });
+  }
+  return fallback;
+}
+
+// ============================================================
+// Mentorships (師弟)
+// ============================================================
+
+export async function proposeMentorship(input: {
+  mentorId: string;
+  apprenticeId: string;
+  proposedBy: string;
+  craft?: string | null;
+}) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("mentorships")
+    .insert({
+      mentor_id: input.mentorId,
+      apprentice_id: input.apprenticeId,
+      proposed_by: input.proposedBy,
+      craft: input.craft ?? null,
+    })
+    .select()
+    .single();
+  if (error) {
+    console.error("proposeMentorship error:", error.message);
+    return { data: null, error: error.message };
+  }
+  return { data, error: null };
+}
+
+export async function respondMentorship(
+  id: string,
+  status: "active" | "declined" | "graduated"
+) {
+  const supabase = createClient();
+  const updates: Record<string, unknown> = { status };
+  if (status === "active") updates.started_at = new Date().toISOString();
+  if (status === "graduated") updates.ended_at = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("mentorships")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) {
+    console.error("respondMentorship error:", error.message);
+    return { data: null, error: error.message };
+  }
+  return { data, error: null };
+}
+
+/**
+ * Fetch mentorships where the user is mentor or apprentice.
+ */
+export async function fetchUserMentorships(userId: string) {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("mentorships")
+    .select("*, mentor:profiles!mentorships_mentor_id_fkey(*), apprentice:profiles!mentorships_apprentice_id_fkey(*)")
+    .or(`mentor_id.eq.${userId},apprentice_id.eq.${userId}`)
+    .order("created_at", { ascending: false });
+  return data ?? [];
 }
 
 export async function fetchUserTradeRecords(userId: string) {

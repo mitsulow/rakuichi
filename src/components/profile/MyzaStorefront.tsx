@@ -11,6 +11,7 @@ import { ContactModal } from "./ContactModal";
 import { QRModal } from "./QRModal";
 import { MigrationBar } from "./MigrationBar";
 import { SeedStage } from "./SeedStage";
+import { MentorshipSection } from "./MentorshipSection";
 import type { Profile, Badge, ExternalLink, Shop } from "@/lib/types";
 
 interface MyzaStorefrontProps {
@@ -170,6 +171,9 @@ export function MyzaStorefront({
             </div>
           </div>
         )}
+
+        {/* Mentorships */}
+        <MentorshipSection profile={profile} isOwner={isOwner} />
 
         {/* Primary action */}
         <div className="mt-4">

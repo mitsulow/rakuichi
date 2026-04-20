@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { TodayFive } from "@/components/feed/TodayFive";
+import { WeeklyMarket } from "@/components/feed/WeeklyMarket";
+import { MigrationDashboard } from "@/components/feed/MigrationDashboard";
 import { FeedFilterTabs } from "@/components/feed/FeedFilterTabs";
 import { PostComposer } from "@/components/feed/PostComposer";
 import { PostCard } from "@/components/feed/PostCard";
-import { mockProfiles, mockBadges } from "@/lib/mock-data";
 import { fetchPosts, getUserLikes } from "@/lib/data";
 import type { Post } from "@/lib/types";
 import type { User } from "@supabase/supabase-js";
@@ -17,11 +17,6 @@ export default function FeedPage() {
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Today's 5: pick 5 profiles with some logic
-  const todayFive = mockProfiles
-    .filter((p) => p.is_paid)
-    .slice(0, 5);
 
   useEffect(() => {
     async function init() {
@@ -55,8 +50,11 @@ export default function FeedPage() {
 
   return (
     <div className="space-y-4">
-      {/* Today's 5 */}
-      <TodayFive profiles={todayFive} badges={mockBadges} />
+      {/* 全体の移行度ダッシュボード */}
+      <MigrationDashboard />
+
+      {/* 週イチ楽座 */}
+      <WeeklyMarket />
 
       {/* Filter tabs */}
       <FeedFilterTabs activeTab={activeTab} onTabChange={setActiveTab} />
