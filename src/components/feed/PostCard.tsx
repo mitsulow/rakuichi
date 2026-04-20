@@ -1,20 +1,43 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
 import { BadgeList } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { CategoryTag } from "@/components/ui/CategoryTag";
 import { formatRelativeTime } from "@/lib/utils";
+import { toggleLike } from "@/lib/data";
 import type { Post } from "@/lib/types";
 
 interface PostCardProps {
   post: Post;
+  currentUserId?: string | null;
+  isLiked?: boolean;
+  onLikeToggled?: (postId: string, liked: boolean) => void;
 }
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled }: PostCardProps) {
   const { profile, badges, shop } = post;
+  const [likeLoading, setLikeLoading] = useState(false);
+
   if (!profile) return null;
+
+  const handleLikeClick = async () => {
+    if (!currentUserId || likeLoading) return;
+
+    // Optimistic update
+    onLikeToggled?.(post.id, !isLiked);
+
+    setLikeLoading(true);
+    const result = await toggleLike(post.id, currentUserId, isLiked);
+    setLikeLoading(false);
+
+    // If the server result disagrees with our optimistic update, revert
+    if (result.error) {
+      onLikeToggled?.(post.id, isLiked); // revert
+    }
+  };
 
   return (
     <Card>
@@ -48,6 +71,30 @@ export function PostCard({ post }: PostCardProps) {
         {post.body}
       </p>
 
+      {/* OGP Embed */}
+      {post.embed && (
+        <a
+          href={post.embed.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 block border border-border rounded-xl overflow-hidden hover:bg-bg transition-colors no-underline"
+        >
+          {post.embed.image && (
+            <img src={post.embed.image} alt="" className="w-full h-36 object-cover" />
+          )}
+          <div className="p-2.5">
+            <div className="text-xs font-medium line-clamp-2">{post.embed.title}</div>
+            {post.embed.description && (
+              <div className="text-xs text-text-mute line-clamp-2 mt-0.5">{post.embed.description}</div>
+            )}
+            <div className="text-xs text-text-mute mt-1">
+              {post.embed.platform && <span className="capitalize mr-1">{post.embed.platform}</span>}
+              {new URL(post.embed.url).hostname}
+            </div>
+          </div>
+        </a>
+      )}
+
       {/* Images */}
       {post.image_urls.length > 0 && (
         <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
@@ -75,8 +122,16 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* Reactions */}
       <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
-        <button className="flex items-center gap-1 text-sm text-text-sub hover:text-accent transition-colors">
-          <span>🌾</span>
+        <button
+          onClick={handleLikeClick}
+          disabled={!currentUserId || likeLoading}
+          className={`flex items-center gap-1 text-sm transition-colors ${
+            isLiked
+              ? "text-accent font-medium"
+              : "text-text-sub hover:text-accent"
+          } ${!currentUserId ? "opacity-50 cursor-default" : ""}`}
+        >
+          <span>{isLiked ? "🌾" : "🌾"}</span>
           <span>{post.likes_count}</span>
         </button>
         <button className="flex items-center gap-1 text-sm text-text-sub hover:text-accent transition-colors">
