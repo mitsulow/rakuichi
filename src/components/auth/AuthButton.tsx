@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
 import type { User } from "@supabase/supabase-js";
@@ -9,12 +10,14 @@ import type { User } from "@supabase/supabase-js";
 export function AuthButton() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const supabase = createClient();
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
+    // Use getSession for initial check (reads from cookies, no network call)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
       setLoading(false);
     });
 
@@ -22,14 +25,20 @@ export function AuthButton() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setLoading(false);
+      // Force re-render of server components when auth state changes
+      if (_event === "SIGNED_IN") {
+        router.refresh();
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [router]);
 
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
+    router.refresh();
     window.location.href = "/login";
   };
 
