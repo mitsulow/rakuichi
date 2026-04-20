@@ -7,64 +7,52 @@ import type { Post, OGPEmbed, Profile } from "@/lib/types";
  * Falls back to mock data if Supabase is not configured or returns no posts.
  */
 export async function fetchPosts(): Promise<Post[]> {
-  try {
-    const supabase = createClient();
+  const supabase = createClient();
 
-    // Fetch posts with profile join
-    const { data, error } = await supabase
-      .from("posts")
-      .select(`
-        *,
-        profile:profiles(*)
-      `)
-      .order("created_at", { ascending: false })
-      .limit(50);
+  const { data, error } = await supabase
+    .from("posts")
+    .select(`
+      *,
+      profile:profiles(*)
+    `)
+    .order("created_at", { ascending: false })
+    .limit(50);
 
-    if (error) {
-      console.error("Supabase fetchPosts error:", error.message);
-      return getMockPostsWithProfiles();
-    }
-
-    if (!data || data.length === 0) {
-      return getMockPostsWithProfiles();
-    }
-
-    // Collect unique user_ids to fetch badges
-    const userIds = [...new Set(data.map((row: any) => row.user_id))];
-
-    const { data: badgesData } = await supabase
-      .from("badges")
-      .select("*")
-      .in("user_id", userIds);
-
-    const badgesByUser = new Map<string, any[]>();
-    for (const badge of badgesData ?? []) {
-      const existing = badgesByUser.get(badge.user_id) ?? [];
-      existing.push(badge);
-      badgesByUser.set(badge.user_id, existing);
-    }
-
-    // Map to our Post type shape
-    return data.map((row: any) => ({
-      id: row.id,
-      user_id: row.user_id,
-      body: row.body,
-      image_urls: row.image_urls ?? [],
-      embed: row.embed ?? null,
-      shop_id: row.shop_id ?? null,
-      latitude: row.latitude ?? null,
-      longitude: row.longitude ?? null,
-      likes_count: row.likes_count ?? 0,
-      comments_count: row.comments_count ?? 0,
-      created_at: row.created_at,
-      profile: row.profile ?? undefined,
-      badges: badgesByUser.get(row.user_id) ?? [],
-      shop: undefined, // TODO: join shops if needed
-    }));
-  } catch (e) {
-    console.error("fetchPosts unexpected error:", e);
-    return getMockPostsWithProfiles();
+  if (error) {
+    console.error("fetchPosts error:", error.message);
+    return [];
   }
+  if (!data || data.length === 0) return [];
+
+  const userIds = [...new Set(data.map((row) => row.user_id))];
+  const { data: badgesData } = await supabase
+    .from("badges")
+    .select("*")
+    .in("user_id", userIds);
+
+  const badgesByUser = new Map<string, unknown[]>();
+  for (const badge of badgesData ?? []) {
+    const existing = badgesByUser.get(badge.user_id) ?? [];
+    existing.push(badge);
+    badgesByUser.set(badge.user_id, existing);
+  }
+
+  return data.map((row) => ({
+    id: row.id,
+    user_id: row.user_id,
+    body: row.body,
+    image_urls: row.image_urls ?? [],
+    embed: row.embed ?? null,
+    shop_id: row.shop_id ?? null,
+    latitude: row.latitude ?? null,
+    longitude: row.longitude ?? null,
+    likes_count: row.likes_count ?? 0,
+    comments_count: row.comments_count ?? 0,
+    created_at: row.created_at,
+    profile: row.profile ?? undefined,
+    badges: (badgesByUser.get(row.user_id) ?? []) as Post["badges"],
+    shop: undefined,
+  }));
 }
 
 /**

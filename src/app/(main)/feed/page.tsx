@@ -66,6 +66,12 @@ export default function FeedPage() {
       <div className="space-y-4">
         {loading ? (
           <div className="text-center py-8 text-text-mute text-sm">読み込み中...</div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-12 text-text-mute">
+            <p className="text-4xl mb-3">🪧</p>
+            <p className="text-sm">まだ立て札がありません</p>
+            <p className="text-xs mt-1">最初の立て札を立ててみよう</p>
+          </div>
         ) : (
           posts.map((post) => (
             <PostCard
