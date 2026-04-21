@@ -11,6 +11,7 @@ import {
   fetchMentorRanking,
   fetchMigrationStats,
 } from "@/lib/data";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import type { Profile } from "@/lib/types";
 
 interface RankingEntry {
@@ -125,7 +126,7 @@ export default function RankingsPage() {
 
       {/* Ranking list */}
       {loading ? (
-        <div className="text-center py-8 text-text-mute text-sm">読み込み中...</div>
+        <LoadingScreen step="ランキングを読み込み中..." />
       ) : active.length === 0 ? (
         <Card>
           <div className="text-center py-8 text-text-mute">

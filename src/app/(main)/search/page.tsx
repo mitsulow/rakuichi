@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { CategoryTag } from "@/components/ui/CategoryTag";
 import { CATEGORIES } from "@/lib/constants";
 import { fetchAllShops } from "@/lib/data";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import type { Shop, Profile } from "@/lib/types";
 
 interface ShopWithOwner extends Shop {
@@ -128,7 +129,7 @@ export default function SearchPage() {
 
       {/* Results */}
       {loading ? (
-        <div className="text-center py-12 text-text-mute text-sm">読み込み中...</div>
+        <LoadingScreen step="屋台を読み込み中..." />
       ) : filtered.length === 0 ? (
         <div className="text-center py-12 text-text-mute">
           <p className="text-4xl mb-3">🌱</p>

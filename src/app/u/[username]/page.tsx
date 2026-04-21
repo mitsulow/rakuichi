@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { MyzaStorefront } from "@/components/profile/MyzaStorefront";
 import { StorySection } from "@/components/profile/StorySection";
 import { WishList } from "@/components/profile/WishList";
@@ -72,7 +73,7 @@ export default function ProfilePage() {
   }, [username]);
 
   if (loading) {
-    return <div className="text-center py-12 text-text-mute text-sm">読み込み中...</div>;
+    return <LoadingScreen step={`MY座を読み込み中... (${username})`} />;
   }
 
   if (!profile) {

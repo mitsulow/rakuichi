@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { WeeklyMarket } from "@/components/feed/WeeklyMarket";
 import { WelcomeBanner } from "@/components/feed/WelcomeBanner";
 import { MigrationDashboard } from "@/components/feed/MigrationDashboard";
@@ -78,7 +79,7 @@ export default function FeedPage() {
       {/* Posts */}
       <div className="space-y-4">
         {loading ? (
-          <div className="text-center py-8 text-text-mute text-sm">読み込み中...</div>
+          <LoadingScreen step="立て札を読み込み中..." />
         ) : posts.length === 0 ? (
           <div className="text-center py-12 text-text-mute">
             <p className="text-4xl mb-3">🪧</p>

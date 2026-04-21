@@ -16,6 +16,7 @@ import {
 import { TradeProposalModal } from "@/components/chat/TradeProposalModal";
 import { TradeProposalCard } from "@/components/chat/TradeProposalCard";
 import { TradeDiaryModal } from "@/components/chat/TradeDiaryModal";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import type { Message, Profile, TradeProposal } from "@/lib/types";
 
 type Item =
@@ -126,7 +127,7 @@ export default function ChatConversationPage({
   };
 
   if (loading || !currentUserId) {
-    return <div className="text-center py-12 text-text-mute text-sm">読み込み中...</div>;
+    return <LoadingScreen step="会話を読み込み中..." />;
   }
 
   // Merge messages and proposals into a single timeline

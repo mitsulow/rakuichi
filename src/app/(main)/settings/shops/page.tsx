@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { CategoryTag } from "@/components/ui/CategoryTag";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { CATEGORIES } from "@/lib/constants";
 import type { Shop } from "@/lib/types";
 
@@ -57,7 +58,7 @@ export default function ShopsSettingsPage() {
   };
 
   if (loading) {
-    return <div className="text-center py-12 text-text-mute text-sm">読み込み中...</div>;
+    return <LoadingScreen step="MY屋台を読み込み中..." />;
   }
 
   if (mode === "create" || (mode === "edit" && editingShop)) {
