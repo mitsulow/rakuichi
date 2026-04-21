@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/Card";
 import { CategoryTag } from "@/components/ui/CategoryTag";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { fetchShopById, findOrCreateChat } from "@/lib/data";
+import { fetchShopById, findOrCreateChat, deleteShop } from "@/lib/data";
 import { getCategoryByKey } from "@/lib/utils";
 import type { Shop, Profile } from "@/lib/types";
 
@@ -223,11 +223,33 @@ export default function ShopDetailPage({
         )}
 
         {isOwner && (
-          <Link href="/settings/shops" className="block no-underline">
-            <Button variant="secondary" size="lg" className="w-full">
-              ✏️ この屋台を編集
-            </Button>
-          </Link>
+          <div className="space-y-2">
+            <Link href="/settings/shops" className="block no-underline">
+              <Button variant="secondary" size="lg" className="w-full">
+                ✏️ この屋台を編集
+              </Button>
+            </Link>
+            <button
+              type="button"
+              onClick={async () => {
+                if (!confirm(`「${shop.name}」を閉じますか？`)) return;
+                const result = await deleteShop(shop.id);
+                if (result.error) {
+                  alert(`削除に失敗: ${result.error}`);
+                  return;
+                }
+                // Clear the feed cache so the deleted shop doesn't reappear
+                try {
+                  localStorage.removeItem("rakuichi:cache:feed:shops");
+                  localStorage.removeItem("rakuichi:cache:myShops");
+                } catch {}
+                router.push("/settings/shops");
+              }}
+              className="w-full text-center text-xs text-red-500 underline py-2"
+            >
+              🗑 この屋台を閉じる（削除）
+            </button>
+          </div>
         )}
       </div>
     </div>
