@@ -16,7 +16,6 @@ import {
   deletePost,
   POSTS_PAGE_SIZE,
 } from "@/lib/data";
-import { getCached, setCached } from "@/lib/cache";
 import type { Post } from "@/lib/types";
 
 /**
@@ -26,15 +25,10 @@ export default function PostsPage() {
   const { user, profile } = useAuth();
   const [scope, setScope] = useState<RegionScope>({ kind: "world" });
   const [random, setRandom] = useState(false);
-  const [posts, setPosts] = useState<Post[]>(() => {
-    if (typeof window === "undefined") return [];
-    return getCached<Post[]>("posts:feed") ?? [];
-  });
+  // Start empty — older cached data may have been filtered. Always fetch fresh.
+  const [posts, setPosts] = useState<Post[]>([]);
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return !getCached<Post[]>("posts:feed");
-  });
+  const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
@@ -64,9 +58,6 @@ export default function PostsPage() {
         if (cancelled) return;
         setPosts(list as Post[]);
         setTotal(total);
-        if (!random && scope.kind === "japan") {
-          setCached("posts:feed", list);
-        }
         if (user && (list as Post[]).length > 0) {
           const ids = (list as Post[]).map((p) => p.id);
           const likes = await getUserLikes(user.id, ids);
@@ -115,11 +106,7 @@ export default function PostsPage() {
   }, [canLoadMore, loadMore, posts.length]);
 
   const handlePostCreated = (newPost: Post) => {
-    setPosts((prev) => {
-      const next = [newPost, ...prev];
-      setCached("posts:feed", next);
-      return next;
-    });
+    setPosts((prev) => [newPost, ...prev]);
   };
 
   const handleDelete = async (postId: string) => {
@@ -129,11 +116,7 @@ export default function PostsPage() {
       alert(`削除に失敗: ${result.error}`);
       return;
     }
-    setPosts((prev) => {
-      const next = prev.filter((p) => p.id !== postId);
-      setCached("posts:feed", next);
-      return next;
-    });
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
   };
 
   const handleRandomize = async () => {
