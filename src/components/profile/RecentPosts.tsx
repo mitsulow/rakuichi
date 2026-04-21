@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card } from "@/components/ui/Card";
+import Link from "next/link";
 import { formatRelativeTime, truncate } from "@/lib/utils";
 import type { Post } from "@/lib/types";
 
@@ -21,11 +21,12 @@ export function RecentPosts({ posts, username: _username }: RecentPostsProps) {
       <h3 className="text-sm font-bold text-text-sub">💭 最近の情緒</h3>
       <div className="space-y-2">
         {visible.map((post) => (
-          <div
+          <Link
             key={post.id}
-            className="border-l-2 border-border pl-3 py-1.5"
+            href={`/post/${post.id}`}
+            className="block no-underline border-l-2 border-border pl-3 py-1.5 hover:border-accent hover:bg-bg-card/50 transition-colors rounded-r-lg"
           >
-            <p className="text-sm whitespace-pre-wrap leading-relaxed">
+            <p className="text-sm whitespace-pre-wrap leading-relaxed text-text">
               {truncate(post.body, 200)}
             </p>
             {post.image_urls && post.image_urls.length > 0 && (
@@ -47,7 +48,7 @@ export function RecentPosts({ posts, username: _username }: RecentPostsProps) {
                 <span>📜 {post.comments_count}</span>
               </span>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
       {posts.length > 5 && !showAll && (

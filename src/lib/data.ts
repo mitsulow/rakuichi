@@ -131,6 +131,30 @@ export async function createPost(
 }
 
 /**
+ * Fetch a single post by id, with profile joined (and badges).
+ */
+export async function fetchPostById(postId: string): Promise<Post | null> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*, profile:profiles(*)")
+    .eq("id", postId)
+    .single();
+  if (error || !data) {
+    console.error("fetchPostById error:", error?.message);
+    return null;
+  }
+  const { data: badges } = await supabase
+    .from("badges")
+    .select("*")
+    .eq("user_id", data.user_id);
+  return {
+    ...data,
+    badges: (badges ?? []) as Post["badges"],
+  } as Post;
+}
+
+/**
  * Fetch comments for a post, newest first, with author profile joined.
  */
 export async function fetchComments(postId: string) {
