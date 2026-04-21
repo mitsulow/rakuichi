@@ -105,22 +105,30 @@ export default function ProfilePage() {
         isOwner={isOwner}
       />
 
-      {/* 詳細の開閉 */}
+      {/* ストーリー */}
+      {profile.story && (
+        <Card>
+          <StorySection story={profile.story} />
+        </Card>
+      )}
+
+      {/* 最近の情緒 — shown directly (was folded) */}
+      {posts.length > 0 && (
+        <Card>
+          <RecentPosts posts={posts} username={username} />
+        </Card>
+      )}
+
+      {/* 交換記録 + ほしいもの only inside the fold */}
       <button
         onClick={() => setShowDetails(!showDetails)}
         className="w-full text-sm text-text-sub py-2 hover:text-accent transition-colors"
       >
-        {showDetails ? "▲ 詳細を閉じる" : "▼ もっと見る（ストーリー・ほしいもの・最近の情緒）"}
+        {showDetails ? "▲ 閉じる" : "▼ 交換記録・ほしいもの"}
       </button>
 
       {showDetails && (
         <>
-          {profile.story && (
-            <Card>
-              <StorySection story={profile.story} />
-            </Card>
-          )}
-
           <Card>
             <TradeRecords userId={profile.id} />
           </Card>
@@ -128,12 +136,6 @@ export default function ProfilePage() {
           {wishes.length > 0 && (
             <Card>
               <WishList wishes={wishes} />
-            </Card>
-          )}
-
-          {posts.length > 0 && (
-            <Card>
-              <RecentPosts posts={posts} username={username} />
             </Card>
           )}
         </>

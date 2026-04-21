@@ -103,11 +103,12 @@ export function Logo({ size = "md", showTagline = true }: LogoProps) {
       {/* Tagline — 日本人総フリーランス化計画 (never wraps) */}
       {showTagline && (
         <span
-          className="font-medium text-text-sub whitespace-nowrap"
+          className="font-semibold whitespace-nowrap"
           style={{
-            fontSize: size === "sm" ? 9 : 10,
-            marginLeft: 6,
-            letterSpacing: "-0.02em",
+            fontSize: size === "sm" ? 10 : 12,
+            marginLeft: 7,
+            letterSpacing: "-0.03em",
+            color: "#c94d3a",
           }}
         >
           日本人総フリーランス化計画
