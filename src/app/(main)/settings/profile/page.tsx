@@ -173,7 +173,11 @@ function ProfileSettingsInner() {
 
     if (isOnboarding) {
       // Mark onboarding done in sessionStorage so gate doesn't loop
-      if (userId) sessionStorage.setItem(`onb:${userId}`, "done");
+      if (userId) {
+        try {
+          localStorage.setItem(`rakuichi:onboarded:${userId}`, "yes");
+        } catch {}
+      }
       setTimeout(() => router.push("/feed?welcome=1"), 800);
     } else {
       setTimeout(() => setSaved(false), 3000);

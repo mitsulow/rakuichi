@@ -6,9 +6,11 @@ import { createClient } from "@/lib/supabase/client";
 import { fetchProfile } from "@/lib/data";
 
 /**
- * If the logged-in user's profile is essentially empty (no life_work, no status_line, no prefecture),
- * redirect them once to /settings/profile?onboarding=1.
- * Skipped for paths that are themselves the settings, callback, or auth routes.
+ * First-time user onboarding. Redirects to /settings/profile?onboarding=1
+ * ONCE per user (persisted in localStorage), only if profile is empty.
+ *
+ * Users who have filled even one of life_work/status_line/prefecture
+ * will never be redirected again. Explicit opt-out via localStorage.
  */
 export function OnboardingGate() {
   const router = useRouter();
@@ -16,11 +18,12 @@ export function OnboardingGate() {
 
   useEffect(() => {
     if (!pathname) return;
-    // Skip on settings/profile itself (to avoid loops), login, callback
+    // Skip on settings/profile (avoid loops), login, callback, user-profile views
     if (
       pathname.startsWith("/settings") ||
       pathname.startsWith("/login") ||
-      pathname.startsWith("/callback")
+      pathname.startsWith("/callback") ||
+      pathname.startsWith("/u/")
     ) {
       return;
     }
@@ -34,22 +37,38 @@ export function OnboardingGate() {
       } = await supabase.auth.getSession();
       if (!session || cancelled) return;
 
-      // Once per session: skip if flagged
-      const key = `onb:${session.user.id}`;
-      if (sessionStorage.getItem(key)) return;
+      // Persistent flag in localStorage — survives reloads & tab closes
+      const key = `rakuichi:onboarded:${session.user.id}`;
+      try {
+        if (localStorage.getItem(key) === "yes") return;
+      } catch {
+        // storage unavailable — proceed with DB check
+      }
 
       const profile = await fetchProfile(session.user.id);
-      if (!profile || cancelled) return;
+      if (cancelled) return;
+      if (!profile) return; // no profile row; skip rather than loop
 
-      const needsOnboarding =
-        !profile.life_work && !profile.status_line && !profile.prefecture;
+      // Any single signal means we don't onboard
+      const hasAnyProfileData = !!(
+        profile.life_work ||
+        profile.status_line ||
+        profile.prefecture ||
+        profile.bio ||
+        profile.story ||
+        profile.avatar_url ||
+        profile.cover_url
+      );
 
-      if (needsOnboarding) {
-        sessionStorage.setItem(key, "pending");
-        router.replace("/settings/profile?onboarding=1");
-      } else {
-        sessionStorage.setItem(key, "done");
+      if (hasAnyProfileData) {
+        try {
+          localStorage.setItem(key, "yes");
+        } catch {}
+        return;
       }
+
+      // Truly empty profile → onboard once
+      router.replace("/settings/profile?onboarding=1");
     }
 
     check();
