@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const staticTabs = [
   { href: "/feed", label: "市場", emoji: "🏪" },
@@ -14,37 +15,24 @@ const staticTabs = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [myHref, setMyHref] = useState<string>("/login");
 
   useEffect(() => {
+    if (!user) {
+      setMyHref("/login");
+      return;
+    }
     const supabase = createClient();
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) {
-        setMyHref("/login");
-        return;
-      }
-      const { data } = await supabase
-        .from("profiles")
-        .select("username")
-        .eq("id", session.user.id)
-        .single();
-      setMyHref(data?.username ? `/u/${data.username}` : "/settings/profile");
-    });
-
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_e, session) => {
-      if (!session) {
-        setMyHref("/login");
-      } else {
-        const { data } = await supabase
-          .from("profiles")
-          .select("username")
-          .eq("id", session.user.id)
-          .single();
+    supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", user.id)
+      .single()
+      .then(({ data }) => {
         setMyHref(data?.username ? `/u/${data.username}` : "/settings/profile");
-      }
-    });
-    return () => sub.subscription.unsubscribe();
-  }, []);
+      });
+  }, [user]);
 
   const tabs = [...staticTabs, { href: myHref, label: "MY座", emoji: "🪞" }];
 

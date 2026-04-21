@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { WeeklyMarket } from "@/components/feed/WeeklyMarket";
 import { WelcomeBanner } from "@/components/feed/WelcomeBanner";
@@ -10,20 +9,19 @@ import { QuickActions } from "@/components/feed/QuickActions";
 import { FeedFilterTabs } from "@/components/feed/FeedFilterTabs";
 import { PostComposer } from "@/components/feed/PostComposer";
 import { PostCard } from "@/components/feed/PostCard";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { fetchPosts, getUserLikes } from "@/lib/data";
 import { getCached, setCached } from "@/lib/cache";
 import type { Post } from "@/lib/types";
-import type { User } from "@supabase/supabase-js";
 
 export default function FeedPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("featured");
-  // Hydrate from cache on first render so content shows instantly on reload
   const [posts, setPosts] = useState<Post[]>(() => {
     if (typeof window === "undefined") return [];
     return getCached<Post[]>("feed:posts") ?? [];
   });
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
-  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(() => {
     if (typeof window === "undefined") return true;
     return !getCached<Post[]>("feed:posts");
@@ -39,12 +37,6 @@ export default function FeedPage() {
 
     async function init() {
       try {
-        const supabase = createClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        if (cancelled) return;
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
         // Fetch fresh posts in background
         const fetchedPosts = await Promise.race([
           fetchPosts(),
@@ -60,10 +52,10 @@ export default function FeedPage() {
           setCached("feed:posts", fetchedPosts);
         }
 
-        if (currentUser && fetchedPosts.length > 0) {
+        if (user && fetchedPosts.length > 0) {
           const postIds = fetchedPosts.map((p) => p.id);
           const likes = await Promise.race([
-            getUserLikes(currentUser.id, postIds),
+            getUserLikes(user.id, postIds),
             new Promise<Set<string>>((resolve) =>
               setTimeout(() => resolve(new Set()), 5000)
             ),
@@ -83,7 +75,7 @@ export default function FeedPage() {
       cancelled = true;
       clearTimeout(failsafe);
     };
-  }, []);
+  }, [user]);
 
   const handlePostCreated = (newPost: Post) => {
     setPosts((prev) => [newPost, ...prev]);

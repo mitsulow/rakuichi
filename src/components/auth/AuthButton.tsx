@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
-import type { User } from "@supabase/supabase-js";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 interface ProfileMini {
   username: string;
@@ -14,47 +14,26 @@ interface ProfileMini {
 }
 
 export function AuthButton() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, loading } = useAuth();
   const [profile, setProfile] = useState<ProfileMini | null>(null);
-  const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const supabase = createClient();
-
-    async function loadProfile(u: User | null) {
-      if (!u) {
-        setProfile(null);
-        return;
-      }
-      const { data } = await supabase
-        .from("profiles")
-        .select("username, avatar_url, display_name")
-        .eq("id", u.id)
-        .single();
-      setProfile((data as ProfileMini) ?? null);
+    if (!user) {
+      setProfile(null);
+      return;
     }
-
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      await loadProfile(session?.user ?? null);
-      setLoading(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null);
-      await loadProfile(session?.user ?? null);
-      setLoading(false);
-      if (_event === "SIGNED_IN") {
-        router.refresh();
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [router]);
+    const supabase = createClient();
+    supabase
+      .from("profiles")
+      .select("username, avatar_url, display_name")
+      .eq("id", user.id)
+      .single()
+      .then(({ data }) => {
+        setProfile((data as ProfileMini) ?? null);
+      });
+  }, [user]);
 
   // Close menu when clicking outside
   useEffect(() => {
