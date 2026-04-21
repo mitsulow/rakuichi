@@ -58,3 +58,41 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* 踊る阿呆に、見る阿呆。 ── 30秒ごとのお囃子 */
+@keyframes ahou-sweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-30%) scale(0.9);
+  }
+  15% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(30%) scale(0.95);
+  }
+}
+@keyframes ahou-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+@keyframes lantern-sway {
+  0%,
+  100% {
+    transform: rotate(-6deg);
+  }
+  50% {
+    transform: rotate(6deg);
+  }
+}

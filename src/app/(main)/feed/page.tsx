@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { WeeklyMarket } from "@/components/feed/WeeklyMarket";
 import { WelcomeBanner } from "@/components/feed/WelcomeBanner";
+import { AhouDansu } from "@/components/feed/AhouDansu";
 import {
   RegionFilter,
   regionToPrefectures,
@@ -117,6 +118,7 @@ export default function FeedPage() {
 
   return (
     <div className="space-y-4">
+      <AhouDansu />
       <WelcomeBanner />
       <WeeklyMarket />
 
