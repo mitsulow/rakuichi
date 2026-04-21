@@ -17,7 +17,7 @@ export function AhouDansu() {
 
     const loop = setInterval(() => {
       setShowing(true);
-    }, 30000);
+    }, 60000);
 
     return () => {
       clearTimeout(firstTimer);
