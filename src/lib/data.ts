@@ -655,6 +655,23 @@ export async function fetchUserRecommendations(userId: string) {
 }
 
 /**
+ * Fetch a single shop by id, with owner profile joined.
+ */
+export async function fetchShopById(shopId: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("shops")
+    .select("*, owner:profiles!shops_owner_id_fkey(*)")
+    .eq("id", shopId)
+    .single();
+  if (error) {
+    console.error("fetchShopById error:", error.message);
+    return null;
+  }
+  return data;
+}
+
+/**
  * Fetch all shops with owner profiles joined.
  * Optionally filter by category.
  */

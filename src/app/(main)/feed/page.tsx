@@ -190,64 +190,85 @@ export default function FeedPage() {
 }
 
 function ShopCard({ shop }: { shop: ShopWithOwner }) {
-  const href = shop.owner ? `/u/${shop.owner.username}` : "#";
   const image = shop.image_urls?.[0];
   return (
-    <Link href={href} className="no-underline block">
+    <Link href={`/shop/${shop.id}`} className="no-underline block">
       <Card className="!p-0 overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col">
-        {/* Image or category placeholder */}
-        {image ? (
-          <div className="aspect-square overflow-hidden bg-bg">
-            <img src={image} alt={shop.name} className="w-full h-full object-cover" />
-          </div>
-        ) : (
-          <div className="aspect-square flex items-center justify-center bg-gradient-to-br from-accent/10 to-transparent">
-            <CategoryTag categoryId={shop.category} size="sm" />
-          </div>
-        )}
-
-        <div className="p-3 flex-1 flex flex-col">
-          <div className="flex items-center gap-1 mb-1">
-            <CategoryTag categoryId={shop.category} size="sm" />
-            {shop.is_trial && (
-              <span className="text-[9px] bg-accent/20 text-accent px-1.5 rounded-full">
-                お試し
-              </span>
-            )}
-          </div>
-          <div className="text-sm font-medium line-clamp-2">{shop.name}</div>
-          {shop.description && (
-            <p className="text-[10px] text-text-mute line-clamp-2 mt-1">
-              {shop.description}
-            </p>
+        {/* Image with title overlay on top */}
+        <div className="relative aspect-square overflow-hidden bg-bg">
+          {image ? (
+            <img
+              src={image}
+              alt={shop.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div
+              className="w-full h-full flex items-center justify-center text-4xl"
+              style={{
+                background:
+                  "linear-gradient(135deg, #c94d3a 0%, #d4a043 50%, #5a7d4a 100%)",
+              }}
+            >
+              🏪
+            </div>
           )}
 
-          <div className="flex items-center justify-between mt-auto pt-2">
-            <div className="text-xs font-medium text-accent">
-              {shop.is_trial
-                ? "0円〜"
-                : shop.price_jpy != null
-                ? `¥${shop.price_jpy.toLocaleString()}`
-                : shop.price_text ?? ""}
-            </div>
-            <div className="flex gap-0.5 text-[10px]">
-              {shop.accepts_barter && <span title="物々交換可">🔄</span>}
-              {shop.accepts_tip && <span title="投げ銭可">🪙</span>}
+          {/* Dark gradient at top for title legibility */}
+          <div
+            className="absolute top-0 left-0 right-0 p-2.5 pb-6"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)",
+            }}
+          >
+            <div className="flex items-start gap-1.5">
+              {shop.is_trial && (
+                <span className="text-[9px] bg-accent text-white px-1.5 py-0.5 rounded-full font-medium flex-shrink-0">
+                  お試し
+                </span>
+              )}
+              <h3 className="text-sm font-bold text-white line-clamp-2 leading-tight drop-shadow-md">
+                {shop.name}
+              </h3>
             </div>
           </div>
 
+          {/* Owner avatar — separate tap target in corner */}
           {shop.owner && (
-            <div className="flex items-center gap-1 mt-2 pt-2 border-t border-border">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.location.href = `/u/${shop.owner!.username}`;
+              }}
+              className="absolute bottom-1.5 left-1.5 ring-2 ring-white/80 rounded-full hover:scale-110 transition-transform"
+              title={`${shop.owner.display_name}のMY座`}
+              aria-label={`${shop.owner.display_name}のMY座へ`}
+            >
               <Avatar
                 src={shop.owner.avatar_url}
                 alt={shop.owner.display_name}
-                size="xs"
+                size="sm"
               />
-              <span className="text-[10px] text-text-mute line-clamp-1">
-                {shop.owner.display_name}
-              </span>
-            </div>
+            </button>
           )}
+        </div>
+
+        {/* Compact info strip */}
+        <div className="px-2.5 py-2 flex items-center justify-between gap-1">
+          <div className="text-xs font-bold text-accent truncate">
+            {shop.is_trial
+              ? "0円〜"
+              : shop.price_jpy != null
+              ? `¥${shop.price_jpy.toLocaleString()}`
+              : shop.price_text ?? ""}
+          </div>
+          <div className="flex gap-0.5 text-[11px] flex-shrink-0">
+            {shop.accepts_barter && <span title="物々交換可">🔄</span>}
+            {shop.accepts_tip && <span title="投げ銭可">🪙</span>}
+          </div>
         </div>
       </Card>
     </Link>
