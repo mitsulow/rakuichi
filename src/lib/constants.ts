@@ -98,7 +98,7 @@ export const WORDS = {
   trade: { label: "交換する", item: "交換", emoji: "🔄" },
   // モノ
   user: "座の民",
-  profile: "MY座",
+  profile: "マイページ",
   shop: "屋台",
   chat: "文（ふみ）",
   review: "交換日記",

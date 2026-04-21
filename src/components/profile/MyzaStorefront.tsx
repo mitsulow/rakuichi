@@ -288,7 +288,7 @@ export function MyzaStorefront({
           {isOwner ? (
             <Link href="/settings/profile" className="block no-underline">
               <Button variant="secondary" size="md" className="w-full">
-                ✏️ MY座を編集
+                ✏️ マイページを編集
               </Button>
             </Link>
           ) : (

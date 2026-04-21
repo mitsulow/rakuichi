@@ -270,7 +270,7 @@ function ProfileSettingsInner() {
       {isOnboarding && (
         <Card className="border-2 border-accent/40 bg-accent/5">
           <div className="text-sm space-y-1">
-            <p className="font-medium">まずはMY座を整えよう。</p>
+            <p className="font-medium">まずはマイページを整えよう。</p>
             <p className="text-text-sub text-xs">
               これが「あなたの名刺」兼「お店」になります。
               <br />
@@ -321,7 +321,7 @@ function ProfileSettingsInner() {
               🎨 カバー画像（宣伝用）
             </h3>
             <p className="text-xs text-text-mute">
-              商品・作品・サービスのイメージが伝わる1枚を。MY座の一番上に大きく表示されます。
+              商品・作品・サービスのイメージが伝わる1枚を。マイページの一番上に大きく表示されます。
             </p>
             <ImageUpload
               bucket="covers"
@@ -497,7 +497,7 @@ function ProfileSettingsInner() {
               />
               <div className="flex-1">
                 <div className="text-sm font-medium">
-                  🗺 マップにMY座を表示する
+                  🗺 マップにマイページを表示する
                 </div>
                 <div className="text-xs text-text-mute mt-0.5">
                   あなたの都道府県のマップ上に、あなたの楽座が表示されます。
@@ -513,7 +513,7 @@ function ProfileSettingsInner() {
           <div className="space-y-3">
             <h3 className="text-sm font-bold text-text-sub">🔗 外部SNSリンク</h3>
             <p className="text-xs text-text-mute">
-              Instagram・X・note・YouTubeなど、MY座に貼っておきたい外部リンクを追加
+              Instagram・X・note・YouTubeなど、マイページに貼っておきたい外部リンクを追加
             </p>
 
             <div className="space-y-2">
@@ -618,7 +618,7 @@ function ProfileSettingsInner() {
             : saved
             ? "✓ 保存しました"
             : isOnboarding
-            ? "🪧 MY座を開く"
+            ? "🪧 マイページを開く"
             : "保存する"}
         </Button>
 

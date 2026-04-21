@@ -39,9 +39,10 @@ export default function PostsPage() {
   // Re-fetch on scope/random change
   useEffect(() => {
     let cancelled = false;
+    // Generous failsafe — cold-starting Supabase can take 10-20s
     const failsafe = setTimeout(() => {
       if (!cancelled) setLoading(false);
-    }, 4000);
+    }, 15000);
 
     setLoading(true);
     setPage(0);
@@ -63,6 +64,8 @@ export default function PostsPage() {
           const likes = await getUserLikes(user.id, ids);
           if (!cancelled) setLikedPostIds(likes);
         }
+      } catch (e) {
+        console.error("Posts fetch failed:", e);
       } finally {
         if (!cancelled) setLoading(false);
       }

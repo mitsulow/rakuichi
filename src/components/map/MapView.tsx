@@ -108,7 +108,7 @@ export function MapView({
                     href={`/u/${vs.profile.username}`}
                     className="text-xs text-accent font-medium no-underline block pt-1 border-t border-gray-200"
                   >
-                    🪞 MY座を開く →
+                    🪞 マイページを開く →
                   </Link>
                 </div>
               </Popup>

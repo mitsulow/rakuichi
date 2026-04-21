@@ -93,7 +93,7 @@ export function AuthButton() {
             onClick={() => setMenuOpen(false)}
             className="block px-4 py-2.5 text-sm text-text hover:bg-bg no-underline"
           >
-            🪞 MY座を見る
+            🪞 マイページを見る
           </Link>
           <Link
             href="/settings/profile"
@@ -115,12 +115,12 @@ export function AuthButton() {
               try {
                 if (navigator.share) {
                   await navigator.share({
-                    title: `${name}のMY座 - 楽市楽座`,
+                    title: `${name}のマイページ - 楽市楽座`,
                     url,
                   });
                 } else {
                   await navigator.clipboard.writeText(url);
-                  alert("MY座のURLをコピーしました");
+                  alert("マイページのURLをコピーしました");
                 }
               } catch {
                 // user cancelled
@@ -129,7 +129,7 @@ export function AuthButton() {
             }}
             className="block w-full text-left px-4 py-2.5 text-sm text-text hover:bg-bg"
           >
-            📤 MY座を共有
+            📤 マイページを共有
           </button>
           <div className="my-1 border-t border-border" />
           <button

@@ -78,7 +78,7 @@ export default function ChatListPage() {
           <p className="text-4xl mb-3">📜</p>
           <p className="text-sm">まだ文のやり取りがありません</p>
           <p className="text-xs mt-1">
-            MY座の「💬 連絡を取る」から始められます
+            マイページの「💬 連絡を取る」から始められます
           </p>
         </div>
       ) : (

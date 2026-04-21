@@ -132,24 +132,33 @@ export async function createPost(
 
 /**
  * Fetch a single post by id, with profile joined (and badges).
+ * Robust to missing profile (fetches separately, doesn't 404 if join fails).
  */
 export async function fetchPostById(postId: string): Promise<Post | null> {
   const supabase = createClient();
-  const { data, error } = await supabase
+  const { data: post, error } = await supabase
     .from("posts")
-    .select("*, profile:profiles(*)")
+    .select("*")
     .eq("id", postId)
-    .single();
-  if (error || !data) {
-    console.error("fetchPostById error:", error?.message);
+    .maybeSingle();
+  if (error) {
+    console.error("fetchPostById error:", error.message);
     return null;
   }
-  const { data: badges } = await supabase
-    .from("badges")
-    .select("*")
-    .eq("user_id", data.user_id);
+  if (!post) return null;
+
+  const [{ data: profile }, { data: badges }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", post.user_id)
+      .maybeSingle(),
+    supabase.from("badges").select("*").eq("user_id", post.user_id),
+  ]);
+
   return {
-    ...data,
+    ...post,
+    profile: (profile ?? undefined) as Post["profile"],
     badges: (badges ?? []) as Post["badges"],
   } as Post;
 }
@@ -809,37 +818,62 @@ export async function fetchPostsPaged(
   const from = page * pageSize;
   const to = from + pageSize - 1;
 
-  const select = prefectures && prefectures.length > 0
-    ? "*, profile:profiles!inner(*)"
-    : "*, profile:profiles(*)";
-
-  let query = supabase
+  // Step 1: fetch posts (with a separate profiles lookup below so a missing
+  // join never filters out a post).
+  let postsQuery = supabase
     .from("posts")
-    .select(select, { count: "exact" });
+    .select("*", { count: "estimated" });
 
-  if (prefectures && prefectures.length > 0) {
-    query = query.in("profile.prefecture", prefectures);
-  }
-
-  // Random or chronological
   if (!random) {
-    query = query.order("created_at", { ascending: false }).range(from, to);
+    postsQuery = postsQuery.order("created_at", { ascending: false }).range(from, to);
   } else {
-    // Supabase doesn't have ORDER BY RANDOM() in the HTTP API; approximate by
-    // fetching a bigger chunk and shuffling client-side.
-    query = query.order("created_at", { ascending: false }).limit(100);
+    postsQuery = postsQuery.order("created_at", { ascending: false }).limit(100);
   }
 
-  const { data, error, count } = await query;
+  const { data: rawPosts, error, count } = await postsQuery;
   if (error) {
     console.error("fetchPostsPaged error:", error.message);
     return { posts: [], total: 0 };
   }
-  let rows = (data ?? []) as unknown[];
-  if (random) {
-    rows = [...rows].sort(() => Math.random() - 0.5).slice(0, pageSize);
+
+  let posts = (rawPosts ?? []) as Array<{
+    id: string;
+    user_id: string;
+    [k: string]: unknown;
+  }>;
+
+  // Step 2: fetch all unique profiles in one query
+  const userIds = Array.from(new Set(posts.map((p) => p.user_id)));
+  const profilesById = new Map<string, unknown>();
+  if (userIds.length > 0) {
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("*")
+      .in("id", userIds);
+    for (const p of profs ?? []) {
+      profilesById.set((p as { id: string }).id, p);
+    }
   }
-  return { posts: rows, total: count ?? rows.length };
+
+  // Step 3: attach profile; if prefecture filter set, filter here
+  let enriched = posts.map((p) => ({
+    ...p,
+    profile: profilesById.get(p.user_id) ?? null,
+  }));
+
+  if (prefectures && prefectures.length > 0) {
+    const set = new Set(prefectures);
+    enriched = enriched.filter((p) => {
+      const prof = p.profile as { prefecture?: string | null } | null;
+      return prof?.prefecture && set.has(prof.prefecture);
+    });
+  }
+
+  if (random) {
+    enriched = [...enriched].sort(() => Math.random() - 0.5).slice(0, pageSize);
+  }
+
+  return { posts: enriched, total: count ?? enriched.length };
 }
 
 export async function deleteShop(shopId: string) {

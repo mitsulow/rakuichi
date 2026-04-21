@@ -71,7 +71,7 @@ export function TradeDiaryModal({
         <p className="text-xs text-text-mute bg-accent/5 rounded-lg p-2.5">
           <span className="font-medium text-text-sub">{partnerName}</span>
           さんとの交換を振り返って一言。
-          MY座に公開されて、これから出会う人の参考になります。
+          マイページに公開されて、これから出会う人の参考になります。
         </p>
 
         <div>

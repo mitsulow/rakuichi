@@ -86,7 +86,7 @@ export default function ProfilePage() {
   }, [username]);
 
   if (loading) {
-    return <LoadingScreen step={`MY座を読み込み中... (${username})`} />;
+    return <LoadingScreen step={`マイページを読み込み中... (${username})`} />;
   }
 
   if (!profile) {
@@ -95,7 +95,7 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-[680px] mx-auto px-4 py-4 space-y-4">
-      {/* MY座 — 1画面ストアフロント */}
+      {/* マイページ — 1画面ストアフロント */}
       <MyzaStorefront
         profile={profile}
         badges={badges}

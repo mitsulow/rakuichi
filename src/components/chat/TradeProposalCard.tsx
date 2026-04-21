@@ -153,7 +153,7 @@ export function TradeProposalCard({
         {proposal.status === "completed" && (
           <div className="space-y-1.5">
             <p className="text-[10px] text-text-mute">
-              交換日記を書くと、お互いのMY座に残ります
+              交換日記を書くと、お互いのマイページに残ります
             </p>
             <Button
               variant="secondary"

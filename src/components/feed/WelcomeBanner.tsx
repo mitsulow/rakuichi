@@ -23,7 +23,7 @@ function WelcomeBannerInner() {
         <div className="flex items-start gap-3">
           <span className="text-3xl">🪧</span>
           <div className="flex-1">
-            <h2 className="text-sm font-bold mb-1">MY座が整いました！</h2>
+            <h2 className="text-sm font-bold mb-1">マイページが整いました！</h2>
             <p className="text-xs text-text-sub leading-relaxed">
               これで楽座を出したり、情緒を投げたり、
               他の座の民と交流できます。

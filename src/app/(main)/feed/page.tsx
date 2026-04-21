@@ -331,8 +331,8 @@ function ShopCard({ shop }: { shop: ShopWithOwner }) {
                 router.push(`/u/${shop.owner!.username}`);
               }}
               className="absolute bottom-1.5 left-1.5 ring-2 ring-white/80 rounded-full hover:scale-110 transition-transform"
-              title={`${shop.owner.display_name}のMY座`}
-              aria-label={`${shop.owner.display_name}のMY座へ`}
+              title={`${shop.owner.display_name}のマイページ`}
+              aria-label={`${shop.owner.display_name}のマイページへ`}
             >
               <Avatar
                 src={shop.owner.avatar_url}

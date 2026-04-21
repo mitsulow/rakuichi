@@ -201,7 +201,7 @@ export default function ShopDetailPage({
                 href={`/u/${owner.username}`}
                 className="text-xs text-accent no-underline whitespace-nowrap"
               >
-                MY座を見る →
+                マイページを見る →
               </Link>
             </div>
           </Card>

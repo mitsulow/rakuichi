@@ -84,7 +84,7 @@ export function BottomNav() {
     fetchUnreadMessageCount(user.id).then(setUnreadCount);
   }, [pathname, user]);
 
-  const tabs = [...staticTabs, { href: myHref, label: "MY座", emoji: "🪞" }];
+  const tabs = [...staticTabs, { href: myHref, label: "マイページ", emoji: "🪞" }];
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border">
