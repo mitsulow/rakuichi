@@ -94,7 +94,7 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
     setIsSubmitting(false);
 
     if (result.error) {
-      alert(`立て札を立てられませんでした: ${result.error}`);
+      alert(`情緒を投げられませんでした: ${result.error}`);
       return;
     }
     const newPost = result.post;
@@ -255,7 +255,7 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
                     disabled={(!body.trim() && !embed && imageUrls.length === 0) || isSubmitting}
                     onClick={handleSubmit}
                   >
-                    {isSubmitting ? "立てかけ中..." : "🪧 立て札を立てる"}
+                    {isSubmitting ? "投げかけ中..." : "💭 情緒を投げる"}
                   </Button>
                 </div>
               </div>

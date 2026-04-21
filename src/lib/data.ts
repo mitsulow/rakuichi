@@ -131,6 +131,19 @@ export async function createPost(
 }
 
 /**
+ * Delete own post. Owner-only via RLS.
+ */
+export async function deletePost(postId: string): Promise<{ error: string | null }> {
+  const supabase = createClient();
+  const { error } = await supabase.from("posts").delete().eq("id", postId);
+  if (error) {
+    console.error("deletePost error:", error.message);
+    return { error: error.message };
+  }
+  return { error: null };
+}
+
+/**
  * Toggle a like on a post. Returns the new liked state.
  */
 export async function toggleLike(

@@ -110,7 +110,7 @@ export default function ProfilePage() {
         onClick={() => setShowDetails(!showDetails)}
         className="w-full text-sm text-text-sub py-2 hover:text-accent transition-colors"
       >
-        {showDetails ? "▲ 詳細を閉じる" : "▼ もっと見る（ストーリー・ほしいもの・最近の立て札）"}
+        {showDetails ? "▲ 詳細を閉じる" : "▼ もっと見る（ストーリー・ほしいもの・最近の情緒）"}
       </button>
 
       {showDetails && (

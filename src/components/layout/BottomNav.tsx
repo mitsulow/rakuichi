@@ -7,9 +7,9 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 const staticTabs = [
-  { href: "/feed", label: "市場", emoji: "🏪" },
-  { href: "/search", label: "屋台", emoji: "🔍" },
+  { href: "/feed", label: "屋台", emoji: "🏪" },
   { href: "/map", label: "マップ", emoji: "🗾" },
+  { href: "/posts", label: "情緒", emoji: "💭" },
   { href: "/chat", label: "文", emoji: "💬" },
 ];
 

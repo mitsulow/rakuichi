@@ -16,9 +16,10 @@ interface PostCardProps {
   currentUserId?: string | null;
   isLiked?: boolean;
   onLikeToggled?: (postId: string, liked: boolean) => void;
+  onDelete?: (postId: string) => void;
 }
 
-export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled }: PostCardProps) {
+export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled, onDelete }: PostCardProps) {
   const { profile, badges, shop } = post;
   const [likeLoading, setLikeLoading] = useState(false);
 
@@ -71,6 +72,18 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled }
             <span>{formatRelativeTime(post.created_at)}</span>
           </div>
         </div>
+        {/* Delete button — only for own posts */}
+        {currentUserId === post.user_id && onDelete && (
+          <button
+            type="button"
+            onClick={() => onDelete(post.id)}
+            className="text-text-mute hover:text-red-500 text-sm w-8 h-8 flex items-center justify-center flex-shrink-0"
+            title="削除"
+            aria-label="削除"
+          >
+            🗑
+          </button>
+        )}
       </div>
 
       {/* Body */}
