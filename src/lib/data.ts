@@ -635,6 +635,23 @@ export interface RecommendedShopInput {
   city?: string | null;
 }
 
+/**
+ * Fetch a single recommended shop by id.
+ */
+export async function fetchRecommendedShopById(id: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("recommended_shops")
+    .select("*, recommendations(id, user_id, comment, created_at, profile:profiles(*))")
+    .eq("id", id)
+    .single();
+  if (error || !data) {
+    console.error("fetchRecommendedShopById error:", error?.message);
+    return null;
+  }
+  return data;
+}
+
 export async function fetchRecommendedShops(options?: {
   category?: string | null;
   prefecture?: string | null;

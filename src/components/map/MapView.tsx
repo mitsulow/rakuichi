@@ -78,25 +78,37 @@ export function MapView({
               icon={villageIcon}
             >
               <Popup>
-                <div className="text-center min-w-[150px]">
-                  <p className="font-bold text-sm mb-1">
-                    {vs.profile.display_name}
+                <div className="min-w-[180px]">
+                  <p className="font-bold text-sm mb-1.5">
+                    🏡 {vs.profile.display_name}
                   </p>
-                  <div className="flex flex-wrap gap-1 justify-center mb-2">
-                    {vs.shops.map((shop) => {
+                  {vs.profile.life_work && (
+                    <p className="text-xs text-gray-600 mb-1.5">
+                      {vs.profile.life_work}
+                      {vs.profile.life_work_level
+                        ? `・${vs.profile.life_work_level}`
+                        : ""}
+                    </p>
+                  )}
+                  <div className="space-y-1 mb-2">
+                    {vs.shops.slice(0, 3).map((shop) => {
                       const cat = getCategoryByKey(shop.category);
                       return (
-                        <span key={shop.id} className="text-xs">
-                          {cat?.emoji} {shop.name}
-                        </span>
+                        <Link
+                          key={shop.id}
+                          href={`/shop/${shop.id}`}
+                          className="block text-xs text-accent no-underline hover:underline"
+                        >
+                          {cat?.emoji} {shop.name} →
+                        </Link>
                       );
                     })}
                   </div>
                   <Link
                     href={`/u/${vs.profile.username}`}
-                    className="text-xs text-accent"
+                    className="text-xs text-accent font-medium no-underline block pt-1 border-t border-gray-200"
                   >
-                    詳しく見る →
+                    🪞 MY座を開く →
                   </Link>
                 </div>
               </Popup>
@@ -136,9 +148,9 @@ export function MapView({
                       {rs.description}
                     </p>
                   )}
-                  <div className="flex items-center justify-between mt-1">
+                  <div className="flex items-center justify-between mt-1 mb-2">
                     <p className="text-xs text-gray-500">
-                      推薦 {rs.recommendation_count || 0}
+                      🌟 推薦 {rs.recommendation_count || 0}人
                     </p>
                     {rs.website && (
                       <a
@@ -151,6 +163,12 @@ export function MapView({
                       </a>
                     )}
                   </div>
+                  <Link
+                    href={`/rec-shop/${rs.id}`}
+                    className="block text-xs text-accent font-medium no-underline text-center pt-2 border-t border-gray-200"
+                  >
+                    詳しく見る →
+                  </Link>
                 </div>
               </Popup>
             </Marker>
