@@ -118,12 +118,26 @@ export default function ChatConversationPage({
     const body = newMessage.trim();
     if (!body || !currentUserId || sending) return;
     setSending(true);
-    const result = await sendMessage(chatId, currentUserId, body);
+
+    // Timeout so the button never stays disabled forever
+    const result = await Promise.race([
+      sendMessage(chatId, currentUserId, body),
+      new Promise<{ data: null; error: string }>((resolve) =>
+        setTimeout(
+          () => resolve({ data: null, error: "タイムアウト（ネットワーク不調）" }),
+          10000
+        )
+      ),
+    ]);
+
     setSending(false);
-    if (result.data) {
-      setMessages((prev) => [...prev, result.data as Message & { sender?: Profile }]);
-      setNewMessage("");
+
+    if (result.error || !result.data) {
+      alert(`送信に失敗: ${result.error ?? "不明なエラー"}`);
+      return;
     }
+    setMessages((prev) => [...prev, result.data as Message & { sender?: Profile }]);
+    setNewMessage("");
   };
 
   if (loading || !currentUserId) {
