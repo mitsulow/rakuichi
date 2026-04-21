@@ -24,7 +24,7 @@ import type { Post } from "@/lib/types";
  */
 export default function PostsPage() {
   const { user, profile } = useAuth();
-  const [scope, setScope] = useState<RegionScope>({ kind: "japan" });
+  const [scope, setScope] = useState<RegionScope>({ kind: "world" });
   const [random, setRandom] = useState(false);
   const [posts, setPosts] = useState<Post[]>(() => {
     if (typeof window === "undefined") return [];
@@ -40,13 +40,7 @@ export default function PostsPage() {
   const [total, setTotal] = useState(0);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Default to user's prefecture when profile loads
-  useEffect(() => {
-    if (profile?.prefecture && scope.kind === "japan") {
-      setScope({ kind: "mine", prefecture: profile.prefecture });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.prefecture]);
+  // No auto-prefecture filter on mount — user chooses explicitly.
 
   // Re-fetch on scope/random change
   useEffect(() => {

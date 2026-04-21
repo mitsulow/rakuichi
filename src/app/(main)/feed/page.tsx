@@ -29,7 +29,8 @@ interface ShopWithOwner extends Shop {
  */
 export default function FeedPage() {
   const { user, profile } = useAuth();
-  const [scope, setScope] = useState<RegionScope>({ kind: "japan" });
+  // Default: show EVERYTHING (no filter). Users pick a region if they want.
+  const [scope, setScope] = useState<RegionScope>({ kind: "world" });
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [shops, setShops] = useState<ShopWithOwner[]>(() => {
     if (typeof window === "undefined") return [];
@@ -44,14 +45,8 @@ export default function FeedPage() {
   const [total, setTotal] = useState(0);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Auto-set "my prefecture" default once the profile loads, if they have one
-  useEffect(() => {
-    if (profile?.prefecture && scope.kind === "japan") {
-      // First-time default for logged-in users with a pref set: show their pref
-      setScope({ kind: "mine", prefecture: profile.prefecture });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.prefecture]);
+  // No auto-filter by prefecture on mount — show everything by default.
+  // Users tap '自分の県' themselves when they want to filter.
 
   // Reset + fetch whenever scope or category changes
   useEffect(() => {
