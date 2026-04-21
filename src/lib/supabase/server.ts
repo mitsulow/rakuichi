@@ -15,12 +15,22 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, {
+                ...options,
+                maxAge: options?.maxAge ?? 60 * 60 * 24 * 400, // 400 days
+                path: options?.path ?? "/",
+                sameSite: options?.sameSite ?? "lax",
+              })
             );
           } catch {
             // Server Component can't set cookies
           }
         },
+      },
+      cookieOptions: {
+        maxAge: 60 * 60 * 24 * 400,
+        path: "/",
+        sameSite: "lax",
       },
     }
   );

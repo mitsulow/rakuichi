@@ -8,7 +8,6 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // Skip if Supabase is not configured
   if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes("placeholder")) {
     return supabaseResponse;
   }
@@ -19,19 +18,34 @@ export async function middleware(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) =>
+        cookiesToSet.forEach(({ name, value }) =>
           request.cookies.set(name, value)
         );
         supabaseResponse = NextResponse.next({ request });
         cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options)
+          supabaseResponse.cookies.set(name, value, {
+            ...options,
+            // Ensure cookies persist across reloads on mobile
+            maxAge: options?.maxAge ?? 60 * 60 * 24 * 400, // 400 days
+            path: options?.path ?? "/",
+            sameSite: options?.sameSite ?? "lax",
+          })
         );
       },
     },
+    cookieOptions: {
+      maxAge: 60 * 60 * 24 * 400,
+      path: "/",
+      sameSite: "lax",
+    },
   });
 
-  // Refresh session if expired
-  await supabase.auth.getUser();
+  // Refresh session if expired (tolerate failures so a blip doesn't clear cookies)
+  try {
+    await supabase.auth.getUser();
+  } catch {
+    // network issue — don't clear cookies, just pass through
+  }
 
   return supabaseResponse;
 }
