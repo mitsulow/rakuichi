@@ -81,14 +81,19 @@ export async function createPost(
       session?.user.user_metadata?.name ??
       email.split("@")[0] ??
       "ユーザー";
-    const username = email.split("@")[0] || userId.slice(0, 8);
-    await supabase.from("profiles").insert({
-      id: userId,
-      username,
-      display_name: name,
-      email,
-      avatar_url: session?.user.user_metadata?.avatar_url ?? null,
-    });
+    // Unique username: base + short random suffix to avoid collisions
+    const base = (email.split("@")[0] || "user").replace(/[^a-zA-Z0-9_-]/g, "");
+    const username = `${base || "user"}_${userId.slice(0, 6)}`;
+    await supabase.from("profiles").upsert(
+      {
+        id: userId,
+        username,
+        display_name: name,
+        email,
+        avatar_url: session?.user.user_metadata?.avatar_url ?? null,
+      },
+      { onConflict: "id", ignoreDuplicates: true }
+    );
   }
 
   // Insert with a timeout to prevent infinite spinner
