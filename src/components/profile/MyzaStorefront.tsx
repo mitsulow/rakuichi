@@ -39,7 +39,7 @@ export function MyzaStorefront({
   const levelText = [
     profile.life_work,
     profile.life_work_level,
-    profile.life_work_years ? `${profile.life_work_years}年目` : null,
+    profile.life_work_years ? `移行${profile.life_work_years}年目` : null,
   ]
     .filter(Boolean)
     .join(" ・ ");
@@ -136,7 +136,7 @@ export function MyzaStorefront({
                 </span>
                 {profile.life_work_years != null && profile.life_work_years > 0 && (
                   <span className="text-xs text-text-sub">
-                    {profile.life_work_years}年目
+                    移行{profile.life_work_years}年目
                   </span>
                 )}
               </div>

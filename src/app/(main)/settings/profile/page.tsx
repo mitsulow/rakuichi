@@ -364,7 +364,12 @@ function ProfileSettingsInner() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-text-mute block mb-1">年数</label>
+                <label className="text-xs text-text-mute block mb-1">
+                  移行年数
+                  <span className="block text-[9px] text-text-mute mt-0.5">
+                    ライスワーク→ライフワークに踏み出してから何年？
+                  </span>
+                </label>
                 <input
                   type="number"
                   value={formData.life_work_years}

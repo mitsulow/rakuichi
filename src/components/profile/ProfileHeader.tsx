@@ -22,7 +22,7 @@ export function ProfileHeader({ profile, badges, externalLinks, isOwner = false 
 
   const levelDisplay = profile.life_work_level
     ? `${profile.life_work_level}・${profile.life_work || ""}${
-        profile.life_work_years ? `${profile.life_work_years}年` : ""
+        profile.life_work_years ? `移行${profile.life_work_years}年目` : ""
       }`
     : null;
 

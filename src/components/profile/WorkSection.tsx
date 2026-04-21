@@ -29,7 +29,7 @@ export function WorkSection({ profile }: WorkSectionProps) {
               <span className="text-text-mute">
                 （{profile.life_work_level}
                 {profile.life_work_years
-                  ? `・${profile.life_work_years}年目`
+                  ? `・移行${profile.life_work_years}年目`
                   : ""}
                 ）
               </span>
