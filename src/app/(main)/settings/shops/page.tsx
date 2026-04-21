@@ -28,21 +28,43 @@ export default function ShopsSettingsPage() {
   const [editingShop, setEditingShop] = useState<Shop | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    const failsafe = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 8000);
+
     async function init() {
-      const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        router.replace("/login");
-        return;
+      try {
+        const supabase = createClient();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (cancelled) return;
+        if (!session) {
+          router.replace("/login");
+          return;
+        }
+        setUserId(session.user.id);
+
+        const s = await Promise.race([
+          fetchShopsByOwner(session.user.id),
+          new Promise<Shop[]>((resolve) =>
+            setTimeout(() => resolve([]), 6000)
+          ),
+        ]);
+        if (cancelled) return;
+        setShops(s as Shop[]);
+      } catch (e) {
+        console.error("Shops init error:", e);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setUserId(session.user.id);
-      const s = await fetchShopsByOwner(session.user.id);
-      setShops(s as Shop[]);
-      setLoading(false);
     }
     init();
+    return () => {
+      cancelled = true;
+      clearTimeout(failsafe);
+    };
   }, [router]);
 
   const refresh = async () => {

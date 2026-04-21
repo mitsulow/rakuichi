@@ -38,38 +38,51 @@ export default function ProfilePage() {
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+    const failsafe = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 10000);
+
     async function load() {
-      const p = await fetchProfileByUsername(username);
-      if (!p) {
-        setProfile(null);
-        setLoading(false);
-        return;
+      try {
+        const p = await fetchProfileByUsername(username);
+        if (cancelled) return;
+        if (!p) {
+          setProfile(null);
+          return;
+        }
+        setProfile(p as Profile);
+
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (cancelled) return;
+        setIsOwner(session?.user?.id === p.id);
+
+        const [b, po, el, sh, wi, seeds] = await Promise.all([
+          fetchBadges(p.id).catch(() => []),
+          fetchPostsByUser(p.id).catch(() => []),
+          fetchExternalLinks(p.id).catch(() => []),
+          fetchShopsByOwner(p.id).catch(() => []),
+          fetchWishes(p.id).catch(() => []),
+          fetchTotalSeeds(p.id).catch(() => 0),
+        ]);
+        if (cancelled) return;
+
+        setBadges(b as Badge[]);
+        setPosts(po as Post[]);
+        setExternalLinks(el as ExternalLink[]);
+        setShops(sh as Shop[]);
+        setWishes(wi as Wish[]);
+        setTotalSeeds(seeds);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-
-      setProfile(p as Profile);
-
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsOwner(session?.user?.id === p.id);
-
-      const [b, po, el, sh, wi, seeds] = await Promise.all([
-        fetchBadges(p.id),
-        fetchPostsByUser(p.id),
-        fetchExternalLinks(p.id),
-        fetchShopsByOwner(p.id),
-        fetchWishes(p.id),
-        fetchTotalSeeds(p.id),
-      ]);
-
-      setBadges(b as Badge[]);
-      setPosts(po as Post[]);
-      setExternalLinks(el as ExternalLink[]);
-      setShops(sh as Shop[]);
-      setWishes(wi as Wish[]);
-      setTotalSeeds(seeds);
-      setLoading(false);
     }
     load();
+    return () => {
+      cancelled = true;
+      clearTimeout(failsafe);
+    };
   }, [username]);
 
   if (loading) {

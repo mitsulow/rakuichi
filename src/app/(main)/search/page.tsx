@@ -31,13 +31,29 @@ export default function SearchPage() {
   const [shops, setShops] = useState<ShopWithOwner[]>([]);
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      const data = await fetchAllShops(selectedCategory);
-      setShops(data as ShopWithOwner[]);
-      setLoading(false);
-    }
-    load();
+    let cancelled = false;
+    setLoading(true);
+    const failsafe = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 8000);
+
+    (async () => {
+      try {
+        const data = await Promise.race([
+          fetchAllShops(selectedCategory),
+          new Promise<unknown[]>((resolve) => setTimeout(() => resolve([]), 6000)),
+        ]);
+        if (cancelled) return;
+        setShops(data as ShopWithOwner[]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(failsafe);
+    };
   }, [selectedCategory]);
 
   const filtered = useMemo(() => {

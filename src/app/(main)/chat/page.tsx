@@ -31,21 +31,38 @@ export default function ChatListPage() {
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    const failsafe = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 8000);
+
     async function init() {
-      const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        router.replace("/login");
-        return;
+      try {
+        const supabase = createClient();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (cancelled) return;
+        if (!session) {
+          router.replace("/login");
+          return;
+        }
+        setUserId(session.user.id);
+        const data = await Promise.race([
+          fetchUserChats(session.user.id),
+          new Promise<unknown[]>((resolve) => setTimeout(() => resolve([]), 6000)),
+        ]);
+        if (cancelled) return;
+        setChats(data as ChatListItem[]);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setUserId(session.user.id);
-      const data = await fetchUserChats(session.user.id);
-      setChats(data as ChatListItem[]);
-      setLoading(false);
     }
     init();
+    return () => {
+      cancelled = true;
+      clearTimeout(failsafe);
+    };
   }, [router]);
 
   if (loading) {

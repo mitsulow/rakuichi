@@ -35,20 +35,33 @@ export default function RankingsPage() {
   } | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    const failsafe = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 8000);
+
     async function load() {
-      const [s, e, m, st] = await Promise.all([
-        fetchSeedRanking(),
-        fetchExchangeRanking(),
-        fetchMentorRanking(),
-        fetchMigrationStats(),
-      ]);
-      setSeed(s as RankingEntry[]);
-      setExchange(e as RankingEntry[]);
-      setMentor(m as RankingEntry[]);
-      setStats(st);
-      setLoading(false);
+      try {
+        const [s, e, m, st] = await Promise.all([
+          fetchSeedRanking().catch(() => []),
+          fetchExchangeRanking().catch(() => []),
+          fetchMentorRanking().catch(() => []),
+          fetchMigrationStats().catch(() => ({ total: 0, avg: 0, fullyMigrated: 0 })),
+        ]);
+        if (cancelled) return;
+        setSeed(s as RankingEntry[]);
+        setExchange(e as RankingEntry[]);
+        setMentor(m as RankingEntry[]);
+        setStats(st);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
     load();
+    return () => {
+      cancelled = true;
+      clearTimeout(failsafe);
+    };
   }, []);
 
   const active =

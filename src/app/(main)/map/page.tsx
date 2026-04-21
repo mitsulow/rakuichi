@@ -40,25 +40,42 @@ export default function MapPage() {
   const [userId, setUserId] = useState<string | null>(null);
 
   async function loadAll() {
-    const [village, rec] = await Promise.all([
-      fetchMapVillageShops(),
-      fetchRecommendedShops(),
-    ]);
-    setVillageShops(village as VillageShop[]);
-    setRecommendedShops(rec as RecommendedShop[]);
-    setLoading(false);
+    try {
+      const [village, rec] = await Promise.all([
+        fetchMapVillageShops().catch(() => []),
+        fetchRecommendedShops().catch(() => []),
+      ]);
+      setVillageShops(village as VillageShop[]);
+      setRecommendedShops(rec as RecommendedShop[]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
+    let cancelled = false;
+    const failsafe = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 10000);
+
     async function init() {
-      const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUserId(session?.user.id ?? null);
-      await loadAll();
+      try {
+        const supabase = createClient();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (cancelled) return;
+        setUserId(session?.user.id ?? null);
+        await loadAll();
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
     init();
+    return () => {
+      cancelled = true;
+      clearTimeout(failsafe);
+    };
   }, []);
 
   const showVillage = tab === "all" || tab === "village";
