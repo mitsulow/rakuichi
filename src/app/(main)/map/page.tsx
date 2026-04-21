@@ -182,11 +182,11 @@ export default function MapPage() {
         </div>
       )}
 
-      {/* Floating action button */}
+      {/* Floating action button - above bottom nav and Leaflet attribution */}
       {userId && (
         <button
           onClick={() => setShowAddModal(true)}
-          className="fixed bottom-20 right-4 bg-accent text-white rounded-full shadow-lg px-4 py-3 text-sm font-medium hover:bg-accent/90 transition-colors z-40 flex items-center gap-1.5"
+          className="fixed bottom-24 right-4 bg-accent text-white rounded-full shadow-xl px-4 py-3 text-sm font-medium hover:bg-accent/90 transition-colors z-[1000] flex items-center gap-1.5"
         >
           <span className="text-base">＋</span>
           <span>おすすめを追加</span>
