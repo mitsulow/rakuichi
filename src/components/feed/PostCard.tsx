@@ -9,6 +9,8 @@ import { CategoryTag } from "@/components/ui/CategoryTag";
 import { formatRelativeTime } from "@/lib/utils";
 import { toggleLike } from "@/lib/data";
 import { EmbedCard } from "./EmbedCard";
+import { CommentsSection } from "./CommentsSection";
+import { useAuth } from "@/components/auth/AuthProvider";
 import type { Post } from "@/lib/types";
 
 interface PostCardProps {
@@ -22,6 +24,9 @@ interface PostCardProps {
 export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled, onDelete }: PostCardProps) {
   const { profile, badges, shop } = post;
   const [likeLoading, setLikeLoading] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(post.comments_count);
+  const { user } = useAuth();
 
   // If profile is missing (partial join), use a minimal fallback so the post still shows
   const displayProfile = profile ?? {
@@ -135,19 +140,52 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled, 
           <span>{post.likes_count}</span>
         </button>
         <button
+          type="button"
+          onClick={() => setCommentsOpen((o) => !o)}
           title="文を寄せる"
-          className="flex items-center gap-1 text-sm text-text-sub hover:text-accent transition-colors"
+          className={`flex items-center gap-1 text-sm transition-colors ${
+            commentsOpen ? "text-accent font-medium" : "text-text-sub hover:text-accent"
+          }`}
         >
           <span>📜</span>
-          <span>{post.comments_count}</span>
+          <span>{commentsCount}</span>
         </button>
         <button
+          type="button"
+          onClick={async () => {
+            const url = `${window.location.origin}/u/${displayProfile.username}`;
+            try {
+              if (navigator.share) {
+                await navigator.share({
+                  title: "楽市楽座",
+                  text: post.body.slice(0, 100),
+                  url,
+                });
+              } else {
+                await navigator.clipboard.writeText(url);
+                alert("URLをコピーしました");
+              }
+            } catch {
+              // user cancelled
+            }
+          }}
           title="共有"
           className="flex items-center gap-1 text-sm text-text-sub hover:text-accent transition-colors"
         >
           <span>🔗</span>
         </button>
       </div>
+
+      {/* Inline comments */}
+      {commentsOpen && (
+        <CommentsSection
+          postId={post.id}
+          currentUserId={user?.id ?? null}
+          currentUserAvatarUrl={user?.user_metadata?.avatar_url ?? null}
+          currentUserName={user?.user_metadata?.full_name ?? null}
+          onCountChange={(delta) => setCommentsCount((c) => c + delta)}
+        />
+      )}
     </Card>
   );
 }

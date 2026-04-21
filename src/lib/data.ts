@@ -131,6 +131,50 @@ export async function createPost(
 }
 
 /**
+ * Fetch comments for a post, newest first, with author profile joined.
+ */
+export async function fetchComments(postId: string) {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("comments")
+    .select("*, profile:profiles(*)")
+    .eq("post_id", postId)
+    .order("created_at", { ascending: true });
+  return data ?? [];
+}
+
+export async function createComment(
+  postId: string,
+  userId: string,
+  body: string
+) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("comments")
+    .insert({ post_id: postId, user_id: userId, body })
+    .select("*, profile:profiles(*)")
+    .single();
+  if (error) {
+    console.error("createComment error:", error.message);
+    return { data: null, error: error.message };
+  }
+  return { data, error: null };
+}
+
+export async function deleteComment(commentId: string) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("comments")
+    .delete()
+    .eq("id", commentId);
+  if (error) {
+    console.error("deleteComment error:", error.message);
+    return { error: error.message };
+  }
+  return { error: null };
+}
+
+/**
  * Delete own post. Owner-only via RLS.
  */
 export async function deletePost(postId: string): Promise<{ error: string | null }> {
