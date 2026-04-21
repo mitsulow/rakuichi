@@ -55,12 +55,44 @@ export async function fetchPosts(): Promise<Post[]> {
 }
 
 /**
- * Insert a new post. Returns the inserted post or null on failure.
+ * Insert a new post. Returns { post, error } — caller gets detail on failure.
  */
-export async function createPost(body: string, userId: string, embed?: OGPEmbed | null, imageUrls: string[] = []): Promise<Post | null> {
+export async function createPost(
+  body: string,
+  userId: string,
+  embed?: OGPEmbed | null,
+  imageUrls: string[] = []
+): Promise<{ post: Post | null; error: string | null }> {
   const supabase = createClient();
 
-  const { data, error } = await supabase
+  // Ensure the profile row exists (important: FK reference posts.user_id -> profiles.id)
+  // Older users whose trigger didn't fire won't have a profile; create one lazily.
+  const { data: existingProfile } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (!existingProfile) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const email = session?.user.email ?? "";
+    const name =
+      session?.user.user_metadata?.full_name ??
+      session?.user.user_metadata?.name ??
+      email.split("@")[0] ??
+      "ユーザー";
+    const username = email.split("@")[0] || userId.slice(0, 8);
+    await supabase.from("profiles").insert({
+      id: userId,
+      username,
+      display_name: name,
+      email,
+      avatar_url: session?.user.user_metadata?.avatar_url ?? null,
+    });
+  }
+
+  // Insert with a timeout to prevent infinite spinner
+  const insertPromise = supabase
     .from("posts")
     .insert({
       user_id: userId,
@@ -73,12 +105,24 @@ export async function createPost(body: string, userId: string, embed?: OGPEmbed 
     .select()
     .single();
 
+  const timeoutPromise = new Promise<{ data: null; error: { message: string } }>(
+    (resolve) =>
+      setTimeout(
+        () => resolve({ data: null, error: { message: "タイムアウト（ネットワーク不調？）" } }),
+        10000
+      )
+  );
+
+  const { data, error } = (await Promise.race([insertPromise, timeoutPromise])) as
+    | { data: Post; error: null }
+    | { data: null; error: { message: string } };
+
   if (error) {
     console.error("createPost error:", error.message);
-    return null;
+    return { post: null, error: error.message };
   }
 
-  return data as Post;
+  return { post: data as Post, error: null };
 }
 
 /**

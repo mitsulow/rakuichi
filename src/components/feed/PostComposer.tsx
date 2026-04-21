@@ -90,9 +90,14 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
     if ((!body.trim() && !embed && imageUrls.length === 0) || isSubmitting) return;
 
     setIsSubmitting(true);
-    const newPost = await createPost(body.trim(), user.id, embed, imageUrls);
+    const result = await createPost(body.trim(), user.id, embed, imageUrls);
     setIsSubmitting(false);
 
+    if (result.error) {
+      alert(`立て札を立てられませんでした: ${result.error}`);
+      return;
+    }
+    const newPost = result.post;
     if (newPost) {
       const enrichedPost: Post = {
         ...newPost,
