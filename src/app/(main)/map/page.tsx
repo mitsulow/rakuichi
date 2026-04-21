@@ -29,7 +29,7 @@ interface VillageShop {
 type Tab = "all" | "village" | "recommended";
 
 export default function MapPage() {
-  const [tab, setTab] = useState<Tab>("all");
+  const [tab, setTab] = useState<Tab>("recommended");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [villageShops, setVillageShops] = useState<VillageShop[]>([]);

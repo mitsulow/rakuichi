@@ -184,18 +184,48 @@ export async function updateProfile(userId: string, fields: {
 }) {
   const supabase = createClient();
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .update({ ...fields, updated_at: new Date().toISOString() })
-    .eq("id", userId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error("updateProfile error:", error.message);
-    return { data: null, error: error.message };
+  async function attemptUpdate(payload: Record<string, unknown>): Promise<{ data: unknown; error: string | null }> {
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({ ...payload, updated_at: new Date().toISOString() })
+      .eq("id", userId)
+      .select()
+      .single();
+    if (error) {
+      return { data: null, error: error.message };
+    }
+    return { data, error: null };
   }
-  return { data, error: null };
+
+  // Try full update first. If Supabase errors due to missing columns, retry
+  // after removing any keys the error mentions (defensive for un-migrated DBs).
+  const payload: Record<string, unknown> = { ...fields };
+  let result = await attemptUpdate(payload);
+
+  // Retry dropping potentially-new columns if update failed
+  if (result.error) {
+    const missingColumnPatterns = [
+      "migration_percent",
+      "avatar_url",
+      "cover_url",
+      "show_on_map",
+    ];
+    let dropped = false;
+    for (const col of missingColumnPatterns) {
+      if (result.error.toLowerCase().includes(col) && col in payload) {
+        delete payload[col];
+        dropped = true;
+      }
+    }
+    if (dropped) {
+      result = await attemptUpdate(payload);
+    }
+  }
+
+  if (result.error) {
+    console.error("updateProfile error:", result.error);
+  }
+  return result;
 }
 
 /**
@@ -251,6 +281,44 @@ export async function fetchExternalLinks(userId: string) {
     .eq("user_id", userId)
     .order("sort_order", { ascending: true });
   return data ?? [];
+}
+
+/**
+ * Replace all of a user's external links with the given list.
+ * Deletes existing links and inserts new ones in order.
+ */
+export async function replaceExternalLinks(
+  userId: string,
+  links: Array<{ platform: string; url: string }>
+) {
+  const supabase = createClient();
+  // Delete all existing
+  const { error: delErr } = await supabase
+    .from("external_links")
+    .delete()
+    .eq("user_id", userId);
+  if (delErr) {
+    console.error("replaceExternalLinks delete error:", delErr.message);
+    return { error: delErr.message };
+  }
+  if (links.length === 0) return { error: null };
+
+  const rows = links
+    .filter((l) => l.url.trim().length > 0)
+    .map((l, i) => ({
+      user_id: userId,
+      platform: l.platform,
+      url: l.url.trim(),
+      sort_order: i,
+    }));
+  if (rows.length === 0) return { error: null };
+
+  const { error: insErr } = await supabase.from("external_links").insert(rows);
+  if (insErr) {
+    console.error("replaceExternalLinks insert error:", insErr.message);
+    return { error: insErr.message };
+  }
+  return { error: null };
 }
 
 /**

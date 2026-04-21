@@ -7,6 +7,7 @@ import { BadgeList } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { CategoryTag } from "@/components/ui/CategoryTag";
+import { SnsIcon, getPlatformLabel } from "@/components/ui/SnsIcon";
 import { ContactModal } from "./ContactModal";
 import { QRModal } from "./QRModal";
 import { MigrationBar } from "./MigrationBar";
@@ -97,6 +98,25 @@ export function MyzaStorefront({
             <p className="text-xs text-text-mute mt-0.5">📍 {location}</p>
           )}
         </div>
+
+        {/* SNS icon bar */}
+        {externalLinks.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {externalLinks.map((link) => (
+              <a
+                key={link.id}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full bg-white border border-border flex items-center justify-center hover:bg-bg-card hover:scale-105 transition-all no-underline"
+                title={getPlatformLabel(link.platform)}
+                aria-label={getPlatformLabel(link.platform)}
+              >
+                <SnsIcon platform={link.platform} size={18} />
+              </a>
+            ))}
+          </div>
+        )}
 
         {/* Status line */}
         {profile.status_line && (

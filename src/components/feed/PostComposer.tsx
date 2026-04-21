@@ -8,6 +8,7 @@ import { createPost } from "@/lib/data";
 import { EmbedCard } from "./EmbedCard";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { SOCIAL_PLATFORMS } from "@/lib/constants";
+import { SnsIcon } from "@/components/ui/SnsIcon";
 import type { Post, OGPEmbed } from "@/lib/types";
 import type { User } from "@supabase/supabase-js";
 
@@ -206,11 +207,11 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
                   {SOCIAL_PLATFORMS.map((p) => (
                     <span
                       key={p.id}
-                      className="text-xs bg-bg-card rounded-full px-2 py-0.5 text-text-mute border border-border"
+                      className="inline-flex items-center gap-1 text-xs bg-white rounded-full px-2 py-1 text-text-mute border border-border"
                       title={p.label}
                     >
-                      <span className="mr-0.5">{p.icon}</span>
-                      {p.label}
+                      <SnsIcon platform={p.id} size={14} />
+                      <span>{p.label}</span>
                     </span>
                   ))}
                 </div>

@@ -3,11 +3,17 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { fetchProfile, updateProfile } from "@/lib/data";
+import {
+  fetchProfile,
+  updateProfile,
+  fetchExternalLinks,
+  replaceExternalLinks,
+} from "@/lib/data";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { SnsIcon, detectPlatform, getPlatformLabel } from "@/components/ui/SnsIcon";
 import { MigrationBar } from "@/components/profile/MigrationBar";
 import { PREFECTURES } from "@/lib/constants";
 
@@ -38,6 +44,7 @@ function ProfileSettingsInner() {
     cover_url: null as string | null,
     show_on_map: true,
   });
+  const [snsLinks, setSnsLinks] = useState<Array<{ platform: string; url: string }>>([]);
 
   useEffect(() => {
     async function init() {
@@ -54,7 +61,16 @@ function ProfileSettingsInner() {
       setUserId(session.user.id);
       setGoogleAvatarUrl(session.user.user_metadata?.avatar_url ?? null);
 
-      const profile = await fetchProfile(session.user.id);
+      const [profile, links] = await Promise.all([
+        fetchProfile(session.user.id),
+        fetchExternalLinks(session.user.id),
+      ]);
+      setSnsLinks(
+        (links as Array<{ platform: string; url: string }>).map((l) => ({
+          platform: l.platform,
+          url: l.url,
+        }))
+      );
       if (profile) {
         setFormData({
           display_name: profile.display_name || "",
@@ -106,10 +122,17 @@ function ProfileSettingsInner() {
       show_on_map: formData.show_on_map,
     });
 
+    // Save SNS links
+    const { error: snsErr } = await replaceExternalLinks(userId, snsLinks);
+
     setSaving(false);
 
     if (error) {
-      alert(`保存に失敗しました: ${error}`);
+      alert(`プロフィールの保存に失敗しました: ${error}\n\nSupabase SQL Editor で 006_bulletproof_fix.sql を実行してください。`);
+      return;
+    }
+    if (snsErr) {
+      alert(`SNSリンクの保存に失敗しました: ${snsErr}`);
       return;
     }
 
@@ -392,6 +415,90 @@ function ProfileSettingsInner() {
                 </div>
               </div>
             </label>
+          </div>
+        </Card>
+
+        {/* SNS Links */}
+        <Card>
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold text-text-sub">🔗 外部SNSリンク</h3>
+            <p className="text-xs text-text-mute">
+              Instagram・X・note・YouTubeなど、MY座に貼っておきたい外部リンクを追加
+            </p>
+
+            <div className="space-y-2">
+              {snsLinks.map((link, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 p-2 border border-border rounded-xl bg-bg"
+                >
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: "rgba(0,0,0,0.04)" }}
+                  >
+                    <SnsIcon platform={link.platform} size={20} />
+                  </div>
+                  <input
+                    type="url"
+                    value={link.url}
+                    onChange={(e) => {
+                      const url = e.target.value;
+                      setSnsLinks((prev) => {
+                        const next = [...prev];
+                        next[i] = { url, platform: url ? detectPlatform(url) : link.platform };
+                        return next;
+                      });
+                    }}
+                    placeholder="https://..."
+                    className="flex-1 min-w-0 bg-transparent text-sm focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSnsLinks((prev) => prev.filter((_, j) => j !== i))
+                    }
+                    className="text-text-mute hover:text-red-500 w-8 h-8 flex items-center justify-center"
+                    aria-label="削除"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                setSnsLinks((prev) => [...prev, { platform: "website", url: "" }])
+              }
+              className="w-full py-2.5 rounded-xl border-2 border-dashed border-border hover:border-accent hover:bg-accent/5 text-sm text-text-mute hover:text-accent transition-colors"
+            >
+              ＋ リンクを追加
+            </button>
+
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              <span className="text-[10px] text-text-mute">対応:</span>
+              {[
+                "instagram",
+                "x",
+                "facebook",
+                "youtube",
+                "tiktok",
+                "note",
+                "ameblo",
+                "line",
+                "threads",
+                "website",
+              ].map((p) => (
+                <span
+                  key={p}
+                  className="inline-flex items-center gap-0.5 text-[10px] text-text-mute"
+                  title={getPlatformLabel(p)}
+                >
+                  <SnsIcon platform={p} size={14} />
+                </span>
+              ))}
+            </div>
           </div>
         </Card>
 

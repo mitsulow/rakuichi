@@ -31,14 +31,16 @@ export const LEVELS = [
 ] as const;
 
 export const SOCIAL_PLATFORMS = [
-  { id: "instagram", label: "Instagram", icon: "📷" },
-  { id: "x", label: "X", icon: "𝕏" },
-  { id: "note", label: "note", icon: "📝" },
-  { id: "facebook", label: "Facebook", icon: "📘" },
-  { id: "youtube", label: "YouTube", icon: "▶️" },
-  { id: "ameblo", label: "アメブロ", icon: "🅰️" },
-  { id: "tiktok", label: "TikTok", icon: "🎵" },
-  { id: "website", label: "サイト", icon: "🌐" },
+  { id: "instagram", label: "Instagram" },
+  { id: "x", label: "X" },
+  { id: "note", label: "note" },
+  { id: "facebook", label: "Facebook" },
+  { id: "youtube", label: "YouTube" },
+  { id: "tiktok", label: "TikTok" },
+  { id: "ameblo", label: "アメブロ" },
+  { id: "line", label: "LINE" },
+  { id: "threads", label: "Threads" },
+  { id: "website", label: "ウェブサイト" },
 ] as const;
 
 // ============================================================

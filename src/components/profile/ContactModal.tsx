@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Modal } from "@/components/ui/Modal";
-import { SOCIAL_PLATFORMS } from "@/lib/constants";
+import { SnsIcon, getPlatformLabel } from "@/components/ui/SnsIcon";
 import { createClient } from "@/lib/supabase/client";
 import { findOrCreateChat } from "@/lib/data";
 import type { Profile, ExternalLink } from "@/lib/types";
@@ -72,30 +72,25 @@ export function ContactModal({
             <div className="text-xs text-text-mute text-center">
               または外部リンクで直接
             </div>
-            {externalLinks.map((link) => {
-              const platform = SOCIAL_PLATFORMS.find(
-                (p) => p.id === link.platform
-              );
-              return (
-                <a
-                  key={link.id}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full flex items-center gap-3 p-3 bg-bg hover:bg-border/50 rounded-xl transition-colors no-underline text-left"
-                >
-                  <span className="text-xl">{platform?.icon || "🔗"}</span>
-                  <div>
-                    <div className="font-medium text-sm text-text">
-                      {platform?.label || "外部リンク"}
-                    </div>
-                    <div className="text-xs text-text-mute truncate max-w-[250px]">
-                      {link.url}
-                    </div>
+            {externalLinks.map((link) => (
+              <a
+                key={link.id}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center gap-3 p-3 bg-bg hover:bg-border/50 rounded-xl transition-colors no-underline text-left"
+              >
+                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                  <SnsIcon platform={link.platform} size={20} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-sm text-text">
+                    {getPlatformLabel(link.platform)}
                   </div>
-                </a>
-              );
-            })}
+                  <div className="text-xs text-text-mute truncate">{link.url}</div>
+                </div>
+              </a>
+            ))}
           </>
         )}
       </div>
