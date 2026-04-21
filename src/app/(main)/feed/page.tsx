@@ -23,31 +23,26 @@ export default function FeedPage() {
   useEffect(() => {
     let cancelled = false;
 
-    // Hard timeout: even if everything hangs, show the page after 6 seconds
+    // Hard failsafe — stop showing spinner after 10s no matter what
     const failsafe = setTimeout(() => {
       if (!cancelled) setLoading(false);
-    }, 6000);
+    }, 10000);
 
     async function init() {
       try {
         const supabase = createClient();
 
-        // Get current user (timeout 4s)
-        const sessionResult = await Promise.race([
-          supabase.auth.getSession(),
-          new Promise<{ data: { session: null } }>((resolve) =>
-            setTimeout(() => resolve({ data: { session: null } }), 4000)
-          ),
-        ]);
-        const currentUser = sessionResult.data.session?.user ?? null;
+        // getSession reads from storage, practically instant
+        const { data: { session } } = await supabase.auth.getSession();
         if (cancelled) return;
+        const currentUser = session?.user ?? null;
         setUser(currentUser);
 
-        // Fetch posts (timeout 5s)
+        // Fetch posts (with timeout only on this network call)
         const fetchedPosts = await Promise.race([
           fetchPosts(),
           new Promise<Post[]>((resolve) =>
-            setTimeout(() => resolve([]), 5000)
+            setTimeout(() => resolve([]), 8000)
           ),
         ]);
         if (cancelled) return;
@@ -58,7 +53,7 @@ export default function FeedPage() {
           const likes = await Promise.race([
             getUserLikes(currentUser.id, postIds),
             new Promise<Set<string>>((resolve) =>
-              setTimeout(() => resolve(new Set()), 3000)
+              setTimeout(() => resolve(new Set()), 5000)
             ),
           ]);
           if (cancelled) return;
