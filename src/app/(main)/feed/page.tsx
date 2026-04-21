@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { WeeklyMarket } from "@/components/feed/WeeklyMarket";
 import { WelcomeBanner } from "@/components/feed/WelcomeBanner";
-import { MigrationDashboard } from "@/components/feed/MigrationDashboard";
 import { QuickActions } from "@/components/feed/QuickActions";
 import { FeedFilterTabs } from "@/components/feed/FeedFilterTabs";
 import { PostComposer } from "@/components/feed/PostComposer";
@@ -92,9 +91,6 @@ export default function FeedPage() {
 
       {/* クイックアクション - ログイン中のみ */}
       <QuickActions isLoggedIn={!!user} />
-
-      {/* 全体の移行度ダッシュボード */}
-      <MigrationDashboard />
 
       {/* 週イチ楽座 */}
       <WeeklyMarket />
