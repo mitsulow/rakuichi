@@ -21,29 +21,61 @@ export default function FeedPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
+    // Hard timeout: even if everything hangs, show the page after 6 seconds
+    const failsafe = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 6000);
+
     async function init() {
-      const supabase = createClient();
+      try {
+        const supabase = createClient();
 
-      // Get current user
-      const { data: { session } } = await supabase.auth.getSession();
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
+        // Get current user (timeout 4s)
+        const sessionResult = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise<{ data: { session: null } }>((resolve) =>
+            setTimeout(() => resolve({ data: { session: null } }), 4000)
+          ),
+        ]);
+        const currentUser = sessionResult.data.session?.user ?? null;
+        if (cancelled) return;
+        setUser(currentUser);
 
-      // Fetch posts
-      const fetchedPosts = await fetchPosts();
-      setPosts(fetchedPosts);
+        // Fetch posts (timeout 5s)
+        const fetchedPosts = await Promise.race([
+          fetchPosts(),
+          new Promise<Post[]>((resolve) =>
+            setTimeout(() => resolve([]), 5000)
+          ),
+        ]);
+        if (cancelled) return;
+        setPosts(fetchedPosts);
 
-      // Fetch user's likes
-      if (currentUser) {
-        const postIds = fetchedPosts.map((p) => p.id);
-        const likes = await getUserLikes(currentUser.id, postIds);
-        setLikedPostIds(likes);
+        if (currentUser && fetchedPosts.length > 0) {
+          const postIds = fetchedPosts.map((p) => p.id);
+          const likes = await Promise.race([
+            getUserLikes(currentUser.id, postIds),
+            new Promise<Set<string>>((resolve) =>
+              setTimeout(() => resolve(new Set()), 3000)
+            ),
+          ]);
+          if (cancelled) return;
+          setLikedPostIds(likes);
+        }
+      } catch (e) {
+        console.error("Feed init error:", e);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-
-      setLoading(false);
     }
 
     init();
+    return () => {
+      cancelled = true;
+      clearTimeout(failsafe);
+    };
   }, []);
 
   const handlePostCreated = (newPost: Post) => {
