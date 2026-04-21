@@ -51,7 +51,7 @@ export function TradeDiaryModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center"
+      className="fixed inset-0 bg-black/70 z-[9999] flex items-end sm:items-center justify-center"
       onClick={onClose}
     >
       <div
