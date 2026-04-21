@@ -78,7 +78,11 @@ export default function FeedPage() {
   }, [user]);
 
   const handlePostCreated = (newPost: Post) => {
-    setPosts((prev) => [newPost, ...prev]);
+    setPosts((prev) => {
+      const next = [newPost, ...prev];
+      setCached("feed:posts", next);
+      return next;
+    });
   };
 
   return (

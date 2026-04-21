@@ -22,7 +22,13 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled }
   const { profile, badges, shop } = post;
   const [likeLoading, setLikeLoading] = useState(false);
 
-  if (!profile) return null;
+  // If profile is missing (partial join), use a minimal fallback so the post still shows
+  const displayProfile = profile ?? {
+    id: post.user_id,
+    username: post.user_id.slice(0, 8),
+    display_name: "座の民",
+    avatar_url: null,
+  };
 
   const handleLikeClick = async () => {
     if (!currentUserId || likeLoading) return;
@@ -44,24 +50,24 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled }
     <Card>
       {/* Author header */}
       <div className="flex items-start gap-3">
-        <Link href={`/u/${profile.username}`}>
-          <Avatar src={profile.avatar_url} alt={profile.display_name} size="md" />
+        <Link href={`/u/${displayProfile.username}`}>
+          <Avatar src={displayProfile.avatar_url} alt={displayProfile.display_name} size="md" />
         </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <Link
-              href={`/u/${profile.username}`}
+              href={`/u/${displayProfile.username}`}
               className="font-medium text-sm no-underline hover:underline"
             >
-              {profile.display_name}
+              {displayProfile.display_name}
             </Link>
             {badges && <BadgeList badges={badges.slice(0, 3)} />}
           </div>
           <div className="flex items-center gap-2 text-xs text-text-mute">
-            {profile.life_work_level && (
+            {profile?.life_work_level && (
               <span>{profile.life_work_level}</span>
             )}
-            {profile.prefecture && <span>📍{profile.prefecture}</span>}
+            {profile?.prefecture && <span>📍{profile.prefecture}</span>}
             <span>{formatRelativeTime(post.created_at)}</span>
           </div>
         </div>
