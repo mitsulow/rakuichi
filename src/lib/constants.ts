@@ -77,6 +77,12 @@ export const NATURAL_CATEGORIES = [
     label: "自然派カフェ",
     description: "有機コーヒー・ヴィーガン・グルテンフリー",
   },
+  {
+    id: "shrine",
+    emoji: "⛩",
+    label: "神社・寺社",
+    description: "全国の神社仏閣、パワースポット",
+  },
 ] as const;
 
 export type NaturalCategoryId = (typeof NATURAL_CATEGORIES)[number]["id"];

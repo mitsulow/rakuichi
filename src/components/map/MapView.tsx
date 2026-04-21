@@ -25,11 +25,17 @@ function makeRecIcon(emoji: string) {
 }
 
 const recommendedIcons: Record<string, L.DivIcon> = {
-  natural_food: makeRecIcon("🌾"),
+  natural_food: makeRecIcon("🍙"),
   alt_medicine: makeRecIcon("🪷"),
   natural_therapy: makeRecIcon("🌿"),
   natural_goods: makeRecIcon("🧺"),
   natural_cafe: makeRecIcon("☕"),
+  shrine: new L.DivIcon({
+    html: '<div style="background:#2b3a67;color:white;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3)">⛩</div>',
+    className: "",
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+  }),
   default: makeRecIcon("🌟"),
 };
 

@@ -118,68 +118,57 @@ export default function MapPage() {
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1.5 overflow-x-auto hide-scrollbar">
-        <TabButton
-          active={tab === "all"}
-          onClick={() => {
-            setTab("all");
-            setCategoryFilter(null);
-          }}
-          label="すべて"
-          emoji="🗺"
-        />
-        <TabButton
-          active={tab === "village"}
-          onClick={() => {
-            setTab("village");
-            setCategoryFilter(null);
-          }}
-          label="座の民の楽座"
-          emoji="🏡"
-        />
-        <TabButton
-          active={tab === "recommended"}
-          onClick={() => {
-            setTab("recommended");
-            setCategoryFilter(null);
-          }}
-          label="みんなの推薦店"
-          emoji="🌟"
-        />
-      </div>
-
-      {/* Category filter - hidden on "all" tab since categories differ */}
-      {tab !== "all" && (
-        <div className="flex gap-1.5 overflow-x-auto hide-scrollbar">
-          <button
-            onClick={() => setCategoryFilter(null)}
-            className={`px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors ${
-              !categoryFilter
-                ? "bg-accent text-white"
-                : "bg-card text-text-sub border border-border"
-            }`}
-          >
-            すべてのジャンル
-          </button>
-          {categoryOptions.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() =>
-                setCategoryFilter(categoryFilter === cat.id ? null : cat.id)
-              }
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors ${
-                categoryFilter === cat.id
-                  ? "bg-accent text-white"
-                  : "bg-card text-text-sub border border-border"
-              }`}
-            >
-              <span>{cat.emoji}</span>
-              <span>{cat.label}</span>
-            </button>
-          ))}
+      {/* Filters as dropdowns */}
+      <div>
+        <div className="text-[11px] text-text-sub font-medium mb-1.5 px-1">
+          🔍 絞り込み検索
         </div>
-      )}
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <div className="text-[10px] text-text-mute mb-1 px-1">種類</div>
+            <select
+              value={tab}
+              onChange={(e) => {
+                setTab(e.target.value as Tab);
+                setCategoryFilter(null);
+              }}
+              className="w-full bg-card border border-border rounded-xl px-3 py-2.5 text-sm focus:border-accent focus:outline-none appearance-none pr-8 bg-no-repeat"
+              style={{
+                backgroundImage:
+                  "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+                backgroundPosition: "right 0.75rem center",
+              }}
+            >
+              <option value="all">🗺 すべて</option>
+              <option value="village">🏡 村人の楽座</option>
+              <option value="recommended">🌟 みんなの推薦店</option>
+            </select>
+          </div>
+          <div>
+            <div className="text-[10px] text-text-mute mb-1 px-1">ジャンル</div>
+            <select
+              value={categoryFilter ?? ""}
+              onChange={(e) => setCategoryFilter(e.target.value || null)}
+              disabled={tab === "all"}
+              className="w-full bg-card border border-border rounded-xl px-3 py-2.5 text-sm focus:border-accent focus:outline-none appearance-none pr-8 bg-no-repeat disabled:opacity-50"
+              style={{
+                backgroundImage:
+                  "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+                backgroundPosition: "right 0.75rem center",
+              }}
+            >
+              <option value="">
+                {tab === "all" ? "種類を選んでから" : "すべてのジャンル"}
+              </option>
+              {categoryOptions.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.emoji} {cat.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
 
       {/* Counts */}
       <div className="flex items-center justify-between text-xs text-text-mute px-1">
@@ -236,28 +225,3 @@ export default function MapPage() {
   );
 }
 
-function TabButton({
-  active,
-  onClick,
-  emoji,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  emoji: string;
-  label: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-1 px-3 py-2 rounded-full text-xs whitespace-nowrap transition-colors font-medium ${
-        active
-          ? "bg-accent text-white"
-          : "bg-card text-text-sub border border-border hover:bg-bg"
-      }`}
-    >
-      <span>{emoji}</span>
-      <span>{label}</span>
-    </button>
-  );
-}
