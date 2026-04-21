@@ -2,6 +2,7 @@ import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { OnboardingGate } from "@/components/layout/OnboardingGate";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import { InAppBrowserWarning } from "@/components/auth/InAppBrowserWarning";
 
 export default function MainLayout({
   children,
@@ -10,6 +11,7 @@ export default function MainLayout({
 }) {
   return (
     <AuthProvider>
+      <InAppBrowserWarning />
       <OnboardingGate />
       <Header />
       <main className="flex-1 pb-16 md:pb-0">

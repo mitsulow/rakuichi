@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/layout/Logo";
+import { InAppBrowserWarning } from "@/components/auth/InAppBrowserWarning";
 
 function LoginInner() {
   const params = useSearchParams();
@@ -29,7 +30,9 @@ function LoginInner() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-bg">
+    <div className="min-h-screen flex flex-col bg-bg">
+      <InAppBrowserWarning />
+      <div className="flex-1 flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8 text-center">
         <div className="flex justify-center">
           <Logo size="md" />
@@ -123,6 +126,7 @@ function LoginInner() {
         >
           うまく行かない時：セッションを強制クリア
         </button>
+      </div>
       </div>
     </div>
   );
