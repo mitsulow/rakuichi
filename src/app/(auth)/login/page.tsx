@@ -20,10 +20,6 @@ function LoginInner() {
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/callback`,
-        queryParams: {
-          access_type: "offline",
-          prompt: "consent",
-        },
       },
     });
     if (error) {
