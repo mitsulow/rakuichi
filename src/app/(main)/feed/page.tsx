@@ -11,35 +11,41 @@ import { FeedFilterTabs } from "@/components/feed/FeedFilterTabs";
 import { PostComposer } from "@/components/feed/PostComposer";
 import { PostCard } from "@/components/feed/PostCard";
 import { fetchPosts, getUserLikes } from "@/lib/data";
+import { getCached, setCached } from "@/lib/cache";
 import type { Post } from "@/lib/types";
 import type { User } from "@supabase/supabase-js";
 
 export default function FeedPage() {
   const [activeTab, setActiveTab] = useState("featured");
-  const [posts, setPosts] = useState<Post[]>([]);
+  // Hydrate from cache on first render so content shows instantly on reload
+  const [posts, setPosts] = useState<Post[]>(() => {
+    if (typeof window === "undefined") return [];
+    return getCached<Post[]>("feed:posts") ?? [];
+  });
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return !getCached<Post[]>("feed:posts");
+  });
 
   useEffect(() => {
     let cancelled = false;
 
-    // Hard failsafe — stop showing spinner after 10s no matter what
+    // Stop showing spinner after 4s no matter what
     const failsafe = setTimeout(() => {
       if (!cancelled) setLoading(false);
-    }, 10000);
+    }, 4000);
 
     async function init() {
       try {
         const supabase = createClient();
-
-        // getSession reads from storage, practically instant
         const { data: { session } } = await supabase.auth.getSession();
         if (cancelled) return;
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
-        // Fetch posts (with timeout only on this network call)
+        // Fetch fresh posts in background
         const fetchedPosts = await Promise.race([
           fetchPosts(),
           new Promise<Post[]>((resolve) =>
@@ -47,7 +53,12 @@ export default function FeedPage() {
           ),
         ]);
         if (cancelled) return;
-        setPosts(fetchedPosts);
+
+        // Only overwrite if fetch actually returned something
+        if (fetchedPosts.length > 0) {
+          setPosts(fetchedPosts);
+          setCached("feed:posts", fetchedPosts);
+        }
 
         if (currentUser && fetchedPosts.length > 0) {
           const postIds = fetchedPosts.map((p) => p.id);

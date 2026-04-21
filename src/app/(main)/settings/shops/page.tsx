@@ -15,6 +15,7 @@ import { CategoryTag } from "@/components/ui/CategoryTag";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { CATEGORIES } from "@/lib/constants";
+import { getCached, setCached } from "@/lib/cache";
 import type { Shop } from "@/lib/types";
 
 type Mode = "list" | "create" | "edit";
@@ -22,8 +23,14 @@ type Mode = "list" | "create" | "edit";
 export default function ShopsSettingsPage() {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [shops, setShops] = useState<Shop[]>([]);
+  const [shops, setShops] = useState<Shop[]>(() => {
+    if (typeof window === "undefined") return [];
+    return getCached<Shop[]>("myShops") ?? [];
+  });
+  const [loading, setLoading] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return !getCached<Shop[]>("myShops");
+  });
   const [mode, setMode] = useState<Mode>("list");
   const [editingShop, setEditingShop] = useState<Shop | null>(null);
 
@@ -31,7 +38,7 @@ export default function ShopsSettingsPage() {
     let cancelled = false;
     const failsafe = setTimeout(() => {
       if (!cancelled) setLoading(false);
-    }, 8000);
+    }, 4000);
 
     async function init() {
       try {
@@ -54,6 +61,7 @@ export default function ShopsSettingsPage() {
         ]);
         if (cancelled) return;
         setShops(s as Shop[]);
+        setCached("myShops", s);
       } catch (e) {
         console.error("Shops init error:", e);
       } finally {

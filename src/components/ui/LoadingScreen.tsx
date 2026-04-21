@@ -20,7 +20,7 @@ export function LoadingScreen({ page, step }: LoadingScreenProps) {
     if (typeof window !== "undefined") {
       setCurrentUrl(window.location.pathname + window.location.search);
     }
-    const t = setTimeout(() => setShowEscape(true), 10000);
+    const t = setTimeout(() => setShowEscape(true), 5000);
     return () => clearTimeout(t);
   }, []);
 

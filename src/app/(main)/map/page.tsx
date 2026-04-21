@@ -9,6 +9,7 @@ import {
   fetchRecommendedShops,
 } from "@/lib/data";
 import { AddRecommendationModal } from "@/components/map/AddRecommendationModal";
+import { getCached, setCached } from "@/lib/cache";
 import type { Profile, Shop, RecommendedShop } from "@/lib/types";
 
 const MapView = dynamic(
@@ -31,11 +32,20 @@ type Tab = "all" | "village" | "recommended";
 export default function MapPage() {
   const [tab, setTab] = useState<Tab>("recommended");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [villageShops, setVillageShops] = useState<VillageShop[]>([]);
+  const [villageShops, setVillageShops] = useState<VillageShop[]>(() => {
+    if (typeof window === "undefined") return [];
+    return getCached<VillageShop[]>("map:village") ?? [];
+  });
   const [recommendedShops, setRecommendedShops] = useState<RecommendedShop[]>(
-    []
+    () => {
+      if (typeof window === "undefined") return [];
+      return getCached<RecommendedShop[]>("map:recommended") ?? [];
+    }
   );
+  const [loading, setLoading] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return !getCached("map:recommended");
+  });
   const [showAddModal, setShowAddModal] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -47,6 +57,8 @@ export default function MapPage() {
       ]);
       setVillageShops(village as VillageShop[]);
       setRecommendedShops(rec as RecommendedShop[]);
+      setCached("map:village", village);
+      setCached("map:recommended", rec);
     } finally {
       setLoading(false);
     }
@@ -56,7 +68,7 @@ export default function MapPage() {
     let cancelled = false;
     const failsafe = setTimeout(() => {
       if (!cancelled) setLoading(false);
-    }, 10000);
+    }, 5000);
 
     async function init() {
       try {
