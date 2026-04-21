@@ -151,7 +151,7 @@ export default function PostsPage() {
 
       {/* Region filter */}
       <div>
-        <div className="text-[10px] text-text-mute mb-1.5 px-1">地域</div>
+        <div className="text-[10px] text-text-mute mb-1 px-1">地域で絞る</div>
         <RegionFilter
           scope={scope}
           onChange={(s) => {

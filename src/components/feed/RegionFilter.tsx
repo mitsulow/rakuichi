@@ -17,7 +17,6 @@ export function regionToPrefectures(
     const r = REGIONS.find((x) => x.id === scope.id);
     return r ? [...r.prefectures] : null;
   }
-  // japan: all prefectures listed in REGIONS (anyone with a pref = in Japan)
   return REGIONS.flatMap((r) => [...r.prefectures]);
 }
 
@@ -26,7 +25,7 @@ export function scopeLabel(scope: RegionScope): string {
   if (scope.kind === "japan") return "🗾 日本全体";
   if (scope.kind === "mine") return `📍 自分の県（${scope.prefecture}）`;
   const r = REGIONS.find((x) => x.id === scope.id);
-  return `${r?.label ?? "地方"}`;
+  return r?.label ?? "地方";
 }
 
 interface RegionFilterProps {
@@ -35,53 +34,53 @@ interface RegionFilterProps {
   userPrefecture?: string | null;
 }
 
+/**
+ * Serialize/deserialize scope as a single string for <select> value.
+ */
+function scopeValue(scope: RegionScope): string {
+  if (scope.kind === "world") return "world";
+  if (scope.kind === "japan") return "japan";
+  if (scope.kind === "mine") return "mine";
+  return `region:${scope.id}`;
+}
+function valueToScope(value: string, userPref: string | null): RegionScope {
+  if (value === "world") return { kind: "world" };
+  if (value === "japan") return { kind: "japan" };
+  if (value === "mine" && userPref)
+    return { kind: "mine", prefecture: userPref };
+  if (value.startsWith("region:"))
+    return { kind: "region", id: value.slice(7) };
+  return { kind: "world" };
+}
+
 export function RegionFilter({
   scope,
   onChange,
   userPrefecture,
 }: RegionFilterProps) {
-  const isActive = (test: (s: RegionScope) => boolean) => test(scope);
-
-  const pill = (active: boolean, extra = "") =>
-    `flex-shrink-0 px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors ${
-      active
-        ? "bg-accent text-white"
-        : "bg-card text-text-sub border border-border hover:bg-bg"
-    } ${extra}`;
-
   return (
-    <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pb-1">
+    <select
+      value={scopeValue(scope)}
+      onChange={(e) => onChange(valueToScope(e.target.value, userPrefecture ?? null))}
+      className="w-full bg-card border border-border rounded-xl px-3 py-2.5 text-sm focus:border-accent focus:outline-none appearance-none pr-8 bg-no-repeat bg-right"
+      style={{
+        backgroundImage:
+          "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+        backgroundPosition: "right 0.75rem center",
+      }}
+    >
+      <option value="world">🌍 全世界</option>
+      <option value="japan">🗾 日本全体</option>
       {userPrefecture && (
-        <button
-          onClick={() => onChange({ kind: "mine", prefecture: userPrefecture })}
-          className={pill(isActive((s) => s.kind === "mine"), "font-bold")}
-        >
-          📍 自分の県
-        </button>
+        <option value="mine">📍 自分の県（{userPrefecture}）</option>
       )}
-      <button
-        onClick={() => onChange({ kind: "japan" })}
-        className={pill(isActive((s) => s.kind === "japan"))}
-      >
-        🗾 日本全体
-      </button>
-      <button
-        onClick={() => onChange({ kind: "world" })}
-        className={pill(isActive((s) => s.kind === "world"))}
-      >
-        🌍 全世界
-      </button>
-      {REGIONS.map((r) => (
-        <button
-          key={r.id}
-          onClick={() => onChange({ kind: "region", id: r.id })}
-          className={pill(
-            isActive((s) => s.kind === "region" && s.id === r.id)
-          )}
-        >
-          {r.label}
-        </button>
-      ))}
-    </div>
+      <optgroup label="地方で絞る">
+        {REGIONS.map((r) => (
+          <option key={r.id} value={`region:${r.id}`}>
+            {r.label}
+          </option>
+        ))}
+      </optgroup>
+    </select>
   );
 }
