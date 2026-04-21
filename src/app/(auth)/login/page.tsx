@@ -1,9 +1,19 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/layout/Logo";
 
-export default function LoginPage() {
+function LoginInner() {
+  const params = useSearchParams();
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const e = params.get("error");
+    if (e) setError(decodeURIComponent(e));
+  }, [params]);
+
   const handleGoogleLogin = async () => {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
@@ -35,6 +45,13 @@ export default function LoginPage() {
             AIの時代、自分の腕一本で。
           </p>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700 break-all text-left">
+            <div className="font-medium mb-1">⚠️ ログインに失敗しました</div>
+            <div>{error}</div>
+          </div>
+        )}
 
         <button
           onClick={handleGoogleLogin}
@@ -75,5 +92,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <LoginInner />
+    </Suspense>
   );
 }
