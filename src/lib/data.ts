@@ -760,19 +760,29 @@ export async function fetchShopById(shopId: string) {
  * Fetch all shops with owner profiles joined.
  * Optionally filter by category.
  */
-export async function fetchAllShops(category?: string | null) {
+export const SHOPS_PAGE_SIZE = 20;
+
+export async function fetchAllShops(
+  category?: string | null,
+  page = 0,
+  pageSize = SHOPS_PAGE_SIZE
+) {
   const supabase = createClient();
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
   let query = supabase
     .from("shops")
-    .select("*, owner:profiles!shops_owner_id_fkey(*)")
-    .order("created_at", { ascending: false });
+    .select("*, owner:profiles!shops_owner_id_fkey(*)", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
   if (category) query = query.eq("category", category);
-  const { data, error } = await query;
+  const { data, error, count } = await query;
   if (error) {
     console.error("fetchAllShops error:", error.message);
-    return [];
+    return { shops: [], total: 0 };
   }
-  return data ?? [];
+  return { shops: data ?? [], total: count ?? 0 };
 }
 
 export async function deleteShop(shopId: string) {

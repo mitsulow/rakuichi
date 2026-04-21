@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
@@ -10,7 +10,7 @@ import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { WeeklyMarket } from "@/components/feed/WeeklyMarket";
 import { WelcomeBanner } from "@/components/feed/WelcomeBanner";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { fetchAllShops } from "@/lib/data";
+import { fetchAllShops, SHOPS_PAGE_SIZE } from "@/lib/data";
 import { getCached, setCached } from "@/lib/cache";
 import { CATEGORIES } from "@/lib/constants";
 import type { Shop, Profile } from "@/lib/types";
@@ -35,27 +35,28 @@ export default function FeedPage() {
     if (typeof window === "undefined") return true;
     return !getCached<ShopWithOwner[]>("feed:shops");
   });
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(0);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
+  // Reset + fetch first page whenever category changes
   useEffect(() => {
     let cancelled = false;
     const failsafe = setTimeout(() => {
       if (!cancelled) setLoading(false);
     }, 4000);
 
+    setLoading(true);
+    setPage(0);
+
     (async () => {
       try {
-        const data = await Promise.race([
-          fetchAllShops(),
-          new Promise<unknown[]>((resolve) =>
-            setTimeout(() => resolve([]), 8000)
-          ),
-        ]);
+        const { shops: list, total } = await fetchAllShops(selectedCategory, 0);
         if (cancelled) return;
-        const list = data as ShopWithOwner[];
-        if (list.length > 0) {
-          setShops(list);
-          setCached("feed:shops", list);
-        }
+        setShops(list as ShopWithOwner[]);
+        setTotal(total);
+        if (!selectedCategory) setCached("feed:shops", list);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -65,12 +66,35 @@ export default function FeedPage() {
       cancelled = true;
       clearTimeout(failsafe);
     };
-  }, []);
+  }, [selectedCategory]);
 
-  const filtered = useMemo(() => {
-    if (!selectedCategory) return shops;
-    return shops.filter((s) => s.category === selectedCategory);
-  }, [shops, selectedCategory]);
+  const canLoadMore = shops.length < total;
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !canLoadMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    const { shops: more } = await fetchAllShops(selectedCategory, nextPage);
+    setShops((prev) => [...prev, ...(more as ShopWithOwner[])]);
+    setPage(nextPage);
+    setLoadingMore(false);
+  }, [loadingMore, canLoadMore, page, selectedCategory]);
+
+  // Infinite scroll via IntersectionObserver
+  useEffect(() => {
+    if (!sentinelRef.current || !canLoadMore) return;
+    const el = sentinelRef.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore();
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [canLoadMore, loadMore, shops.length]);
+
+  const filtered = shops;
 
   return (
     <div className="space-y-4">
@@ -180,11 +204,37 @@ export default function FeedPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {filtered.map((shop) => (
-            <ShopCard key={shop.id} shop={shop} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            {filtered.map((shop) => (
+              <ShopCard key={shop.id} shop={shop} />
+            ))}
+          </div>
+
+          {/* Infinite scroll sentinel + fallback button */}
+          {canLoadMore && (
+            <div ref={sentinelRef} className="py-6 text-center">
+              {loadingMore ? (
+                <div className="inline-flex items-center gap-2 text-xs text-text-mute">
+                  <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                  次の屋台を読み込み中...
+                </div>
+              ) : (
+                <button
+                  onClick={loadMore}
+                  className="text-xs text-accent underline"
+                >
+                  もっと見る（あと{total - shops.length}件）
+                </button>
+              )}
+            </div>
+          )}
+          {!canLoadMore && shops.length >= SHOPS_PAGE_SIZE && (
+            <p className="text-center text-[10px] text-text-mute py-4">
+              🏮 すべての屋台を表示しました（全{total}件）
+            </p>
+          )}
+        </>
       )}
     </div>
   );

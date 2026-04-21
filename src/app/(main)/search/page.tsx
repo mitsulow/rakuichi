@@ -39,12 +39,15 @@ export default function SearchPage() {
 
     (async () => {
       try {
-        const data = await Promise.race([
-          fetchAllShops(selectedCategory),
-          new Promise<unknown[]>((resolve) => setTimeout(() => resolve([]), 6000)),
+        // Fetch more per page on search (50) since users scroll through a list
+        const result = await Promise.race([
+          fetchAllShops(selectedCategory, 0, 50),
+          new Promise<{ shops: unknown[]; total: number }>((resolve) =>
+            setTimeout(() => resolve({ shops: [], total: 0 }), 6000)
+          ),
         ]);
         if (cancelled) return;
-        setShops(data as ShopWithOwner[]);
+        setShops(result.shops as ShopWithOwner[]);
       } finally {
         if (!cancelled) setLoading(false);
       }
