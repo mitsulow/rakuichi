@@ -1,19 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function CallbackPage() {
-  const router = useRouter();
   const [status, setStatus] = useState("ログイン処理中...");
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [debug, setDebug] = useState<string[]>([]);
 
   useEffect(() => {
     const supabase = createClient();
     let done = false;
 
-    // If the URL contains an explicit error from Google/Supabase, show it
+    const log = (msg: string) => {
+      setDebug((prev) => [...prev, `${new Date().toISOString().slice(14, 19)} ${msg}`]);
+    };
+
+    // Error param from Google/Supabase
     const url = new URL(window.location.href);
     const errorParam =
       url.searchParams.get("error_description") ||
@@ -21,54 +24,73 @@ export default function CallbackPage() {
     if (errorParam) {
       setStatus("ログインに失敗しました");
       setDetailError(decodeURIComponent(errorParam));
+      return;
     }
 
-    const goToFeed = () => {
+    const goToFeed = async () => {
       if (done) return;
+      // Double-check session really exists before navigating
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        log("goToFeed called but no session yet");
+        return;
+      }
       done = true;
-      // Full-page navigation rather than SPA replace so the server gets the
-      // new cookies and middleware re-reads them.
-      window.location.replace("/feed");
+      log(`session OK, navigating. user=${session.user.email}`);
+      // Short delay to ensure cookies are flushed to document.cookie
+      setTimeout(() => {
+        window.location.href = "/feed";
+      }, 200);
     };
 
-    // 1. Listen for session established
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) goToFeed();
+    // 1. Listen for auth state change
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        log(`authEvent=${event} hasSession=${!!session}`);
+        if (session) await goToFeed();
+      }
+    );
+
+    // 2. Immediate session check (maybe already set)
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      log(`initial getSession hasSession=${!!session}`);
+      if (session) await goToFeed();
     });
 
-    // 2. Immediate check (may already be set if SDK processed URL on mount)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) goToFeed();
-    });
-
-    // 3. Fallback: after a bit, try an explicit code exchange
+    // 3. Try explicit exchange
     const code = url.searchParams.get("code");
     if (code) {
-      // Give the SDK a moment to auto-process first
+      log(`has code, will exchange in 500ms`);
       setTimeout(async () => {
         if (done) return;
         try {
-          await supabase.auth.exchangeCodeForSession(code);
-        } catch {
-          // ignore; we may still get session from listener
+          log("calling exchangeCodeForSession");
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          log(
+            error
+              ? `exchange error: ${error.message}`
+              : `exchange OK: ${data.session?.user?.email ?? "?"}`
+          );
+          if (data.session) await goToFeed();
+        } catch (e) {
+          log(`exchange throw: ${e instanceof Error ? e.message : String(e)}`);
         }
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) goToFeed();
-      }, 800);
+      }, 500);
     }
 
-    // 4. Final timeout — 25s to allow slow networks on mobile
+    // 4. Final timeout
     const timeout = setTimeout(() => {
-      if (!done) setStatus("ログインに失敗しました");
-    }, 25000);
+      if (!done) {
+        log("timeout 30s reached");
+        setStatus("ログインに失敗しました");
+      }
+    }, 30000);
 
     return () => {
       subscription.unsubscribe();
       clearTimeout(timeout);
     };
-  }, [router]);
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-bg">
@@ -82,6 +104,16 @@ export default function CallbackPage() {
           <a href="/login" className="text-xs text-accent underline block">
             もう一度ログインする
           </a>
+        )}
+        {debug.length > 0 && (
+          <div className="mt-6 p-2 bg-bg border border-border rounded-lg text-left">
+            <div className="text-[9px] text-text-mute mb-1">デバッグ:</div>
+            {debug.map((line, i) => (
+              <div key={i} className="text-[9px] font-mono text-text-sub break-all">
+                {line}
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
