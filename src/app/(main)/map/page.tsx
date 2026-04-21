@@ -71,13 +71,22 @@ export default function MapPage() {
   return (
     <div className="space-y-4 relative">
       {/* Hero */}
-      <div className="text-center py-2">
+      <div className="text-center py-2 space-y-2">
         <h1 className="text-xl font-bold tracking-wide">
           自然派 ・ 本格派 ・ ナチュラル
         </h1>
-        <p className="text-xs text-text-mute mt-1">
+        <p className="text-xs text-text-mute">
           全国の自然食・代替医療・自然療法がここに集まる
         </p>
+        {userId && (
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="mt-2 inline-flex items-center gap-1.5 bg-accent text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-accent/90 transition-colors"
+          >
+            <span>🌟</span>
+            <span>おすすめの店を登録する</span>
+          </button>
+        )}
       </div>
 
       {/* Tabs */}

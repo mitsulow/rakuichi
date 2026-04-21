@@ -6,6 +6,7 @@ import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { WeeklyMarket } from "@/components/feed/WeeklyMarket";
 import { WelcomeBanner } from "@/components/feed/WelcomeBanner";
 import { MigrationDashboard } from "@/components/feed/MigrationDashboard";
+import { QuickActions } from "@/components/feed/QuickActions";
 import { FeedFilterTabs } from "@/components/feed/FeedFilterTabs";
 import { PostComposer } from "@/components/feed/PostComposer";
 import { PostCard } from "@/components/feed/PostCard";
@@ -81,6 +82,9 @@ export default function FeedPage() {
     <div className="space-y-4">
       {/* Welcome banner for new users */}
       <WelcomeBanner />
+
+      {/* クイックアクション - ログイン中のみ */}
+      <QuickActions isLoggedIn={!!user} />
 
       {/* 全体の移行度ダッシュボード */}
       <MigrationDashboard />
