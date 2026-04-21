@@ -931,6 +931,42 @@ export async function sendMessage(chatId: string, senderId: string, body: string
   return { data, error: null };
 }
 
+/**
+ * Count unread messages for the current user — messages in chats they are
+ * a member of, sent by someone else, still unread (read_at IS NULL).
+ */
+export async function fetchUnreadMessageCount(userId: string): Promise<number> {
+  const supabase = createClient();
+  // First get the user's chat ids
+  const { data: memberships } = await supabase
+    .from("chat_members")
+    .select("chat_id")
+    .eq("user_id", userId);
+  const chatIds = (memberships ?? []).map((m) => m.chat_id);
+  if (chatIds.length === 0) return 0;
+
+  const { count } = await supabase
+    .from("messages")
+    .select("id", { count: "exact", head: true })
+    .in("chat_id", chatIds)
+    .neq("sender_id", userId)
+    .is("read_at", null);
+  return count ?? 0;
+}
+
+/**
+ * Mark all messages in a chat from OTHER senders as read.
+ */
+export async function markChatRead(chatId: string, userId: string) {
+  const supabase = createClient();
+  await supabase
+    .from("messages")
+    .update({ read_at: new Date().toISOString() })
+    .eq("chat_id", chatId)
+    .neq("sender_id", userId)
+    .is("read_at", null);
+}
+
 export async function fetchChatMembers(chatId: string) {
   const supabase = createClient();
   const { data } = await supabase

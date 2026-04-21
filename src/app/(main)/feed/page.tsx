@@ -143,34 +143,41 @@ export default function FeedPage() {
       </div>
 
       {/* Filters: region + category as dropdowns */}
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <div className="text-[10px] text-text-mute mb-1 px-1">地域</div>
-          <RegionFilter
-            scope={scope}
-            onChange={setScope}
-            userPrefecture={profile?.prefecture ?? null}
-          />
+      <div>
+        <div className="text-[11px] text-text-sub font-medium mb-1.5 px-1">
+          🔍 絞り込み検索
         </div>
-        <div>
-          <div className="text-[10px] text-text-mute mb-1 px-1">ジャンル</div>
-          <select
-            value={selectedCategory ?? ""}
-            onChange={(e) => setSelectedCategory(e.target.value || null)}
-            className="w-full bg-card border border-border rounded-xl px-3 py-2.5 text-sm focus:border-accent focus:outline-none appearance-none pr-8 bg-no-repeat"
-            style={{
-              backgroundImage:
-                "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
-              backgroundPosition: "right 0.75rem center",
-            }}
-          >
-            <option value="">すべてのジャンル</option>
-            {CATEGORIES.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.emoji} {cat.label}
-              </option>
-            ))}
-          </select>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <div className="text-[10px] text-text-mute mb-1 px-1">地域検索</div>
+            <RegionFilter
+              scope={scope}
+              onChange={setScope}
+              userPrefecture={profile?.prefecture ?? null}
+            />
+          </div>
+          <div>
+            <div className="text-[10px] text-text-mute mb-1 px-1">
+              ジャンル検索
+            </div>
+            <select
+              value={selectedCategory ?? ""}
+              onChange={(e) => setSelectedCategory(e.target.value || null)}
+              className="w-full bg-card border border-border rounded-xl px-3 py-2.5 text-sm focus:border-accent focus:outline-none appearance-none pr-8 bg-no-repeat"
+              style={{
+                backgroundImage:
+                  "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+                backgroundPosition: "right 0.75rem center",
+              }}
+            >
+              <option value="">すべてのジャンル</option>
+              {CATEGORIES.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.emoji} {cat.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 

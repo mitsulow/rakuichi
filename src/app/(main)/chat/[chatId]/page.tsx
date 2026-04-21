@@ -12,6 +12,7 @@ import {
   sendMessage,
   fetchChatMembers,
   fetchChatProposals,
+  markChatRead,
 } from "@/lib/data";
 import { TradeProposalModal } from "@/components/chat/TradeProposalModal";
 import { TradeProposalCard } from "@/components/chat/TradeProposalCard";
@@ -69,6 +70,9 @@ export default function ChatConversationPage({
       const other = (members as unknown as Profile[]).find((m) => m.id !== session.user.id);
       setOtherMember(other ?? null);
       setLoading(false);
+
+      // Mark all unread messages in this chat as read (fire and forget)
+      markChatRead(chatId, session.user.id).catch(() => {});
 
       // Realtime subscription for messages
       const channel = supabase
