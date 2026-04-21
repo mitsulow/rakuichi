@@ -90,6 +90,32 @@ function LoginInner() {
             MMMメンバーの方は、ログイン後に自動的に有料会員として認識されます。
           </p>
         </div>
+
+        {/* Clear stuck session / cache */}
+        <button
+          type="button"
+          onClick={async () => {
+            const supabase = createClient();
+            try {
+              await supabase.auth.signOut();
+            } catch {}
+            try {
+              sessionStorage.clear();
+              localStorage.clear();
+            } catch {}
+            try {
+              // delete all cookies for this origin
+              document.cookie.split(";").forEach((c) => {
+                const name = c.split("=")[0].trim();
+                document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+              });
+            } catch {}
+            window.location.href = "/login";
+          }}
+          className="text-[10px] text-text-mute underline"
+        >
+          うまく行かない時：セッションを強制クリア
+        </button>
       </div>
     </div>
   );

@@ -25,6 +25,8 @@ function ProfileSettingsInner() {
   const [userId, setUserId] = useState<string | null>(null);
   const [googleAvatarUrl, setGoogleAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingStep, setLoadingStep] = useState("初期化中...");
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -47,53 +49,84 @@ function ProfileSettingsInner() {
   const [snsLinks, setSnsLinks] = useState<Array<{ platform: string; url: string }>>([]);
 
   useEffect(() => {
+    let cancelled = false;
     async function init() {
-      const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        setLoadingStep("セッションを確認中...");
+        const supabase = createClient();
+        const sessionPromise = supabase.auth.getSession();
+        const { data: { session } } = await Promise.race([
+          sessionPromise,
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("session timeout")), 8000)
+          ),
+        ]) as Awaited<ReturnType<typeof supabase.auth.getSession>>;
 
-      if (!session) {
-        router.replace("/login");
-        return;
+        if (cancelled) return;
+
+        if (!session) {
+          router.replace("/login");
+          return;
+        }
+
+        setUserId(session.user.id);
+        setGoogleAvatarUrl(session.user.user_metadata?.avatar_url ?? null);
+
+        setLoadingStep("プロフィールを取得中...");
+        const profilePromise = fetchProfile(session.user.id);
+        const linksPromise = fetchExternalLinks(session.user.id);
+
+        const profile = await Promise.race([
+          profilePromise,
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
+        ]);
+        if (cancelled) return;
+
+        setLoadingStep("リンクを取得中...");
+        const links = await Promise.race([
+          linksPromise,
+          new Promise<[]>((resolve) => setTimeout(() => resolve([]), 8000)),
+        ]);
+        if (cancelled) return;
+
+        setSnsLinks(
+          (links as Array<{ platform: string; url: string }>).map((l) => ({
+            platform: l.platform,
+            url: l.url,
+          }))
+        );
+        if (profile) {
+          setFormData({
+            display_name: profile.display_name || "",
+            bio: profile.bio || "",
+            story: profile.story || "",
+            status_line: profile.status_line || "",
+            prefecture: profile.prefecture || "",
+            city: profile.city || "",
+            rice_work: profile.rice_work || "",
+            life_work: profile.life_work || "",
+            life_work_years: profile.life_work_years?.toString() || "",
+            life_work_level: profile.life_work_level || "",
+            migration_percent: profile.migration_percent ?? 0,
+            avatar_url:
+              profile.avatar_url ?? session.user.user_metadata?.avatar_url ?? null,
+            cover_url: profile.cover_url ?? null,
+            show_on_map: profile.show_on_map ?? true,
+          });
+        }
+
+        setLoading(false);
+      } catch (e) {
+        if (cancelled) return;
+        const msg = e instanceof Error ? e.message : String(e);
+        setLoadError(msg);
+        setLoading(false);
       }
-
-      setUserId(session.user.id);
-      setGoogleAvatarUrl(session.user.user_metadata?.avatar_url ?? null);
-
-      const [profile, links] = await Promise.all([
-        fetchProfile(session.user.id),
-        fetchExternalLinks(session.user.id),
-      ]);
-      setSnsLinks(
-        (links as Array<{ platform: string; url: string }>).map((l) => ({
-          platform: l.platform,
-          url: l.url,
-        }))
-      );
-      if (profile) {
-        setFormData({
-          display_name: profile.display_name || "",
-          bio: profile.bio || "",
-          story: profile.story || "",
-          status_line: profile.status_line || "",
-          prefecture: profile.prefecture || "",
-          city: profile.city || "",
-          rice_work: profile.rice_work || "",
-          life_work: profile.life_work || "",
-          life_work_years: profile.life_work_years?.toString() || "",
-          life_work_level: profile.life_work_level || "",
-          migration_percent: profile.migration_percent ?? 0,
-          avatar_url:
-            profile.avatar_url ?? session.user.user_metadata?.avatar_url ?? null,
-          cover_url: profile.cover_url ?? null,
-          show_on_map: profile.show_on_map ?? true,
-        });
-      }
-
-      setLoading(false);
     }
     init();
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -160,7 +193,55 @@ function ProfileSettingsInner() {
 
   if (loading) {
     return (
-      <div className="text-center py-12 text-text-mute text-sm">読み込み中...</div>
+      <div className="text-center py-12 space-y-4">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-xs text-text-mute">{loadingStep}</p>
+        <button
+          type="button"
+          onClick={async () => {
+            const supabase = createClient();
+            await supabase.auth.signOut();
+            sessionStorage.clear();
+            localStorage.clear();
+            window.location.href = "/login";
+          }}
+          className="text-xs text-accent underline mt-4"
+        >
+          もう一度ログインしなおす
+        </button>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="text-center py-12 space-y-3">
+        <p className="text-4xl">⚠️</p>
+        <p className="text-sm font-medium">読み込みに失敗しました</p>
+        <p className="text-xs text-text-mute break-all px-4">{loadError}</p>
+        <div className="space-y-2 pt-2">
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="block mx-auto text-sm text-accent underline"
+          >
+            もう一度試す
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              const supabase = createClient();
+              await supabase.auth.signOut();
+              sessionStorage.clear();
+              localStorage.clear();
+              window.location.href = "/login";
+            }}
+            className="block mx-auto text-xs text-text-mute underline"
+          >
+            セッションをクリアしてログインしなおす
+          </button>
+        </div>
+      </div>
     );
   }
 
