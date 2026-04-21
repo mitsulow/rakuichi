@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -14,23 +15,43 @@ export async function GET(request: Request) {
     );
   }
 
+  // Prepare the response up front so we can attach cookies to it
+  const response = NextResponse.redirect(`${origin}/feed`);
+
   if (code) {
-    const supabase = await createClient();
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll().map(({ name, value }) => ({ name, value }));
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              // Set on both the incoming cookie store (for this request) and the outgoing response
+              try {
+                cookieStore.set(name, value, options);
+              } catch {
+                // ignore
+              }
+              response.cookies.set(name, value, options);
+            });
+          },
+        },
+      }
+    );
+
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
       return NextResponse.redirect(
         `${origin}/login?error=${encodeURIComponent(error.message)}`
       );
     }
-    // Success
-    return NextResponse.redirect(`${origin}/feed`);
+    return response;
   }
 
-  // No code and no error — just bounce to feed (session may already be set) or login
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (session) return NextResponse.redirect(`${origin}/feed`);
+  // No code at all — bounce back to login
   return NextResponse.redirect(`${origin}/login`);
 }
