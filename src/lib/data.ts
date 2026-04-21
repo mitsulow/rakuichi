@@ -765,24 +765,81 @@ export const SHOPS_PAGE_SIZE = 20;
 export async function fetchAllShops(
   category?: string | null,
   page = 0,
-  pageSize = SHOPS_PAGE_SIZE
+  pageSize = SHOPS_PAGE_SIZE,
+  prefectures?: string[] | null
 ) {
   const supabase = createClient();
   const from = page * pageSize;
   const to = from + pageSize - 1;
 
+  // If we need to filter by prefectures, use inner join so Supabase can filter on joined column
+  const select = prefectures && prefectures.length > 0
+    ? "*, owner:profiles!shops_owner_id_fkey!inner(*)"
+    : "*, owner:profiles!shops_owner_id_fkey(*)";
+
   let query = supabase
     .from("shops")
-    .select("*, owner:profiles!shops_owner_id_fkey(*)", { count: "exact" })
+    .select(select, { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
   if (category) query = query.eq("category", category);
+  if (prefectures && prefectures.length > 0) {
+    query = query.in("owner.prefecture", prefectures);
+  }
   const { data, error, count } = await query;
   if (error) {
     console.error("fetchAllShops error:", error.message);
     return { shops: [], total: 0 };
   }
   return { shops: data ?? [], total: count ?? 0 };
+}
+
+/**
+ * Fetch posts (情緒) with owner prefecture filter + pagination.
+ */
+export const POSTS_PAGE_SIZE = 20;
+
+export async function fetchPostsPaged(
+  page = 0,
+  pageSize = POSTS_PAGE_SIZE,
+  prefectures?: string[] | null,
+  random = false
+) {
+  const supabase = createClient();
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
+  const select = prefectures && prefectures.length > 0
+    ? "*, profile:profiles!inner(*)"
+    : "*, profile:profiles(*)";
+
+  let query = supabase
+    .from("posts")
+    .select(select, { count: "exact" });
+
+  if (prefectures && prefectures.length > 0) {
+    query = query.in("profile.prefecture", prefectures);
+  }
+
+  // Random or chronological
+  if (!random) {
+    query = query.order("created_at", { ascending: false }).range(from, to);
+  } else {
+    // Supabase doesn't have ORDER BY RANDOM() in the HTTP API; approximate by
+    // fetching a bigger chunk and shuffling client-side.
+    query = query.order("created_at", { ascending: false }).limit(100);
+  }
+
+  const { data, error, count } = await query;
+  if (error) {
+    console.error("fetchPostsPaged error:", error.message);
+    return { posts: [], total: 0 };
+  }
+  let rows = (data ?? []) as unknown[];
+  if (random) {
+    rows = [...rows].sort(() => Math.random() - 0.5).slice(0, pageSize);
+  }
+  return { posts: rows, total: count ?? rows.length };
 }
 
 export async function deleteShop(shopId: string) {

@@ -5,10 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
-import { CategoryTag } from "@/components/ui/CategoryTag";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { WeeklyMarket } from "@/components/feed/WeeklyMarket";
 import { WelcomeBanner } from "@/components/feed/WelcomeBanner";
+import {
+  RegionFilter,
+  regionToPrefectures,
+  type RegionScope,
+} from "@/components/feed/RegionFilter";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { fetchAllShops, SHOPS_PAGE_SIZE } from "@/lib/data";
 import { getCached, setCached } from "@/lib/cache";
@@ -20,12 +24,12 @@ interface ShopWithOwner extends Shop {
 }
 
 /**
- * 屋台 — the main landing page. A marketplace of all shops (屋台) across
- * the site, newest first. Acts as the "showcase" where users scroll through
- * what everyone is offering / trading.
+ * 楽座 — the main landing page. A marketplace of all 楽座 across the site.
+ * Scope filter (自分の県 / 日本全体 / 全世界 / 地方) + category filter.
  */
 export default function FeedPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const [scope, setScope] = useState<RegionScope>({ kind: "japan" });
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [shops, setShops] = useState<ShopWithOwner[]>(() => {
     if (typeof window === "undefined") return [];
@@ -40,7 +44,16 @@ export default function FeedPage() {
   const [total, setTotal] = useState(0);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Reset + fetch first page whenever category changes
+  // Auto-set "my prefecture" default once the profile loads, if they have one
+  useEffect(() => {
+    if (profile?.prefecture && scope.kind === "japan") {
+      // First-time default for logged-in users with a pref set: show their pref
+      setScope({ kind: "mine", prefecture: profile.prefecture });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.prefecture]);
+
+  // Reset + fetch whenever scope or category changes
   useEffect(() => {
     let cancelled = false;
     const failsafe = setTimeout(() => {
@@ -49,14 +62,22 @@ export default function FeedPage() {
 
     setLoading(true);
     setPage(0);
+    const prefectures = regionToPrefectures(scope);
 
     (async () => {
       try {
-        const { shops: list, total } = await fetchAllShops(selectedCategory, 0);
+        const { shops: list, total } = await fetchAllShops(
+          selectedCategory,
+          0,
+          SHOPS_PAGE_SIZE,
+          prefectures
+        );
         if (cancelled) return;
         setShops(list as ShopWithOwner[]);
         setTotal(total);
-        if (!selectedCategory) setCached("feed:shops", list);
+        if (!selectedCategory && scope.kind === "japan") {
+          setCached("feed:shops", list);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -66,7 +87,7 @@ export default function FeedPage() {
       cancelled = true;
       clearTimeout(failsafe);
     };
-  }, [selectedCategory]);
+  }, [scope, selectedCategory]);
 
   const canLoadMore = shops.length < total;
 
@@ -74,13 +95,18 @@ export default function FeedPage() {
     if (loadingMore || !canLoadMore) return;
     setLoadingMore(true);
     const nextPage = page + 1;
-    const { shops: more } = await fetchAllShops(selectedCategory, nextPage);
+    const prefectures = regionToPrefectures(scope);
+    const { shops: more } = await fetchAllShops(
+      selectedCategory,
+      nextPage,
+      SHOPS_PAGE_SIZE,
+      prefectures
+    );
     setShops((prev) => [...prev, ...(more as ShopWithOwner[])]);
     setPage(nextPage);
     setLoadingMore(false);
-  }, [loadingMore, canLoadMore, page, selectedCategory]);
+  }, [loadingMore, canLoadMore, page, selectedCategory, scope]);
 
-  // Infinite scroll via IntersectionObserver
   useEffect(() => {
     if (!sentinelRef.current || !canLoadMore) return;
     const el = sentinelRef.current;
@@ -94,13 +120,9 @@ export default function FeedPage() {
     return () => observer.disconnect();
   }, [canLoadMore, loadMore, shops.length]);
 
-  const filtered = shops;
-
   return (
     <div className="space-y-4">
       <WelcomeBanner />
-
-      {/* Weekly market banner */}
       <WeeklyMarket />
 
       {/* Edo-style noren header */}
@@ -118,15 +140,68 @@ export default function FeedPage() {
             className="text-lg font-bold text-white tracking-widest"
             style={{ textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}
           >
-            🏮 屋 台 🏮
+            🏮 楽 座 🏮
           </h1>
         </div>
-        <p className="text-[11px] text-text-mute text-center mt-1">
-          今 {shops.length}軒 並んでいます
-        </p>
       </div>
 
-      {/* Prominent "自分も出店" CTA — always visible */}
+      {/* Region scope filter */}
+      <div>
+        <div className="text-[10px] text-text-mute mb-1.5 px-1">地域</div>
+        <RegionFilter
+          scope={scope}
+          onChange={setScope}
+          userPrefecture={profile?.prefecture ?? null}
+        />
+      </div>
+
+      {/* Category filter */}
+      <div>
+        <div className="text-[10px] text-text-mute mb-1.5 px-1">ジャンル</div>
+        <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pb-1">
+          <button
+            onClick={() => setSelectedCategory(null)}
+            className={`px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors ${
+              !selectedCategory
+                ? "bg-accent text-white"
+                : "bg-card text-text-sub border border-border"
+            }`}
+          >
+            すべて
+          </button>
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() =>
+                setSelectedCategory(selectedCategory === cat.id ? null : cat.id)
+              }
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors ${
+                selectedCategory === cat.id
+                  ? "bg-accent text-white"
+                  : "bg-card text-text-sub border border-border"
+              }`}
+            >
+              <span>{cat.emoji}</span>
+              <span>{cat.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Count + 出す button */}
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] text-text-mute">
+          今 {total}座 並んでいます
+        </p>
+        <Link
+          href={user ? "/settings/shops" : "/login"}
+          className="text-xs text-accent no-underline font-medium"
+        >
+          + 自分も楽座を出す
+        </Link>
+      </div>
+
+      {/* Prominent "自分も楽座を出す" CTA */}
       <Link
         href={user ? "/settings/shops" : "/login"}
         className="block no-underline group"
@@ -147,7 +222,7 @@ export default function FeedPage() {
             </div>
             <div className="flex-1">
               <div className="text-base font-bold text-text">
-                自分も屋台を出す
+                自分も楽座を出す
               </div>
               <div className="text-xs text-text-sub mt-0.5">
                 {user
@@ -160,64 +235,33 @@ export default function FeedPage() {
         </div>
       </Link>
 
-      {/* Category filter */}
-      <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pb-1">
-        <button
-          onClick={() => setSelectedCategory(null)}
-          className={`px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors ${
-            !selectedCategory
-              ? "bg-accent text-white"
-              : "bg-card text-text-sub border border-border"
-          }`}
-        >
-          すべて
-        </button>
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() =>
-              setSelectedCategory(selectedCategory === cat.id ? null : cat.id)
-            }
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors ${
-              selectedCategory === cat.id
-                ? "bg-accent text-white"
-                : "bg-card text-text-sub border border-border"
-            }`}
-          >
-            <span>{cat.emoji}</span>
-            <span>{cat.label}</span>
-          </button>
-        ))}
-      </div>
-
       {/* Shops showcase — 2-column grid */}
       {loading ? (
-        <LoadingScreen step="屋台を読み込み中..." />
-      ) : filtered.length === 0 ? (
+        <LoadingScreen step="楽座を読み込み中..." />
+      ) : shops.length === 0 ? (
         <div className="text-center py-12 text-text-mute">
           <p className="text-4xl mb-3">🏪</p>
           <p className="text-sm">
-            {selectedCategory ? "このジャンルの屋台はまだありません" : "まだ屋台が出ていません"}
+            このエリア・ジャンルの楽座はまだありません
           </p>
           <p className="text-xs mt-1">
-            {user ? "最初の屋台を出してみよう" : "登録して最初の屋台を出そう"}
+            {user ? "最初の楽座を出してみよう" : "登録して最初の楽座を出そう"}
           </p>
         </div>
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3">
-            {filtered.map((shop) => (
+            {shops.map((shop) => (
               <ShopCard key={shop.id} shop={shop} />
             ))}
           </div>
 
-          {/* Infinite scroll sentinel + fallback button */}
           {canLoadMore && (
             <div ref={sentinelRef} className="py-6 text-center">
               {loadingMore ? (
                 <div className="inline-flex items-center gap-2 text-xs text-text-mute">
                   <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-                  次の屋台を読み込み中...
+                  次の楽座を読み込み中...
                 </div>
               ) : (
                 <button
@@ -231,7 +275,7 @@ export default function FeedPage() {
           )}
           {!canLoadMore && shops.length >= SHOPS_PAGE_SIZE && (
             <p className="text-center text-[10px] text-text-mute py-4">
-              🏮 すべての屋台を表示しました（全{total}件）
+              🏮 すべての楽座を表示しました（全{total}件）
             </p>
           )}
         </>
@@ -247,7 +291,6 @@ function ShopCard({ shop }: { shop: ShopWithOwner }) {
   return (
     <Link href={`/shop/${shop.id}`} className="no-underline block">
       <Card className="!p-0 overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col">
-        {/* Image with title overlay on top */}
         <div className="relative aspect-square overflow-hidden bg-bg">
           {image ? (
             <img
@@ -267,7 +310,6 @@ function ShopCard({ shop }: { shop: ShopWithOwner }) {
             </div>
           )}
 
-          {/* Dark gradient at top for title legibility */}
           <div
             className="absolute top-0 left-0 right-0 p-2.5 pb-6 pointer-events-none"
             style={{
@@ -287,7 +329,6 @@ function ShopCard({ shop }: { shop: ShopWithOwner }) {
             </div>
           </div>
 
-          {/* Owner avatar — separate tap target in corner */}
           {shop.owner && (
             <button
               type="button"
@@ -309,7 +350,6 @@ function ShopCard({ shop }: { shop: ShopWithOwner }) {
           )}
         </div>
 
-        {/* Compact info strip */}
         <div className="px-2.5 py-2 flex items-center justify-between gap-1">
           <div className="text-xs font-bold text-accent truncate">
             {shop.is_trial

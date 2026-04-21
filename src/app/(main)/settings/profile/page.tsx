@@ -500,7 +500,7 @@ function ProfileSettingsInner() {
                   🗺 マップにMY座を表示する
                 </div>
                 <div className="text-xs text-text-mute mt-0.5">
-                  あなたの都道府県のマップ上に、あなたの屋台が表示されます。
+                  あなたの都道府県のマップ上に、あなたの楽座が表示されます。
                   オフにすると非表示になります。
                 </div>
               </div>

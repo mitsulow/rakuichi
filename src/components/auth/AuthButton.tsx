@@ -107,7 +107,7 @@ export function AuthButton() {
             onClick={() => setMenuOpen(false)}
             className="block px-4 py-2.5 text-sm text-text hover:bg-bg no-underline"
           >
-            🏪 MY屋台
+            🏪 MY楽座
           </Link>
           <button
             onClick={async () => {

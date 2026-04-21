@@ -25,10 +25,10 @@ function WelcomeBannerInner() {
           <div className="flex-1">
             <h2 className="text-sm font-bold mb-1">MY座が整いました！</h2>
             <p className="text-xs text-text-sub leading-relaxed">
-              これで屋台を出したり、情緒を投げたり、
+              これで楽座を出したり、情緒を投げたり、
               他の座の民と交流できます。
               <br />
-              まずは最初の屋台を出してみよう。
+              まずは最初の楽座を出してみよう。
             </p>
           </div>
           <button

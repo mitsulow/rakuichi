@@ -6,7 +6,7 @@ import { Logo } from "./Logo";
 import { AuthButton } from "@/components/auth/AuthButton";
 
 const tabs = [
-  { href: "/feed", label: "屋台", emoji: "🏪" },
+  { href: "/feed", label: "楽座", emoji: "🏪" },
   { href: "/map", label: "マップ", emoji: "🗾" },
   { href: "/posts", label: "情緒", emoji: "💭" },
   { href: "/rankings", label: "ランキング", emoji: "🏮" },

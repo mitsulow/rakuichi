@@ -87,7 +87,7 @@ export default function SearchPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-bold">🏪 屋台を探す</h1>
+      <h1 className="text-lg font-bold">🏪 楽座を探す</h1>
 
       {/* Search bar */}
       <div className="relative">
@@ -148,13 +148,13 @@ export default function SearchPage() {
 
       {/* Results */}
       {loading ? (
-        <LoadingScreen step="屋台を読み込み中..." />
+        <LoadingScreen step="楽座を読み込み中..." />
       ) : filtered.length === 0 ? (
         <div className="text-center py-12 text-text-mute">
           <p className="text-4xl mb-3">🌱</p>
-          <p className="text-sm">まだ屋台がここに並んでいません</p>
+          <p className="text-sm">まだ楽座がここに並んでいません</p>
           <p className="text-xs mt-2">
-            あなたが最初の屋台を出してみませんか？
+            あなたが最初の楽座を出してみませんか？
           </p>
         </div>
       ) : grouped ? (

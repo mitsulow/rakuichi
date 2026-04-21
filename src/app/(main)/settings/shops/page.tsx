@@ -82,13 +82,13 @@ export default function ShopsSettingsPage() {
   };
 
   const handleDelete = async (shopId: string) => {
-    if (!confirm("この屋台を閉じますか？")) return;
+    if (!confirm("この楽座を閉じますか？")) return;
     await deleteShop(shopId);
     await refresh();
   };
 
   if (loading) {
-    return <LoadingScreen step="MY屋台を読み込み中..." />;
+    return <LoadingScreen step="MY楽座を読み込み中..." />;
   }
 
   if (mode === "create" || (mode === "edit" && editingShop)) {
@@ -119,7 +119,7 @@ export default function ShopsSettingsPage() {
         >
           ←
         </button>
-        <h1 className="text-lg font-bold flex-1">🏪 MY屋台</h1>
+        <h1 className="text-lg font-bold flex-1">🏪 MY楽座</h1>
         <Button variant="primary" size="sm" onClick={() => setMode("create")}>
           + 新しく出す
         </Button>
@@ -129,7 +129,7 @@ export default function ShopsSettingsPage() {
         <Card>
           <div className="text-center py-8">
             <div className="text-4xl mb-2">🌱</div>
-            <p className="text-sm text-text-sub mb-1">まだ屋台を出していません</p>
+            <p className="text-sm text-text-sub mb-1">まだ楽座を出していません</p>
             <p className="text-xs text-text-mute mb-4">
               値段をつける自信がなくても大丈夫。
               <br />
@@ -278,7 +278,7 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
           ←
         </button>
         <h1 className="text-lg font-bold">
-          {initial ? "✏️ 屋台を編集" : "🏪 新しい屋台を出す"}
+          {initial ? "✏️ 楽座を編集" : "🏪 新しい楽座を出す"}
         </h1>
       </div>
 
@@ -330,7 +330,7 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
       <Card>
         <div className="space-y-3">
           <div>
-            <label className="text-xs text-text-mute block mb-1">屋台の名前</label>
+            <label className="text-xs text-text-mute block mb-1">楽座の名前</label>
             <input
               type="text"
               value={form.name}
@@ -445,7 +445,7 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
           disabled={!form.name.trim() || saving}
           className="flex-1"
         >
-          {saving ? "出店中..." : initial ? "保存する" : "🏪 屋台を出す"}
+          {saving ? "出店中..." : initial ? "保存する" : "🏪 楽座を出す"}
         </Button>
       </div>
     </form>

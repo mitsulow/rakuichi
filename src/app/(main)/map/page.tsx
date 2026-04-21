@@ -135,7 +135,7 @@ export default function MapPage() {
             setTab("village");
             setCategoryFilter(null);
           }}
-          label="座の民の屋台"
+          label="座の民の楽座"
           emoji="🏡"
         />
         <TabButton

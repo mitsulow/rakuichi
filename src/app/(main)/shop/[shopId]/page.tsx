@@ -44,7 +44,7 @@ export default function ShopDetailPage({
   }, [shopId]);
 
   if (loading) {
-    return <LoadingScreen step="屋台の詳細を読み込み中..." />;
+    return <LoadingScreen step="楽座の詳細を読み込み中..." />;
   }
 
   if (!shop) {
@@ -217,7 +217,7 @@ export default function ShopDetailPage({
               disabled={contacting}
               className="w-full shadow-lg"
             >
-              {contacting ? "準備中..." : "💬 この屋台の店主に連絡する"}
+              {contacting ? "準備中..." : "💬 この楽座の店主に連絡する"}
             </Button>
           </div>
         )}
@@ -226,7 +226,7 @@ export default function ShopDetailPage({
           <div className="space-y-2">
             <Link href="/settings/shops" className="block no-underline">
               <Button variant="secondary" size="lg" className="w-full">
-                ✏️ この屋台を編集
+                ✏️ この楽座を編集
               </Button>
             </Link>
             <button
@@ -247,7 +247,7 @@ export default function ShopDetailPage({
               }}
               className="w-full text-center text-xs text-red-500 underline py-2"
             >
-              🗑 この屋台を閉じる（削除）
+              🗑 この楽座を閉じる（削除）
             </button>
           </div>
         )}

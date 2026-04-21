@@ -1,23 +1,32 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
-interface AuthContextValue {
-  user: User | null;
-  loading: boolean;
+interface MiniProfile {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  prefecture: string | null;
 }
 
-const AuthContext = createContext<AuthContextValue>({ user: null, loading: true });
+interface AuthContextValue {
+  user: User | null;
+  profile: MiniProfile | null;
+  loading: boolean;
+  refreshProfile: () => Promise<void>;
+}
 
-/**
- * Global auth state. Mounted once in the root layout so session is shared
- * across page navigations without re-querying on every mount.
- */
+const AuthContext = createContext<AuthContextValue>({
+  user: null,
+  profile: null,
+  loading: true,
+  refreshProfile: async () => {},
+});
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Try to hydrate from localStorage on first render so content matches
-  // the user's actual state even before getSession() resolves.
   const [user, setUser] = useState<User | null>(() => {
     if (typeof window === "undefined") return null;
     try {
@@ -27,38 +36,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return null;
     }
   });
+  const [profile, setProfile] = useState<MiniProfile | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const cached = localStorage.getItem("rakuichi:cachedProfile");
+      return cached ? (JSON.parse(cached) as MiniProfile) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
+
+  const fetchAndSetProfile = useCallback(async (u: User | null) => {
+    if (!u) {
+      setProfile(null);
+      try {
+        localStorage.removeItem("rakuichi:cachedProfile");
+      } catch {}
+      return;
+    }
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, username, display_name, avatar_url, prefecture")
+      .eq("id", u.id)
+      .single();
+    if (data) {
+      const p = data as MiniProfile;
+      setProfile(p);
+      try {
+        localStorage.setItem("rakuichi:cachedProfile", JSON.stringify(p));
+      } catch {}
+    }
+  }, []);
+
+  const refreshProfile = useCallback(async () => {
+    if (user) await fetchAndSetProfile(user);
+  }, [user, fetchAndSetProfile]);
 
   useEffect(() => {
     const supabase = createClient();
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const u = session?.user ?? null;
+    async function apply(u: User | null) {
       setUser(u);
       setLoading(false);
       try {
         if (u) localStorage.setItem("rakuichi:cachedUser", JSON.stringify(u));
         else localStorage.removeItem("rakuichi:cachedUser");
       } catch {}
+      await fetchAndSetProfile(u);
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      apply(session?.user ?? null);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      const u = session?.user ?? null;
-      setUser(u);
-      setLoading(false);
-      try {
-        if (u) localStorage.setItem("rakuichi:cachedUser", JSON.stringify(u));
-        else localStorage.removeItem("rakuichi:cachedUser");
-      } catch {}
+      apply(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [fetchAndSetProfile]);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, profile, loading, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
