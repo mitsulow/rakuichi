@@ -6,12 +6,13 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { fetchUnreadMessageCount } from "@/lib/data";
+import { EdoIcon, type EdoIconName } from "@/components/ui/EdoIcon";
 
-const staticTabs = [
-  { href: "/feed", label: "楽座", emoji: "🏪" },
-  { href: "/map", label: "マップ", emoji: "🗾" },
-  { href: "/posts", label: "情緒", emoji: "💭" },
-  { href: "/chat", label: "文", emoji: "💬" },
+const staticTabs: Array<{ href: string; label: string; icon: EdoIconName }> = [
+  { href: "/feed", label: "楽座", icon: "rakuza" },
+  { href: "/map", label: "マップ", icon: "map" },
+  { href: "/posts", label: "情緒", icon: "joucho" },
+  { href: "/chat", label: "文", icon: "fumi" },
 ];
 
 export function BottomNav() {
@@ -84,7 +85,10 @@ export function BottomNav() {
     fetchUnreadMessageCount(user.id).then(setUnreadCount);
   }, [pathname, user]);
 
-  const tabs = [...staticTabs, { href: myHref, label: "マイページ", emoji: "🪞" }];
+  const tabs: Array<{ href: string; label: string; icon: EdoIconName }> = [
+    ...staticTabs,
+    { href: myHref, label: "マイページ", icon: "mypage" },
+  ];
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border">
@@ -103,8 +107,8 @@ export function BottomNav() {
                 isActive ? "text-accent" : "text-text-mute"
               }`}
             >
-              <span className="text-lg relative">
-                {tab.emoji}
+              <span className="relative inline-flex items-center justify-center">
+                <EdoIcon name={tab.icon} size={22} />
                 {showBadge && (
                   <span
                     className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-md"

@@ -4,13 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
 import { AuthButton } from "@/components/auth/AuthButton";
+import { EdoIcon, type EdoIconName } from "@/components/ui/EdoIcon";
 
-const tabs = [
-  { href: "/feed", label: "楽座", emoji: "🏪" },
-  { href: "/map", label: "マップ", emoji: "🗾" },
-  { href: "/posts", label: "情緒", emoji: "💭" },
-  { href: "/rankings", label: "ランキング", emoji: "🏮" },
-  { href: "/notifications", label: "お知らせ", emoji: "🔔" },
+const tabs: Array<{ href: string; label: string; icon: EdoIconName | null; emoji?: string }> = [
+  { href: "/feed", label: "楽座", icon: "rakuza" },
+  { href: "/map", label: "マップ", icon: "map" },
+  { href: "/posts", label: "情緒", icon: "joucho" },
+  { href: "/rankings", label: "ランキング", icon: null, emoji: "🏮" },
+  { href: "/notifications", label: "お知らせ", icon: null, emoji: "🔔" },
 ];
 
 export function Header() {
@@ -28,13 +29,18 @@ export function Header() {
                 <Link
                   key={tab.href}
                   href={tab.href}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors no-underline ${
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors no-underline inline-flex items-center gap-1.5 ${
                     isActive
                       ? "bg-accent-soft text-accent"
                       : "text-text-sub hover:text-text hover:bg-bg"
                   }`}
                 >
-                  {tab.emoji} {tab.label}
+                  {tab.icon ? (
+                    <EdoIcon name={tab.icon} size={16} />
+                  ) : (
+                    <span>{tab.emoji}</span>
+                  )}
+                  {tab.label}
                 </Link>
               );
             })}

@@ -1,13 +1,13 @@
 export const CATEGORIES = [
-  { id: "food", emoji: "🌾", label: "食", description: "自然栽培米、発酵食品、天然塩、無農薬野菜、手作り味噌、パン、お菓子" },
-  { id: "craft", emoji: "🎨", label: "手仕事", description: "絵画、陶器、アクセサリー、木工、染物、手編み、革製品、映像・デザイン・プログラミング" },
-  { id: "body", emoji: "💆", label: "からだ", description: "整体、マッサージ、鍼灸、ヨガ、気功、呼吸法" },
-  { id: "mind", emoji: "🌿", label: "こころ", description: "占い、カウンセリング、スピリチュアル、瞑想指導、エネルギーワーク" },
-  { id: "expression", emoji: "🎵", label: "表現", description: "音楽、歌、ダンス、演劇、DJ、詩" },
-  { id: "learning", emoji: "📚", label: "学び", description: "講座、ワークショップ、コーチング、オンライン講座" },
-  { id: "living", emoji: "🏡", label: "暮らし", description: "家、土地、DIY、農業指導、暮らしの相談" },
+  { id: "food", emoji: "🍙", label: "食", description: "自然栽培米、発酵食品、天然塩、無農薬野菜、手作り味噌、パン、お菓子" },
+  { id: "craft", emoji: "🪡", label: "手仕事", description: "絵画、陶器、アクセサリー、木工、染物、手編み、革製品、映像・デザイン・プログラミング" },
+  { id: "body", emoji: "🧘", label: "からだ", description: "整体、マッサージ、鍼灸、ヨガ、気功、呼吸法" },
+  { id: "mind", emoji: "🪷", label: "こころ", description: "占い、カウンセリング、スピリチュアル、瞑想指導、エネルギーワーク" },
+  { id: "expression", emoji: "🎭", label: "表現", description: "音楽、歌、ダンス、演劇、DJ、詩" },
+  { id: "learning", emoji: "🖋", label: "学び", description: "講座、ワークショップ、コーチング、オンライン講座" },
+  { id: "living", emoji: "⛩", label: "暮らし", description: "家、土地、DIY、農業指導、暮らしの相談" },
   { id: "moon", emoji: "🌙", label: "月と自然", description: "ツキヨガ、シューマン音©、月相に関わる活動、純正律、自然観察" },
-  { id: "kids", emoji: "🍼", label: "こどもと", description: "助産、保育、子育て支援、子ども服" },
+  { id: "kids", emoji: "🎋", label: "こどもと", description: "助産、保育、子育て支援、子ども服" },
 ] as const;
 
 export type CategoryId = (typeof CATEGORIES)[number]["id"];

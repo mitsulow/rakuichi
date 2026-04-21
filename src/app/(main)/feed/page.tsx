@@ -125,7 +125,7 @@ export default function FeedPage() {
       {/* Edo-style noren header */}
       <div className="relative">
         <div
-          className="text-center py-3 px-4"
+          className="text-center py-3 px-4 flex items-center justify-center gap-3"
           style={{
             background:
               "linear-gradient(180deg, #c94d3a 0%, #c94d3a 75%, transparent 100%)",
@@ -133,12 +133,14 @@ export default function FeedPage() {
               "polygon(0 0, 100% 0, 100% 75%, 95% 85%, 85% 75%, 75% 85%, 65% 75%, 55% 85%, 45% 75%, 35% 85%, 25% 75%, 15% 85%, 5% 75%, 0 85%)",
           }}
         >
+          <span style={{ fontSize: 22 }}>🏮</span>
           <h1
             className="text-lg font-bold text-white tracking-widest"
             style={{ textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}
           >
-            🏮 楽 座 🏮
+            楽 座
           </h1>
+          <span style={{ fontSize: 22 }}>🏮</span>
         </div>
       </div>
 
