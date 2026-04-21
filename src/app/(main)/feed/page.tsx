@@ -16,6 +16,7 @@ import {
 } from "@/components/feed/RegionFilter";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { fetchAllShops, SHOPS_PAGE_SIZE } from "@/lib/data";
+import { EdoIcon } from "@/components/ui/EdoIcon";
 import { getCached, setCached } from "@/lib/cache";
 import { CATEGORIES } from "@/lib/constants";
 import type { Shop, Profile } from "@/lib/types";
@@ -210,10 +211,10 @@ export default function FeedPage() {
         >
           <div className="flex items-center gap-3 p-4">
             <div
-              className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 text-2xl"
+              className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 text-white"
               style={{ background: "#c94d3a" }}
             >
-              🏪
+              <EdoIcon name="rakuza" size={28} color="#ffffff" />
             </div>
             <div className="flex-1">
               <div className="text-base font-bold text-text">
@@ -235,7 +236,9 @@ export default function FeedPage() {
         <LoadingScreen step="楽座を読み込み中..." />
       ) : shops.length === 0 ? (
         <div className="text-center py-12 text-text-mute">
-          <p className="text-4xl mb-3">🏪</p>
+          <div className="flex justify-center mb-3 text-accent">
+            <EdoIcon name="rakuza" size={48} />
+          </div>
           <p className="text-sm">
             このエリア・ジャンルの楽座はまだありません
           </p>
@@ -295,13 +298,13 @@ function ShopCard({ shop }: { shop: ShopWithOwner }) {
             />
           ) : (
             <div
-              className="w-full h-full flex items-center justify-center text-4xl"
+              className="w-full h-full flex items-center justify-center text-white"
               style={{
                 background:
                   "linear-gradient(135deg, #c94d3a 0%, #d4a043 50%, #5a7d4a 100%)",
               }}
             >
-              🏪
+              <EdoIcon name="rakuza" size={48} color="#ffffff" />
             </div>
           )}
 

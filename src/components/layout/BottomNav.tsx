@@ -8,11 +8,18 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { fetchUnreadMessageCount } from "@/lib/data";
 import { EdoIcon, type EdoIconName } from "@/components/ui/EdoIcon";
 
-const staticTabs: Array<{ href: string; label: string; icon: EdoIconName }> = [
+type Tab = {
+  href: string;
+  label: string;
+  icon?: EdoIconName;
+  emoji?: string;
+};
+
+const staticTabs: Tab[] = [
   { href: "/feed", label: "楽座", icon: "rakuza" },
   { href: "/map", label: "マップ", icon: "map" },
-  { href: "/posts", label: "情緒", icon: "joucho" },
-  { href: "/chat", label: "文", icon: "fumi" },
+  { href: "/posts", label: "情緒", emoji: "💭" },
+  { href: "/chat", label: "文", emoji: "💬" },
 ];
 
 export function BottomNav() {
@@ -85,7 +92,7 @@ export function BottomNav() {
     fetchUnreadMessageCount(user.id).then(setUnreadCount);
   }, [pathname, user]);
 
-  const tabs: Array<{ href: string; label: string; icon: EdoIconName }> = [
+  const tabs: Tab[] = [
     ...staticTabs,
     { href: myHref, label: "マイページ", icon: "mypage" },
   ];
@@ -108,7 +115,11 @@ export function BottomNav() {
               }`}
             >
               <span className="relative inline-flex items-center justify-center">
-                <EdoIcon name={tab.icon} size={22} />
+                {tab.icon ? (
+                  <EdoIcon name={tab.icon} size={22} />
+                ) : (
+                  <span className="text-lg">{tab.emoji}</span>
+                )}
                 {showBadge && (
                   <span
                     className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-md"
