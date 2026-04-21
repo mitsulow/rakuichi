@@ -78,44 +78,62 @@ export default function FeedPage() {
       {/* Weekly market banner */}
       <WeeklyMarket />
 
-      {/* Not logged in — invite to register */}
-      {!user && (
-        <Card className="!p-4 border-2 border-accent/30 bg-gradient-to-br from-accent/10 to-transparent">
-          <div className="text-center space-y-2">
-            <div className="text-3xl">🏮</div>
-            <h2 className="text-base font-bold">ようこそ、楽市楽座へ</h2>
-            <p className="text-xs text-text-sub">
-              自分の腕一本で、本当にやりたい仕事を。
-              <br />
-              まずは登録してMY屋台を出してみよう。
-            </p>
-            <a
-              href="/login"
-              className="inline-block mt-2 bg-accent text-white px-6 py-2.5 rounded-full text-sm font-medium no-underline"
-            >
-              🪞 登録する
-            </a>
-          </div>
-        </Card>
-      )}
-
-      {/* Section header */}
-      <div className="flex items-baseline justify-between">
-        <div>
-          <h1 className="text-lg font-bold">🏪 屋台</h1>
-          <p className="text-[11px] text-text-mute">
-            {shops.length}件の屋台が並んでいます
-          </p>
-        </div>
-        {user && (
-          <Link
-            href="/settings/shops"
-            className="text-xs text-accent no-underline font-medium"
+      {/* Edo-style noren header */}
+      <div className="relative">
+        <div
+          className="text-center py-3 px-4"
+          style={{
+            background:
+              "linear-gradient(180deg, #c94d3a 0%, #c94d3a 75%, transparent 100%)",
+            clipPath:
+              "polygon(0 0, 100% 0, 100% 75%, 95% 85%, 85% 75%, 75% 85%, 65% 75%, 55% 85%, 45% 75%, 35% 85%, 25% 75%, 15% 85%, 5% 75%, 0 85%)",
+          }}
+        >
+          <h1
+            className="text-lg font-bold text-white tracking-widest"
+            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}
           >
-            + 自分も出店
-          </Link>
-        )}
+            🏮 屋 台 🏮
+          </h1>
+        </div>
+        <p className="text-[11px] text-text-mute text-center mt-1">
+          今 {shops.length}軒 並んでいます
+        </p>
       </div>
+
+      {/* Prominent "自分も出店" CTA — always visible */}
+      <Link
+        href={user ? "/settings/shops" : "/login"}
+        className="block no-underline group"
+      >
+        <div
+          className="relative overflow-hidden rounded-2xl border-2 border-accent/40 shadow-sm hover:shadow-md transition-all"
+          style={{
+            background:
+              "linear-gradient(135deg, #f5e8d5 0%, #ffffff 50%, #f5e8d5 100%)",
+          }}
+        >
+          <div className="flex items-center gap-3 p-4">
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 text-2xl"
+              style={{ background: "#c94d3a" }}
+            >
+              🏪
+            </div>
+            <div className="flex-1">
+              <div className="text-base font-bold text-text">
+                自分も屋台を出す
+              </div>
+              <div className="text-xs text-text-sub mt-0.5">
+                {user
+                  ? "お試し出品（0円）もOK、物々交換もできる"
+                  : "登録して、あなたの腕で勝負する"}
+              </div>
+            </div>
+            <div className="text-accent text-xl">→</div>
+          </div>
+        </div>
+      </Link>
 
       {/* Category filter */}
       <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pb-1">

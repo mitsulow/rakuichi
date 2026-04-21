@@ -2,6 +2,7 @@ import Link from "next/link";
 
 interface LogoProps {
   size?: "sm" | "md" | "lg";
+  showTagline?: boolean;
 }
 
 /**
@@ -12,16 +13,16 @@ interface LogoProps {
  *   座     = 六角形
  * Colors rotate through the brand palette for rhythm.
  */
-export function Logo({ size = "md" }: LogoProps) {
-  const cell = size === "sm" ? 28 : size === "lg" ? 44 : 34;
-  const fontSize = size === "sm" ? 14 : size === "lg" ? 22 : 17;
+export function Logo({ size = "md", showTagline = true }: LogoProps) {
+  const cell = size === "sm" ? 26 : size === "lg" ? 44 : 32;
+  const fontSize = size === "sm" ? 13 : size === "lg" ? 22 : 16;
   const gap = size === "sm" ? 1 : 2;
 
   return (
     <Link
       href="/feed"
       className="no-underline inline-flex items-center select-none"
-      aria-label="楽市楽座"
+      aria-label="楽市楽座 ── 日本人総フリーランス化計画"
       style={{ gap }}
     >
       {/* 楽 — 丸 (vermilion) */}
@@ -98,6 +99,20 @@ export function Logo({ size = "md" }: LogoProps) {
           座
         </span>
       </span>
+
+      {/* Tagline — 日本人総フリーランス化計画 (never wraps) */}
+      {showTagline && (
+        <span
+          className="font-medium text-text-sub whitespace-nowrap"
+          style={{
+            fontSize: size === "sm" ? 9 : 10,
+            marginLeft: 6,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          日本人総フリーランス化計画
+        </span>
+      )}
     </Link>
   );
 }

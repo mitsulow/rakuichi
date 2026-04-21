@@ -55,83 +55,155 @@ export function MyzaStorefront({
             <img src={profile.cover_url} alt="" className="w-full h-full object-cover" />
           </div>
         ) : (
-          <div className="h-28 bg-gradient-to-br from-accent/20 via-accent/10 to-transparent" />
+          <div
+            className="h-28"
+            style={{
+              background:
+                "linear-gradient(135deg, #c94d3a 0%, #d4a043 50%, #5a7d4a 100%)",
+            }}
+          />
         )}
 
-        <div className="p-4 -mt-8 relative">
-
-        {/* Top row: Avatar + actions */}
-        <div className="flex items-start justify-between">
-          <Avatar src={profile.avatar_url} alt={profile.display_name} size="lg" />
-          <div className="flex gap-1">
-            <button
-              onClick={() => setShowQR(true)}
-              className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-sm hover:bg-bg"
-              title="QRコード"
-              aria-label="QRコード"
-            >
-              📱
-            </button>
-            {!isOwner && (
+        {/* Noren-style name banner overlapping the cover */}
+        <div className="px-4 -mt-10 relative">
+          <div className="flex items-end gap-3">
+            <div className="ring-4 ring-card rounded-full">
+              <Avatar
+                src={profile.avatar_url}
+                alt={profile.display_name}
+                size="xl"
+              />
+            </div>
+            <div className="flex gap-1 ml-auto mb-1">
               <button
-                onClick={() => setShowContact(true)}
-                className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-sm hover:bg-bg"
-                title="連絡"
-                aria-label="連絡"
+                onClick={() => setShowQR(true)}
+                className="w-9 h-9 rounded-full bg-white border border-border flex items-center justify-center text-sm hover:bg-bg shadow-sm"
+                title="QRコード"
+                aria-label="QRコード"
               >
-                💬
+                📱
               </button>
-            )}
+              {!isOwner && (
+                <button
+                  onClick={() => setShowContact(true)}
+                  className="w-9 h-9 rounded-full bg-white border border-border flex items-center justify-center text-sm hover:bg-bg shadow-sm"
+                  title="連絡"
+                  aria-label="連絡"
+                >
+                  💬
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Name */}
-        <div className="mt-2">
-          <h1 className="text-lg font-bold flex items-center gap-1.5 flex-wrap">
-            {profile.display_name}
-            {badges.length > 0 && <BadgeList badges={badges} />}
-          </h1>
-          {levelText && (
-            <p className="text-xs text-text-sub mt-0.5">{levelText}</p>
-          )}
-          {location && (
-            <p className="text-xs text-text-mute mt-0.5">📍 {location}</p>
-          )}
-        </div>
-
-        {/* SNS icon bar */}
-        {externalLinks.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {externalLinks.map((link) => (
-              <a
-                key={link.id}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full bg-white border border-border flex items-center justify-center hover:bg-bg-card hover:scale-105 transition-all no-underline"
-                title={getPlatformLabel(link.platform)}
-                aria-label={getPlatformLabel(link.platform)}
+        <div className="p-4 pt-3 relative">
+          {/* Name with hanko-style level badge */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl font-bold">{profile.display_name}</h1>
+            {profile.life_work_level && (
+              <span
+                className="inline-flex items-center justify-center text-[10px] font-bold text-white rounded-full"
+                style={{
+                  background: "#c94d3a",
+                  width: 32,
+                  height: 32,
+                  border: "2px solid #c94d3a",
+                  boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.6)",
+                  fontFamily: "serif",
+                }}
+                title={`レベル：${profile.life_work_level}`}
               >
-                <SnsIcon platform={link.platform} size={18} />
-              </a>
-            ))}
+                {profile.life_work_level === "一人前"
+                  ? "壱"
+                  : profile.life_work_level === "歩み中"
+                  ? "歩"
+                  : "修"}
+              </span>
+            )}
+            {badges.length > 0 && <BadgeList badges={badges} />}
           </div>
-        )}
 
-        {/* Status line */}
-        {profile.status_line && (
-          <div className="mt-3 bg-accent/5 border border-accent/20 rounded-xl px-3 py-2">
-            <p className="text-xs text-text-sub">
-              <span className="text-accent font-medium">今：</span>
-              {profile.status_line}
-            </p>
-          </div>
-        )}
+          {/* Life work — the BIG headline */}
+          {profile.life_work && (
+            <div className="mt-2">
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="text-[10px] text-text-mute tracking-widest">
+                  生業（なりわい）
+                </span>
+                <span className="text-base font-bold text-accent">
+                  {profile.life_work}
+                </span>
+                {profile.life_work_years != null && profile.life_work_years > 0 && (
+                  <span className="text-xs text-text-sub">
+                    {profile.life_work_years}年目
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
-        {/* Migration bar */}
-        <div className="mt-4">
-          <div className="text-xs text-text-mute mb-1.5">🌾 ライフワーク移行度</div>
-          <MigrationBar
+          {/* Location */}
+          {location && (
+            <p className="text-xs text-text-mute mt-1">📍 {location}</p>
+          )}
+
+          {/* SNS icon bar */}
+          {externalLinks.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {externalLinks.map((link) => (
+                <a
+                  key={link.id}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full bg-white border border-border flex items-center justify-center hover:bg-bg-card hover:scale-105 transition-all no-underline shadow-sm"
+                  title={getPlatformLabel(link.platform)}
+                  aria-label={getPlatformLabel(link.platform)}
+                >
+                  <SnsIcon platform={link.platform} size={18} />
+                </a>
+              ))}
+            </div>
+          )}
+
+          {/* Status — "今" */}
+          {profile.status_line && (
+            <div
+              className="mt-3 rounded-xl px-3 py-2.5 relative"
+              style={{
+                background: "linear-gradient(135deg, #fff9f0 0%, #fdf6e8 100%)",
+                border: "1px solid #d4a04340",
+              }}
+            >
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-[10px] font-bold text-white px-1.5 py-0.5 rounded mt-0.5 flex-shrink-0"
+                  style={{ background: "#d4a043" }}
+                >
+                  今
+                </span>
+                <p className="text-xs text-text-sub flex-1">
+                  {profile.status_line}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Migration bar — THE story, big and clear */}
+          <div
+            className="mt-4 p-3 rounded-xl"
+            style={{ background: "#f5e8d5" }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-text-sub">
+                🌾 ライスワーク → ライフワーク
+              </span>
+              <span className="text-lg font-bold text-accent">
+                {profile.migration_percent ?? 0}%
+              </span>
+            </div>
+            <MigrationBar
             percent={profile.migration_percent ?? 0}
             riceWork={profile.rice_work}
             lifeWork={profile.life_work}
