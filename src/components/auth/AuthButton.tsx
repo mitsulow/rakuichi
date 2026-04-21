@@ -52,7 +52,8 @@ export function AuthButton() {
     const supabase = createClient();
     await supabase.auth.signOut();
     router.refresh();
-    window.location.href = "/login";
+    // Go back to the market (public view) rather than forcing a login page
+    window.location.href = "/feed";
   };
 
   if (loading) {

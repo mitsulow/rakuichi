@@ -44,7 +44,18 @@ function LoginInner() {
           <p className="text-sm text-text-sub">
             AIの時代、自分の腕一本で。
           </p>
+          <p className="text-[11px] text-text-mute mt-1">
+            日本人総フリーランス化計画
+          </p>
         </div>
+
+        {/* Browse without login — primary CTA for first-time visitors */}
+        <a
+          href="/feed"
+          className="block text-sm text-accent font-medium underline"
+        >
+          👀 まず市場を眺めてみる →
+        </a>
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700 break-all text-left">
