@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { CategoryTag } from "@/components/ui/CategoryTag";
@@ -9,7 +10,7 @@ import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { WeeklyMarket } from "@/components/feed/WeeklyMarket";
 import { WelcomeBanner } from "@/components/feed/WelcomeBanner";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { fetchAllShops } from "@/lib/data";
+import { fetchAllShops, deleteShop } from "@/lib/data";
 import { getCached, setCached } from "@/lib/cache";
 import { CATEGORIES } from "@/lib/constants";
 import type { Shop, Profile } from "@/lib/types";
@@ -181,7 +182,18 @@ export default function FeedPage() {
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {filtered.map((shop) => (
-            <ShopCard key={shop.id} shop={shop} />
+            <ShopCard
+              key={shop.id}
+              shop={shop}
+              currentUserId={user?.id}
+              onDeleted={(shopId) => {
+                setShops((prev) => {
+                  const next = prev.filter((s) => s.id !== shopId);
+                  setCached("feed:shops", next);
+                  return next;
+                });
+              }}
+            />
           ))}
         </div>
       )}
@@ -189,11 +201,71 @@ export default function FeedPage() {
   );
 }
 
-function ShopCard({ shop }: { shop: ShopWithOwner }) {
+function ShopCard({
+  shop,
+  currentUserId,
+  onDeleted,
+}: {
+  shop: ShopWithOwner;
+  currentUserId?: string | null;
+  onDeleted?: (shopId: string) => void;
+}) {
+  const router = useRouter();
   const image = shop.image_urls?.[0];
+  const isOwner = currentUserId === shop.owner_id;
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressed = useRef(false);
+
+  const startLongPress = () => {
+    if (!isOwner) return;
+    longPressed.current = false;
+    longPressTimer.current = setTimeout(async () => {
+      longPressed.current = true;
+      // Haptic (if supported)
+      try {
+        (navigator as Navigator & { vibrate?: (n: number) => void }).vibrate?.(
+          20
+        );
+      } catch {}
+      const ok = confirm(`「${shop.name}」を閉じますか？`);
+      if (!ok) return;
+      const result = await deleteShop(shop.id);
+      if (result.error) {
+        alert(`削除に失敗: ${result.error}`);
+        return;
+      }
+      onDeleted?.(shop.id);
+    }, 550);
+  };
+
+  const cancelLongPress = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (longPressed.current) {
+      // Swallow the click that follows a long-press
+      e.preventDefault();
+      e.stopPropagation();
+      longPressed.current = false;
+    }
+  };
+
   return (
-    <Link href={`/shop/${shop.id}`} className="no-underline block">
-      <Card className="!p-0 overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col">
+    <Link
+      href={`/shop/${shop.id}`}
+      className="no-underline block select-none"
+      onClick={handleClick}
+      onContextMenu={(e) => isOwner && e.preventDefault()}
+      onPointerDown={startLongPress}
+      onPointerUp={cancelLongPress}
+      onPointerLeave={cancelLongPress}
+      onPointerCancel={cancelLongPress}
+    >
+      <Card className="!p-0 overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col relative">
         {/* Image with title overlay on top */}
         <div className="relative aspect-square overflow-hidden bg-bg">
           {image ? (
@@ -201,6 +273,7 @@ function ShopCard({ shop }: { shop: ShopWithOwner }) {
               src={image}
               alt={shop.name}
               className="w-full h-full object-cover"
+              draggable={false}
             />
           ) : (
             <div
@@ -216,7 +289,7 @@ function ShopCard({ shop }: { shop: ShopWithOwner }) {
 
           {/* Dark gradient at top for title legibility */}
           <div
-            className="absolute top-0 left-0 right-0 p-2.5 pb-6"
+            className="absolute top-0 left-0 right-0 p-2.5 pb-6 pointer-events-none"
             style={{
               background:
                 "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)",
@@ -234,6 +307,13 @@ function ShopCard({ shop }: { shop: ShopWithOwner }) {
             </div>
           </div>
 
+          {/* Mine hint (faint) — shows for owner */}
+          {isOwner && (
+            <div className="absolute top-1.5 right-1.5 bg-white/80 text-[9px] text-text-sub px-1.5 py-0.5 rounded-full pointer-events-none">
+              長押しで削除
+            </div>
+          )}
+
           {/* Owner avatar — separate tap target in corner */}
           {shop.owner && (
             <button
@@ -241,8 +321,9 @@ function ShopCard({ shop }: { shop: ShopWithOwner }) {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                window.location.href = `/u/${shop.owner!.username}`;
+                router.push(`/u/${shop.owner!.username}`);
               }}
+              onPointerDown={(e) => e.stopPropagation()}
               className="absolute bottom-1.5 left-1.5 ring-2 ring-white/80 rounded-full hover:scale-110 transition-transform"
               title={`${shop.owner.display_name}のMY座`}
               aria-label={`${shop.owner.display_name}のMY座へ`}
