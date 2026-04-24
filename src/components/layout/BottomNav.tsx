@@ -77,12 +77,15 @@ export function BottomNav() {
 
     // Refresh whenever route changes (cheap way to re-check after reading a chat)
     window.addEventListener("focus", refresh);
+    // Listen for in-app read events (fires when user opens a chat)
+    window.addEventListener("rakuichi:unreadRefresh", refresh);
 
     return () => {
       cancelled = true;
       clearInterval(interval);
       supabase.removeChannel(channel);
       window.removeEventListener("focus", refresh);
+      window.removeEventListener("rakuichi:unreadRefresh", refresh);
     };
   }, [user]);
 

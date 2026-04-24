@@ -966,39 +966,80 @@ export async function sendMessage(chatId: string, senderId: string, body: string
 }
 
 /**
- * Count unread messages for the current user — messages in chats they are
- * a member of, sent by someone else, still unread (read_at IS NULL).
+ * Count unread messages — messages newer than the user's locally-stored
+ * "last read" timestamp for each chat they're in, sent by someone else.
+ *
+ * Client-side tracking (via localStorage) so it works without requiring
+ * the server-side read_at UPDATE policy. Attempts the server update as a
+ * best-effort side-effect but doesn't depend on it.
  */
 export async function fetchUnreadMessageCount(userId: string): Promise<number> {
   const supabase = createClient();
-  // First get the user's chat ids
   const { data: memberships } = await supabase
     .from("chat_members")
-    .select("chat_id")
+    .select("chat_id, joined_at")
     .eq("user_id", userId);
-  const chatIds = (memberships ?? []).map((m) => m.chat_id);
-  if (chatIds.length === 0) return 0;
+  const rows = memberships ?? [];
+  if (rows.length === 0) return 0;
 
-  const { count } = await supabase
+  const chatIds = rows.map((m) => m.chat_id);
+  const joinedAt = new Map<string, string>(
+    rows.map((m) => [m.chat_id as string, m.joined_at as string])
+  );
+
+  // Pull recent incoming messages across all my chats
+  const { data: messages } = await supabase
     .from("messages")
-    .select("id", { count: "exact", head: true })
+    .select("chat_id, created_at")
     .in("chat_id", chatIds)
     .neq("sender_id", userId)
-    .is("read_at", null);
-  return count ?? 0;
+    .order("created_at", { ascending: false })
+    .limit(500);
+
+  if (!messages) return 0;
+
+  let count = 0;
+  for (const m of messages) {
+    const chatId = m.chat_id as string;
+    const createdAt = m.created_at as string;
+    let lastRead: string | null = null;
+    try {
+      lastRead = localStorage.getItem(`rakuichi:lastRead:${chatId}`);
+    } catch {
+      // storage blocked — treat as never-read, count will be high but not broken
+    }
+    const threshold = lastRead ?? joinedAt.get(chatId) ?? "1970-01-01";
+    if (createdAt > threshold) count++;
+  }
+  return count;
 }
 
 /**
- * Mark all messages in a chat from OTHER senders as read.
+ * Mark a chat as read — records a local timestamp (works without server UPDATE
+ * policy) and also best-effort updates the server if allowed.
  */
 export async function markChatRead(chatId: string, userId: string) {
+  try {
+    localStorage.setItem(
+      `rakuichi:lastRead:${chatId}`,
+      new Date().toISOString()
+    );
+  } catch {
+    // storage unavailable
+  }
+  // Also dispatch a custom event so BottomNav can refresh immediately
+  try {
+    window.dispatchEvent(new CustomEvent("rakuichi:unreadRefresh"));
+  } catch {}
+  // Best-effort server update; ignored if RLS blocks
   const supabase = createClient();
-  await supabase
+  supabase
     .from("messages")
     .update({ read_at: new Date().toISOString() })
     .eq("chat_id", chatId)
     .neq("sender_id", userId)
-    .is("read_at", null);
+    .is("read_at", null)
+    .then(() => {});
 }
 
 export async function fetchChatMembers(chatId: string) {
