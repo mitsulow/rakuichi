@@ -9,6 +9,7 @@ import { EmbedCard } from "./EmbedCard";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { SOCIAL_PLATFORMS } from "@/lib/constants";
 import { SnsIcon } from "@/components/ui/SnsIcon";
+import { useToast } from "@/components/ui/Toast";
 import type { Post, OGPEmbed } from "@/lib/types";
 import type { User } from "@supabase/supabase-js";
 
@@ -52,6 +53,7 @@ async function fetchOGP(url: string): Promise<OGPEmbed | null> {
 }
 
 export function PostComposer({ user, onPostCreated }: PostComposerProps) {
+  const toast = useToast();
   const [body, setBody] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
@@ -94,11 +96,12 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
     setIsSubmitting(false);
 
     if (result.error) {
-      alert(`情緒を投げられませんでした: ${result.error}`);
+      toast.show(`情緒を投げられませんでした: ${result.error}`, "error");
       return;
     }
     const newPost = result.post;
     if (newPost) {
+      toast.show("情緒を投げました", "success");
       const enrichedPost: Post = {
         ...newPost,
         profile: {
