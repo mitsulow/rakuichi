@@ -7,6 +7,7 @@ import { PostCard } from "@/components/feed/PostCard";
 import {
   RegionFilter,
   regionToPrefectures,
+  scopeLabel,
   type RegionScope,
 } from "@/components/feed/RegionFilter";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -128,14 +129,6 @@ export default function PostsPage() {
 
   return (
     <div className="space-y-3">
-      {/* Lightweight subtitle banner — paper-strip feel, not a heavy box */}
-      <p
-        className="text-center text-[12px] font-medium py-1"
-        style={{ color: "#c94d3a" }}
-      >
-        💭 店主たちのつぶやき
-      </p>
-
       {/* Composer first — Twitter-style "post here" at top */}
       {user ? (
         <PostComposer user={user} onPostCreated={handlePostCreated} />
@@ -172,9 +165,14 @@ export default function PostsPage() {
         </button>
       </div>
 
-      <p className="text-[11px] text-text-mute px-1">
-        {random ? "🎲 ランダムに並べてます" : `${total}件の情緒`}
-      </p>
+      <div className="flex items-center gap-2 text-[11px] text-text-mute px-1 py-1 border-t border-border">
+        <span className="font-medium">
+          {random ? "🎲 ランダム" : "🆕 新しい順"}
+        </span>
+        <span className="text-text-mute/40">／</span>
+        <span>{scopeLabel(scope)}</span>
+        <span className="ml-auto">{total}件</span>
+      </div>
 
       {/* Posts */}
       <div className="space-y-4">
