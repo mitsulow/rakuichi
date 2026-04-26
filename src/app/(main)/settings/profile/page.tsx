@@ -272,16 +272,30 @@ function ProfileSettingsInner() {
       </div>
 
       {isOnboarding && (
-        <Card className="border-2 border-accent/40 bg-accent/5">
-          <div className="text-sm space-y-1">
-            <p className="font-medium">まずはマイページを整えよう。</p>
-            <p className="text-text-sub text-xs">
-              これが「あなたの名刺」兼「お店」になります。
-              <br />
-              ライフワーク・都道府県・ステータスだけでも入れればOK。
-            </p>
-          </div>
-        </Card>
+        <div
+          className="rounded-2xl border-2 px-4 py-3"
+          style={{
+            borderColor: "#c94d3a40",
+            background:
+              "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 50%, #fdf6e9 100%)",
+          }}
+        >
+          <p
+            className="text-base font-bold leading-tight"
+            style={{ color: "#c94d3a" }}
+          >
+            🏮 まずはマイページを整えよう
+          </p>
+          <p className="text-xs text-text-sub mt-1.5 leading-relaxed">
+            これが「あなたの名刺」兼「楽座」になります。
+            <br />
+            ライフワーク・都道府県・ステータスだけでも入れればOK。
+            <br />
+            <span className="text-text-mute">
+              （後からいつでも編集できます）
+            </span>
+          </p>
+        </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
