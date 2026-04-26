@@ -19,12 +19,12 @@ const TYPE_META: Record<
   like: {
     emoji: "🌱",
     verb: "あなたの情緒に種をまきました",
-    targetPath: (n) => (n.target_id ? `/posts` : "/posts"),
+    targetPath: (n) => (n.target_id ? `/posts/${n.target_id}` : "/posts"),
   },
   comment: {
     emoji: "📜",
     verb: "あなたの情緒に文を寄せました",
-    targetPath: (n) => (n.target_id ? `/posts` : "/posts"),
+    targetPath: (n) => (n.target_id ? `/posts/${n.target_id}` : "/posts"),
   },
   callout_join: {
     emoji: "🤚",

@@ -227,10 +227,18 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled, 
             <span>📜</span>
             <span>{commentsCount}</span>
           </button>
+          <Link
+            href={`/posts/${post.id}`}
+            className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full text-text-sub hover:bg-bg transition-colors ml-auto no-underline"
+            title="この情緒を開く"
+          >
+            <span>🔗</span>
+            <span>個別表示</span>
+          </Link>
           <button
             type="button"
             onClick={async () => {
-              const url = `${window.location.origin}/u/${displayProfile.username}`;
+              const url = `${window.location.origin}/posts/${post.id}`;
               try {
                 if (navigator.share) {
                   await navigator.share({
@@ -247,7 +255,7 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled, 
               }
             }}
             title="シェア"
-            className="flex items-center gap-1 text-sm px-2.5 py-1 rounded-full text-text-sub hover:bg-bg transition-colors ml-auto"
+            className="flex items-center gap-1 text-sm px-2.5 py-1 rounded-full text-text-sub hover:bg-bg transition-colors"
           >
             <span>📤</span>
           </button>

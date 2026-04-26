@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { RichBody } from "@/components/feed/RichBody";
 import {
   fetchCalloutById,
   joinCallout,
@@ -186,7 +187,7 @@ export default function CalloutDetailPage({
       {callout.body && (
         <Card>
           <p className="text-sm whitespace-pre-wrap leading-relaxed">
-            {callout.body}
+            <RichBody body={callout.body} />
           </p>
         </Card>
       )}
