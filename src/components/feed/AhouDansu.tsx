@@ -12,12 +12,13 @@ export function AhouDansu() {
   const [showing, setShowing] = useState(false);
 
   useEffect(() => {
-    // First show after 5 seconds so the page can render first
-    const firstTimer = setTimeout(() => setShowing(true), 5000);
+    // First show after 8 seconds so the page can render first
+    const firstTimer = setTimeout(() => setShowing(true), 8000);
 
+    // Then once every 10 minutes — easter egg, not interruption
     const loop = setInterval(() => {
       setShowing(true);
-    }, 60000);
+    }, 600000);
 
     return () => {
       clearTimeout(firstTimer);
@@ -25,10 +26,10 @@ export function AhouDansu() {
     };
   }, []);
 
-  // Auto-dismiss after 5s
+  // Auto-dismiss after 4s
   useEffect(() => {
     if (!showing) return;
-    const t = setTimeout(() => setShowing(false), 5000);
+    const t = setTimeout(() => setShowing(false), 4000);
     return () => clearTimeout(t);
   }, [showing]);
 
