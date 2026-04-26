@@ -112,12 +112,14 @@ export default function FeedPage() {
     return () => observer.disconnect();
   }, [canLoadMore, loadMore, shops.length]);
 
-  // 本日のパワープッシュ楽座 — daily-rotating set (max 6) of shops with images
-  const { featured, rest } = useMemo(() => {
+  // 本日のパワープッシュ楽座 — daily-rotating set (max 6) of shops with images.
+  // The grid below shows ALL shops (carousel and grid intentionally overlap)
+  // so users still see every 楽座 even if one is being featured up top.
+  const featured = useMemo(() => {
     const withImage = shops.filter(
       (s) => s.image_urls && s.image_urls.length > 0
     );
-    if (withImage.length === 0) return { featured: [] as ShopWithOwner[], rest: shops };
+    if (withImage.length === 0) return [] as ShopWithOwner[];
     const now = new Date();
     const dayOfYear = Math.floor(
       (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000
@@ -128,8 +130,7 @@ export default function FeedPage() {
     for (let i = 0; i < count; i++) {
       picks.push(withImage[(start + i) % withImage.length]);
     }
-    const pickedIds = new Set(picks.map((p) => p.id));
-    return { featured: picks, rest: shops.filter((s) => !pickedIds.has(s.id)) };
+    return picks;
   }, [shops]);
 
   return (
@@ -169,52 +170,44 @@ export default function FeedPage() {
         </select>
       </div>
 
-      {/* Count + 出す button */}
-      <div className="flex items-center justify-between">
-        <p className="text-[11px] text-text-mute">
-          今 {total}座 並んでいます
-        </p>
-        <Link
-          href={user ? "/settings/shops" : "/login"}
-          className="text-xs text-accent no-underline font-medium"
-        >
-          + あなたも楽座を出す
-        </Link>
-      </div>
-
-      {/* Prominent "自分も楽座を出す" CTA */}
+      {/* Compact CTA: あなたも楽座を出しましょう */}
       <Link
         href={user ? "/settings/shops" : "/login"}
         className="block no-underline group"
       >
         <div
-          className="relative overflow-hidden rounded-2xl border-2 border-accent/40 shadow-sm hover:shadow-md transition-all"
+          className="relative overflow-hidden rounded-xl border border-accent/40 hover:shadow-md transition-all"
           style={{
             background:
               "linear-gradient(135deg, #f5e8d5 0%, #ffffff 50%, #f5e8d5 100%)",
           }}
         >
-          <div className="flex items-center gap-3 p-4">
+          <div className="flex items-center gap-2 px-3 py-2">
             <div
-              className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 text-white"
+              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white"
               style={{ background: "#c94d3a" }}
             >
-              <EdoIcon name="rakuza" size={28} color="#ffffff" />
+              <EdoIcon name="rakuza" size={18} color="#ffffff" />
             </div>
-            <div className="flex-1">
-              <div className="text-base font-bold text-text">
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-bold text-text leading-tight">
                 あなたも楽座を出しましょう
               </div>
-              <div className="text-xs text-text-sub mt-0.5">
+              <div className="text-[10px] text-text-sub leading-tight">
                 {user
-                  ? "お試し出品（0円）もOK、物々交換もできる"
+                  ? "お試し出品（0円）も物々交換もOK"
                   : "登録して、あなたの才能を並べてみよう"}
               </div>
             </div>
-            <div className="text-accent text-xl">→</div>
+            <div className="text-accent text-base flex-shrink-0">→</div>
           </div>
         </div>
       </Link>
+
+      {/* Count line — placed right above the grid */}
+      <p className="text-[11px] text-text-mute text-center">
+        今 {total}座 並んでいます
+      </p>
 
       {/* Shops showcase — 2-column grid */}
       {loading ? (
@@ -234,7 +227,7 @@ export default function FeedPage() {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3">
-            {rest.map((shop) => (
+            {shops.map((shop) => (
               <ShopCard key={shop.id} shop={shop} />
             ))}
           </div>
@@ -449,8 +442,9 @@ function FeaturedShopBody({ shop }: { shop: ShopWithOwner }) {
 }
 
 /**
- * 立て札 (tatefuda) style shop card — vertical with a small kawara roof on top.
- * Roof is decorative only; product info (image, name, price) stays clear.
+ * 和風 shop card — washi-paper background, thin vermilion top accent line
+ * (the "笠木" hint without a literal roof), name + price share a single tight
+ * info bar so the card stays compact.
  */
 function ShopCard({ shop }: { shop: ShopWithOwner }) {
   const router = useRouter();
@@ -458,113 +452,94 @@ function ShopCard({ shop }: { shop: ShopWithOwner }) {
 
   return (
     <Link href={`/shop/${shop.id}`} className="no-underline block group">
-      <div className="relative pt-2.5">
-        {/* Kawara roof — small trapezoidal tile peeking over the card top */}
+      <div
+        className="relative rounded-md border border-border/80 shadow-sm group-hover:shadow-md transition-shadow flex flex-col h-full overflow-hidden"
+        style={{
+          background:
+            "linear-gradient(180deg, #fffaf0 0%, #fdf6e9 100%)",
+        }}
+      >
+        {/* Thin vermilion top line — laid over the very top edge of the card */}
         <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[88%] h-2.5 z-10"
-          style={{
-            background: "#8a4a3a",
-            clipPath: "polygon(8% 0, 92% 0, 100% 100%, 0 100%)",
-            boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.15)",
-          }}
+          className="absolute top-0 left-0 right-0 h-[3px] z-10 pointer-events-none"
+          style={{ background: "#c94d3a" }}
         />
 
-        <div
-          className="relative rounded-xl border border-border shadow-sm group-hover:shadow-md transition-shadow flex flex-col h-full overflow-hidden"
-          style={{
-            background:
-              "linear-gradient(180deg, #fffaf0 0%, #fdf6e9 60%, #f5e8d5 100%)",
-          }}
-        >
-          {/* Image */}
-          <div className="relative aspect-square overflow-hidden bg-bg">
-            {image ? (
-              <img
-                src={image}
-                alt={shop.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div
-                className="w-full h-full flex items-center justify-center text-white"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #c94d3a 0%, #d4a043 50%, #5a7d4a 100%)",
-                }}
-              >
-                <EdoIcon name="rakuza" size={44} color="#ffffff" />
-              </div>
-            )}
-
-            {/* Nobori-style お試し flag */}
-            {shop.is_trial && (
-              <div className="absolute top-1.5 right-1.5 pointer-events-none">
-                <div
-                  className="text-[9px] font-bold text-white px-1.5 py-0.5 rounded-sm shadow-sm"
-                  style={{ background: "#c94d3a", letterSpacing: "0.05em" }}
-                >
-                  お試し
-                </div>
-              </div>
-            )}
-
-            {/* Owner avatar */}
-            {shop.owner && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  router.push(`/u/${shop.owner!.username}`);
-                }}
-                className="absolute bottom-1.5 left-1.5 ring-2 ring-white rounded-full hover:scale-110 transition-transform shadow-md"
-                title={`${shop.owner.display_name}のマイページ`}
-                aria-label={`${shop.owner.display_name}のマイページへ`}
-              >
-                <Avatar
-                  src={shop.owner.avatar_url}
-                  alt={shop.owner.display_name}
-                  size="md"
-                />
-              </button>
-            )}
-          </div>
-
-          {/* Tatefuda body — name on top "板", price strip below */}
-          <div className="flex-1 flex flex-col">
+        {/* Image */}
+        <div className="relative aspect-square overflow-hidden bg-bg">
+          {image ? (
+            <img
+              src={image}
+              alt={shop.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
             <div
-              className="px-2.5 py-1.5 border-b border-dashed border-border/60 min-h-[2.6rem] flex items-center"
+              className="w-full h-full flex items-center justify-center text-white"
               style={{
                 background:
-                  "repeating-linear-gradient(180deg, rgba(201,77,58,0.025) 0 2px, transparent 2px 4px)",
+                  "linear-gradient(135deg, #c94d3a 0%, #d4a043 50%, #5a7d4a 100%)",
               }}
             >
-              <h3
-                className="text-[13px] font-bold text-text line-clamp-2 leading-tight"
-                style={{ letterSpacing: "0.02em" }}
-              >
-                {shop.name}
-              </h3>
+              <EdoIcon name="rakuza" size={40} color="#ffffff" />
             </div>
-            <div className="px-2.5 py-1.5 flex items-center justify-between gap-1">
-              <div className="flex-1 min-w-0">
-                {shop.owner && (
-                  <div className="text-[10px] text-text-mute truncate">
-                    {shop.owner.display_name}
-                  </div>
-                )}
-                <div className="text-xs font-bold text-accent truncate">
-                  {shop.is_trial
-                    ? "0円〜"
-                    : shop.price_jpy != null
-                    ? `¥${shop.price_jpy.toLocaleString()}`
-                    : shop.price_text ?? ""}
-                </div>
+          )}
+
+          {/* Nobori-style お試し flag */}
+          {shop.is_trial && (
+            <div className="absolute top-1.5 right-1.5 pointer-events-none">
+              <div
+                className="text-[9px] font-bold text-white px-1.5 py-0.5 rounded-sm shadow-sm"
+                style={{ background: "#c94d3a", letterSpacing: "0.05em" }}
+              >
+                お試し
               </div>
-              <div className="flex gap-0.5 text-[11px] flex-shrink-0">
+            </div>
+          )}
+
+          {/* Owner avatar */}
+          {shop.owner && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                router.push(`/u/${shop.owner!.username}`);
+              }}
+              className="absolute bottom-1 left-1 ring-2 ring-white rounded-full hover:scale-110 transition-transform shadow-md"
+              title={`${shop.owner.display_name}のマイページ`}
+              aria-label={`${shop.owner.display_name}のマイページへ`}
+            >
+              <Avatar
+                src={shop.owner.avatar_url}
+                alt={shop.owner.display_name}
+                size="sm"
+              />
+            </button>
+          )}
+        </div>
+
+        {/* Tight info row: name + price + payment glyphs all on one strip */}
+        <div className="px-2 py-1.5 flex items-center gap-1.5">
+          <div className="flex-1 min-w-0">
+            <h3
+              className="text-[12px] font-bold text-text leading-tight line-clamp-1"
+              style={{ letterSpacing: "0.02em" }}
+            >
+              {shop.name}
+            </h3>
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className="text-[11px] font-bold text-accent truncate">
+                {shop.is_trial
+                  ? "0円〜"
+                  : shop.price_jpy != null
+                  ? `¥${shop.price_jpy.toLocaleString()}`
+                  : shop.price_text ?? ""}
+              </span>
+              <span className="flex gap-0.5 text-[10px] flex-shrink-0 text-text-mute">
                 {shop.accepts_barter && <span title="物々交換可">🔄</span>}
                 {shop.accepts_tip && <span title="投げ銭可">🪙</span>}
-              </div>
+              </span>
             </div>
           </div>
         </div>
