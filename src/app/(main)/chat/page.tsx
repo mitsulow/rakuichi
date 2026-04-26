@@ -85,10 +85,15 @@ export default function ChatListPage() {
         <div className="space-y-2">
           {chats.map((chat) => {
             if (!chat.other) return null;
+            // Client-side unread: last_message newer than locally-stored last-read
+            let lastRead: string | null = null;
+            try {
+              lastRead = localStorage.getItem(`rakuichi:lastRead:${chat.id}`);
+            } catch {}
             const isUnread =
-              chat.last_message &&
-              !chat.last_message.read_at &&
-              chat.last_message.sender_id !== userId;
+              !!chat.last_message &&
+              chat.last_message.sender_id !== userId &&
+              (!lastRead || chat.last_message.created_at > lastRead);
 
             return (
               <Link
