@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { CategoryTag } from "@/components/ui/CategoryTag";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
+import { ImageLightbox } from "@/components/ui/ImageLightbox";
 import { useAuth } from "@/components/auth/AuthProvider";
 import {
   fetchShopById,
@@ -37,6 +38,7 @@ export default function ShopDetailPage({
   const [selectedImage, setSelectedImage] = useState(0);
   const [contacting, setContacting] = useState(false);
   const [shareToast, setShareToast] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -108,13 +110,17 @@ export default function ShopDetailPage({
       <div className="relative">
         {hasImages ? (
           <>
-            <div className="aspect-square overflow-hidden bg-bg">
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(true)}
+              className="block w-full aspect-square overflow-hidden bg-bg cursor-zoom-in"
+            >
               <img
                 src={shop.image_urls[selectedImage]}
                 alt={shop.name}
                 className="w-full h-full object-cover"
               />
-            </div>
+            </button>
             {shop.image_urls.length > 1 && (
               <div className="flex gap-1.5 px-4 py-2 overflow-x-auto hide-scrollbar">
                 {shop.image_urls.map((url, i) => (
@@ -405,6 +411,14 @@ export default function ShopDetailPage({
                 : "チャットで詳細を聞いてみよう"}
             </p>
           </div>
+        )}
+
+        {lightboxOpen && hasImages && (
+          <ImageLightbox
+            images={shop.image_urls}
+            startIndex={selectedImage}
+            onClose={() => setLightboxOpen(false)}
+          />
         )}
 
         {isOwner && (

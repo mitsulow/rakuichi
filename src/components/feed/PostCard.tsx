@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { BadgeList } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { CategoryTag } from "@/components/ui/CategoryTag";
+import { ImageLightbox } from "@/components/ui/ImageLightbox";
 import { formatRelativeTime } from "@/lib/utils";
 import { toggleLike } from "@/lib/data";
 import { EmbedCard } from "./EmbedCard";
@@ -26,6 +27,7 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled, 
   const [likeLoading, setLikeLoading] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [commentsCount, setCommentsCount] = useState(post.comments_count);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const { user } = useAuth();
 
   // If profile is missing (partial join), use a minimal fallback so the post still shows
@@ -122,7 +124,7 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled, 
         {/* Platform embed */}
         {post.embed && <EmbedCard embed={post.embed} />}
 
-        {/* Images */}
+        {/* Images — tap to enlarge in lightbox */}
         {post.image_urls.length > 0 && (
           <div
             className={`mt-3 gap-1 rounded-xl overflow-hidden ${
@@ -132,16 +134,30 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled, 
             }`}
           >
             {post.image_urls.map((url, i) => (
-              <img
+              <button
                 key={i}
-                src={url}
-                alt=""
-                className={`w-full object-cover ${
-                  post.image_urls.length === 1 ? "max-h-96" : "h-40"
-                }`}
-              />
+                type="button"
+                onClick={() => setLightboxIndex(i)}
+                className="block relative cursor-zoom-in"
+              >
+                <img
+                  src={url}
+                  alt=""
+                  className={`w-full object-cover ${
+                    post.image_urls.length === 1 ? "max-h-96" : "h-40"
+                  }`}
+                />
+              </button>
             ))}
           </div>
+        )}
+
+        {lightboxIndex !== null && (
+          <ImageLightbox
+            images={post.image_urls}
+            startIndex={lightboxIndex}
+            onClose={() => setLightboxIndex(null)}
+          />
         )}
 
         {/* Shop tag — matches 楽座 card visual language */}
