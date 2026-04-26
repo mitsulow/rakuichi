@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { SnsIcon, detectPlatform, getPlatformLabel } from "@/components/ui/SnsIcon";
+import { SkillInput } from "@/components/ui/SkillInput";
 import { MigrationBar } from "@/components/profile/MigrationBar";
 import { PREFECTURES } from "@/lib/constants";
 
@@ -45,6 +46,7 @@ function ProfileSettingsInner() {
     avatar_url: null as string | null,
     cover_url: null as string | null,
     show_on_map: true,
+    skills: [] as string[],
   });
   const [snsLinks, setSnsLinks] = useState<Array<{ platform: string; url: string }>>([]);
 
@@ -112,6 +114,7 @@ function ProfileSettingsInner() {
               profile.avatar_url ?? session.user.user_metadata?.avatar_url ?? null,
             cover_url: profile.cover_url ?? null,
             show_on_map: profile.show_on_map ?? true,
+            skills: Array.isArray(profile.skills) ? profile.skills : [],
           });
         }
 
@@ -153,6 +156,7 @@ function ProfileSettingsInner() {
       avatar_url: formData.avatar_url,
       cover_url: formData.cover_url,
       show_on_map: formData.show_on_map,
+      skills: formData.skills,
     });
 
     // Save SNS links
@@ -448,6 +452,20 @@ function ProfileSettingsInner() {
                 onChange={(e) => updateField("bio", e.target.value)}
                 rows={2}
                 className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-sm resize-none focus:border-accent focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-text-mute block mb-1">
+                🛠 My SKILL（できること）
+                <span className="block text-[10px] text-text-mute mt-0.5">
+                  あなたができることを並べて。「結（ゆい）」で誰かが必要な時に
+                  あなたが見つかります。
+                </span>
+              </label>
+              <SkillInput
+                value={formData.skills}
+                onChange={(skills) => setField("skills", skills)}
               />
             </div>
           </div>

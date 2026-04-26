@@ -123,6 +123,7 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
           life_work_level: null,
           migration_percent: 0,
           show_on_map: true,
+          skills: [],
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },

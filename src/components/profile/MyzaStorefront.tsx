@@ -124,28 +124,62 @@ export function MyzaStorefront({
             {badges.length > 0 && <BadgeList badges={badges} />}
           </div>
 
-          {/* Life work — the BIG headline */}
-          {profile.life_work && (
-            <div className="mt-2">
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-[10px] text-text-mute tracking-widest">
-                  生業（なりわい）
-                </span>
-                <span className="text-base font-bold text-accent">
-                  {profile.life_work}
-                </span>
-                {profile.life_work_years != null && profile.life_work_years > 0 && (
-                  <span className="text-xs text-text-sub">
-                    移行{profile.life_work_years}年目
+          {/* Life work + Rice work — clearly displayed */}
+          {(profile.life_work || profile.rice_work) && (
+            <div className="mt-3 space-y-1.5">
+              {profile.life_work && (
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span
+                    className="inline-block text-[9px] font-bold text-white px-1.5 py-0.5 rounded flex-shrink-0"
+                    style={{ background: "#c94d3a" }}
+                  >
+                    ライフワーク
                   </span>
-                )}
+                  <span className="text-base font-bold text-accent">
+                    {profile.life_work}
+                  </span>
+                  {profile.life_work_years != null && profile.life_work_years > 0 && (
+                    <span className="text-[10px] text-text-sub">
+                      移行{profile.life_work_years}年目
+                    </span>
+                  )}
+                </div>
+              )}
+              {profile.rice_work && (
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="inline-block text-[9px] font-bold text-white px-1.5 py-0.5 rounded flex-shrink-0 bg-text-mute">
+                    ライスワーク
+                  </span>
+                  <span className="text-sm text-text-sub">
+                    {profile.rice_work}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* My SKILL — できること */}
+          {profile.skills && profile.skills.length > 0 && (
+            <div className="mt-3">
+              <div className="text-[10px] text-text-mute mb-1.5 font-medium">
+                🛠 できること
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {profile.skills.map((s, i) => (
+                  <span
+                    key={`${s}-${i}`}
+                    className="inline-flex items-center bg-accent/10 text-accent text-[11px] font-medium rounded-full px-2.5 py-1"
+                  >
+                    {s}
+                  </span>
+                ))}
               </div>
             </div>
           )}
 
           {/* Location */}
           {location && (
-            <p className="text-xs text-text-mute mt-1">📍 {location}</p>
+            <p className="text-xs text-text-mute mt-2">📍 {location}</p>
           )}
 
           {/* SNS icon bar */}

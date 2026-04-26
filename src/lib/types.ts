@@ -22,6 +22,7 @@ export interface Profile {
   life_work_level: "修行中" | "歩み中" | "一人前" | null;
   migration_percent: number;
   show_on_map: boolean;
+  skills: string[];
   created_at: string;
   updated_at: string;
 }

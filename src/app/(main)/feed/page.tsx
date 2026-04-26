@@ -193,7 +193,7 @@ export default function FeedPage() {
           href={user ? "/settings/shops" : "/login"}
           className="text-xs text-accent no-underline font-medium"
         >
-          + 自分も楽座を出す
+          + あなたも楽座を出す
         </Link>
       </div>
 
@@ -218,12 +218,12 @@ export default function FeedPage() {
             </div>
             <div className="flex-1">
               <div className="text-base font-bold text-text">
-                自分も楽座を出す
+                あなたも楽座を出しましょう
               </div>
               <div className="text-xs text-text-sub mt-0.5">
                 {user
                   ? "お試し出品（0円）もOK、物々交換もできる"
-                  : "登録して、あなたの腕で勝負する"}
+                  : "登録して、あなたの才能を並べてみよう"}
               </div>
             </div>
             <div className="text-accent text-xl">→</div>
