@@ -1,27 +1,30 @@
 import Link from "next/link";
 
-export default function ProfileNotFound() {
+export default function GlobalNotFound() {
   return (
-    <div className="max-w-[680px] mx-auto px-4 py-12 text-center">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 text-center">
       <img
         src="/icons/error-404.png"
         alt=""
-        className="w-40 h-40 mx-auto mb-4"
+        className="w-48 h-48 mb-4"
       />
-      <h1 className="text-xl font-bold mb-2" style={{ color: "#c94d3a" }}>
-        座の民が見つかりません
+      <h1
+        className="text-xl font-bold mb-2"
+        style={{ color: "#c94d3a" }}
+      >
+        ここには何もありません
       </h1>
       <p className="text-sm text-text-sub mb-1">
-        この人の名刺はありませんでした。
+        道に迷ったみたい。
       </p>
       <p className="text-xs text-text-mute mb-6">
-        URLが間違っているか、まだ準備中の可能性があります。
+        URLが間違っているか、削除された可能性があります。
       </p>
       <Link
         href="/feed"
         className="inline-block bg-accent text-white rounded-full px-5 py-2.5 text-sm font-bold hover:opacity-90 transition shadow-sm no-underline"
       >
-        🏮 みんなの楽座に戻る
+        🏮 楽座に戻る
       </Link>
     </div>
   );

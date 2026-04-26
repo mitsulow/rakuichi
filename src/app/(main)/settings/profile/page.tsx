@@ -280,28 +280,31 @@ function ProfileSettingsInner() {
 
       {isOnboarding && (
         <div
-          className="rounded-2xl border-2 px-4 py-3"
+          className="rounded-2xl border-2 px-4 py-3 flex items-center gap-3"
           style={{
             borderColor: "#c94d3a40",
             background:
               "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 50%, #fdf6e9 100%)",
           }}
         >
-          <p
-            className="text-base font-bold leading-tight"
-            style={{ color: "#c94d3a" }}
-          >
-            🏮 まずはマイページを整えよう
-          </p>
-          <p className="text-xs text-text-sub mt-1.5 leading-relaxed">
-            これが「あなたの名刺」兼「楽座」になります。
-            <br />
-            ライフワーク・都道府県・ステータスだけでも入れればOK。
-            <br />
-            <span className="text-text-mute">
-              （後からいつでも編集できます）
-            </span>
-          </p>
+          <img
+            src="/icons/onboarding-welcome.png"
+            alt=""
+            className="w-20 h-20 flex-shrink-0 rounded-xl"
+          />
+          <div className="flex-1 min-w-0">
+            <p
+              className="text-sm font-bold leading-tight"
+              style={{ color: "#c94d3a" }}
+            >
+              🏮 まずは名刺を整えよう
+            </p>
+            <p className="text-[11px] text-text-sub mt-1 leading-relaxed">
+              これが「あなたの存在」になります。
+              <br />
+              ライフワーク・都道府県だけでもOK。
+            </p>
+          </div>
         </div>
       )}
 

@@ -65,24 +65,14 @@ export function MyzaStorefront({
   return (
     <>
       <Card className="overflow-hidden !p-0">
-        {/* Cover image */}
-        {profile.cover_url ? (
-          <div className="h-44 overflow-hidden">
-            <img
-              src={profile.cover_url}
-              alt=""
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : (
-          <div
-            className="h-32"
-            style={{
-              background:
-                "linear-gradient(135deg, #c94d3a 0%, #d4a043 50%, #5a7d4a 100%)",
-            }}
+        {/* Cover image — user upload, or beautiful default landscape */}
+        <div className="h-44 overflow-hidden">
+          <img
+            src={profile.cover_url ?? "/icons/cover-default.png"}
+            alt=""
+            className="w-full h-full object-cover"
           />
-        )}
+        </div>
 
         {/* Avatar — overlaps cover */}
         <div className="px-4 -mt-12 relative">
