@@ -321,6 +321,7 @@ export async function updateProfile(userId: string, fields: {
   cover_url?: string | null;
   show_on_map?: boolean;
   skills?: string[];
+  wants_to_do?: string[];
 }) {
   const supabase = createClient();
 
@@ -350,6 +351,7 @@ export async function updateProfile(userId: string, fields: {
       "cover_url",
       "show_on_map",
       "skills",
+      "wants_to_do",
     ];
     let dropped = false;
     for (const col of missingColumnPatterns) {

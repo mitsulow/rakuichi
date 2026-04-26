@@ -124,6 +124,7 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
           migration_percent: 0,
           show_on_map: true,
           skills: [],
+          wants_to_do: [],
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },

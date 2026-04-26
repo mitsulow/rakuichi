@@ -191,17 +191,40 @@ export function MyzaStorefront({
             </div>
           )}
 
-          {/* My SKILL — できること */}
+          {/* My Skill — 私が役に立てること */}
           {profile.skills && profile.skills.length > 0 && (
             <div className="mt-3">
               <div className="text-[10px] text-text-mute mb-1.5 font-medium">
-                🛠 できること
+                🛠 My Skill（私が役に立てること）
               </div>
               <div className="flex flex-wrap gap-1">
                 {profile.skills.map((s, i) => (
                   <span
                     key={`${s}-${i}`}
                     className="inline-flex items-center bg-accent/10 text-accent text-[11px] font-medium rounded-full px-2.5 py-1"
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* やりたいこと — pre-skill aspirations */}
+          {profile.wants_to_do && profile.wants_to_do.length > 0 && (
+            <div className="mt-3">
+              <div className="text-[10px] text-text-mute mb-1.5 font-medium">
+                🌱 やりたいこと
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {profile.wants_to_do.map((s, i) => (
+                  <span
+                    key={`${s}-${i}`}
+                    className="inline-flex items-center text-[11px] font-medium rounded-full px-2.5 py-1"
+                    style={{
+                      background: "#2b3a6715",
+                      color: "#2b3a67",
+                    }}
                   >
                     {s}
                   </span>

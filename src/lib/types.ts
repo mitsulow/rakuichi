@@ -23,6 +23,7 @@ export interface Profile {
   migration_percent: number;
   show_on_map: boolean;
   skills: string[];
+  wants_to_do: string[];
   created_at: string;
   updated_at: string;
 }

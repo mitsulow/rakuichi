@@ -47,6 +47,7 @@ function ProfileSettingsInner() {
     cover_url: null as string | null,
     show_on_map: true,
     skills: [] as string[],
+    wants_to_do: [] as string[],
   });
   const [snsLinks, setSnsLinks] = useState<Array<{ platform: string; url: string }>>([]);
 
@@ -115,6 +116,11 @@ function ProfileSettingsInner() {
             cover_url: profile.cover_url ?? null,
             show_on_map: profile.show_on_map ?? true,
             skills: Array.isArray(profile.skills) ? profile.skills : [],
+            wants_to_do: Array.isArray(
+              (profile as { wants_to_do?: string[] }).wants_to_do
+            )
+              ? (profile as { wants_to_do: string[] }).wants_to_do
+              : [],
           });
         }
 
@@ -157,6 +163,7 @@ function ProfileSettingsInner() {
       cover_url: formData.cover_url,
       show_on_map: formData.show_on_map,
       skills: formData.skills,
+      wants_to_do: formData.wants_to_do,
     });
 
     // Save SNS links
@@ -471,15 +478,69 @@ function ProfileSettingsInner() {
 
             <div>
               <label className="text-xs text-text-mute block mb-1">
-                🛠 My SKILL（できること）
+                🛠 My Skill（私が役に立てること）
                 <span className="block text-[10px] text-text-mute mt-0.5">
-                  あなたができることを並べて。「結（ゆい）」で誰かが必要な時に
-                  あなたが見つかります。
+                  Enter で 1 個ずつ追加していこう。誰かが「料理できる人いない？」
+                  と探した時、SKILL検索であなたが見つかります。
                 </span>
               </label>
               <SkillInput
                 value={formData.skills}
                 onChange={(skills) => setField("skills", skills)}
+                placeholder="例: 料理（Enter で追加）"
+              />
+            </div>
+
+            <div className="pt-2 border-t border-dashed border-border">
+              <label className="text-xs text-text-mute block mb-1">
+                🌱 私がやりたいこと（まだできなくてもOK）
+                <span className="block text-[10px] text-text-mute mt-0.5">
+                  ライフワークの「たまご」。誰かが教えたり、仲間が集まる
+                  きっかけになります。
+                </span>
+              </label>
+              <SkillInput
+                value={formData.wants_to_do}
+                onChange={(list) => setField("wants_to_do", list)}
+                placeholder="例: 釣り（Enter で追加）"
+                variant="indigo"
+                suggestions={[
+                  "農業",
+                  "釣り",
+                  "猟",
+                  "発酵",
+                  "陶芸",
+                  "木工",
+                  "建築",
+                  "DIY",
+                  "薬草",
+                  "アロマ",
+                  "ヨガ",
+                  "瞑想",
+                  "整体",
+                  "助産",
+                  "鍼灸",
+                  "気功",
+                  "茶道",
+                  "華道",
+                  "書道",
+                  "三味線",
+                  "和太鼓",
+                  "ギター",
+                  "歌",
+                  "ダンス",
+                  "音楽制作",
+                  "イラスト",
+                  "写真",
+                  "動画編集",
+                  "デザイン",
+                  "プログラミング",
+                  "翻訳",
+                  "経理",
+                  "営業",
+                  "保育",
+                  "子育て",
+                ]}
               />
             </div>
           </div>
