@@ -12,6 +12,7 @@ import {
 import { useAuth } from "@/components/auth/AuthProvider";
 import {
   fetchPostsPaged,
+  fetchFollowingIds,
   getUserLikes,
   deletePost,
   POSTS_PAGE_SIZE,
@@ -29,6 +30,8 @@ export default function PostsPage() {
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [newPostsCount, setNewPostsCount] = useState(0);
+  const [filterMode, setFilterMode] = useState<"all" | "following">("all");
+  const [followingIds, setFollowingIds] = useState<string[] | null>(null);
   // Start empty — older cached data may have been filtered. Always fetch fresh.
   const [posts, setPosts] = useState<Post[]>([]);
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
@@ -54,12 +57,22 @@ export default function PostsPage() {
 
     (async () => {
       try {
+        let restrictUserIds: string[] | null = null;
+        if (filterMode === "following" && user) {
+          let ids = followingIds;
+          if (ids == null) {
+            ids = await fetchFollowingIds(user.id);
+            if (!cancelled) setFollowingIds(ids);
+          }
+          restrictUserIds = ids;
+        }
         const { posts: list, total } = await fetchPostsPaged(
           0,
           POSTS_PAGE_SIZE,
           prefectures,
           random,
-          searchTerm
+          searchTerm,
+          restrictUserIds
         );
         if (cancelled) return;
         setPosts(list as Post[]);
@@ -80,7 +93,7 @@ export default function PostsPage() {
       cancelled = true;
       clearTimeout(failsafe);
     };
-  }, [scope, random, user, searchTerm]);
+  }, [scope, random, user, searchTerm, filterMode, followingIds]);
 
   const canLoadMore = !random && posts.length < total;
 
@@ -89,17 +102,29 @@ export default function PostsPage() {
     setLoadingMore(true);
     const nextPage = page + 1;
     const prefectures = regionToPrefectures(scope);
+    const restrictUserIds =
+      filterMode === "following" && user ? followingIds : null;
     const { posts: more } = await fetchPostsPaged(
       nextPage,
       POSTS_PAGE_SIZE,
       prefectures,
       false,
-      searchTerm
+      searchTerm,
+      restrictUserIds
     );
     setPosts((prev) => [...prev, ...(more as Post[])]);
     setPage(nextPage);
     setLoadingMore(false);
-  }, [loadingMore, canLoadMore, page, scope, searchTerm]);
+  }, [
+    loadingMore,
+    canLoadMore,
+    page,
+    scope,
+    searchTerm,
+    filterMode,
+    followingIds,
+    user,
+  ]);
 
   // Realtime: track new posts arriving while user is viewing
   useEffect(() => {
@@ -186,6 +211,36 @@ export default function PostsPage() {
 
       {/* Filter strip + meta — visually unified, separates composer from feed */}
       <div className="pt-3 border-t border-border space-y-2">
+        {/* Tab switch: 全部 / のれん中 */}
+        {user && (
+          <div className="flex gap-1 p-1 bg-bg rounded-full">
+            <button
+              onClick={() => setFilterMode("all")}
+              className={`flex-1 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                filterMode === "all"
+                  ? "bg-card shadow-sm"
+                  : "text-text-mute hover:text-text-sub"
+              }`}
+              style={filterMode === "all" ? { color: "#c94d3a" } : undefined}
+            >
+              🏮 全部
+            </button>
+            <button
+              onClick={() => setFilterMode("following")}
+              className={`flex-1 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                filterMode === "following"
+                  ? "bg-card shadow-sm"
+                  : "text-text-mute hover:text-text-sub"
+              }`}
+              style={
+                filterMode === "following" ? { color: "#c94d3a" } : undefined
+              }
+            >
+              🏮 のれん中
+            </button>
+          </div>
+        )}
+
         {/* Search input */}
         <form
           onSubmit={(e) => {

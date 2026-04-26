@@ -669,6 +669,15 @@ export async function isFollowing(followerId: string, followingId: string) {
   return !!data;
 }
 
+export async function fetchFollowingIds(userId: string): Promise<string[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("follows")
+    .select("following_id")
+    .eq("follower_id", userId);
+  return (data ?? []).map((row) => (row as { following_id: string }).following_id);
+}
+
 export async function fetchFollowCounts(userId: string) {
   const supabase = createClient();
   const [followersRes, followingRes] = await Promise.all([
@@ -1116,7 +1125,8 @@ export async function fetchPostsPaged(
   pageSize = POSTS_PAGE_SIZE,
   prefectures?: string[] | null,
   random = false,
-  searchTerm?: string | null
+  searchTerm?: string | null,
+  restrictUserIds?: string[] | null
 ) {
   const supabase = createClient();
   const from = page * pageSize;
@@ -1132,6 +1142,14 @@ export async function fetchPostsPaged(
   const term = searchTerm?.trim();
   if (term) {
     postsQuery = postsQuery.ilike("body", `%${term}%`);
+  }
+
+  // Restrict by author IDs (e.g. "following only" feed)
+  if (restrictUserIds && restrictUserIds.length > 0) {
+    postsQuery = postsQuery.in("user_id", restrictUserIds);
+  } else if (restrictUserIds && restrictUserIds.length === 0) {
+    // Following empty → return nothing (caller already wants restricted set)
+    return { posts: [], total: 0 };
   }
 
   if (!random) {
