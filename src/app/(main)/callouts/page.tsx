@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { fetchCallouts, createCallout } from "@/lib/data";
+import { useToast } from "@/components/ui/Toast";
 import { formatRelativeTime } from "@/lib/utils";
 import type { Callout } from "@/lib/types";
 
@@ -211,6 +212,7 @@ function CalloutComposer({
   onCancel: () => void;
   onCreated: (c: Callout) => void;
 }) {
+  const toast = useToast();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [skillsInput, setSkillsInput] = useState("");
@@ -233,10 +235,13 @@ function CalloutComposer({
     });
     setSaving(false);
     if (result.error) {
-      alert(`投稿に失敗: ${result.error}`);
+      toast.show(`投稿に失敗: ${result.error}`, "error");
       return;
     }
-    if (result.data) onCreated(result.data as Callout);
+    if (result.data) {
+      toast.show("呼びかけを投げました", "success");
+      onCreated(result.data as Callout);
+    }
   };
 
   return (

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useToast } from "@/components/ui/Toast";
 import { RichBody } from "@/components/feed/RichBody";
 import {
   fetchCalloutById,
@@ -39,6 +40,7 @@ export default function CalloutDetailPage({
   const { id } = use(params);
   const router = useRouter();
   const { user } = useAuth();
+  const toast = useToast();
   const [callout, setCallout] = useState<CalloutWithDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
@@ -80,11 +82,12 @@ export default function CalloutDetailPage({
     const result = await joinCallout(callout.id, user.id, comment || undefined);
     setJoining(false);
     if (result.error) {
-      alert(`指をあげられませんでした: ${result.error}`);
+      toast.show(`指をあげられませんでした: ${result.error}`, "error");
       return;
     }
     setComment("");
     setShowCommentBox(false);
+    toast.show("🤚 指をあげました", "success");
     await reload();
   };
 
@@ -93,7 +96,7 @@ export default function CalloutDetailPage({
     if (!confirm("指を下ろしますか？")) return;
     const result = await leaveCallout(callout.id, user.id);
     if (result.error) {
-      alert(`失敗: ${result.error}`);
+      toast.show(`失敗: ${result.error}`, "error");
       return;
     }
     await reload();
@@ -115,7 +118,7 @@ export default function CalloutDetailPage({
     if (!confirm("この呼びかけを削除しますか？")) return;
     const result = await deleteCallout(callout.id);
     if (result.error) {
-      alert(`削除に失敗: ${result.error}`);
+      toast.show(`削除に失敗: ${result.error}`, "error");
       return;
     }
     router.push("/callouts");
