@@ -225,22 +225,25 @@ export default function PostsPage() {
             ))}
 
             {canLoadMore && (
-              <div ref={sentinelRef} className="py-6 text-center">
+              <div ref={sentinelRef} className="py-4 flex justify-center">
                 {loadingMore ? (
                   <div className="inline-flex items-center gap-2 text-xs text-text-mute">
                     <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-                    次の情緒を読み込み中...
+                    読み込み中...
                   </div>
                 ) : (
-                  <button onClick={loadMore} className="text-xs text-accent underline">
-                    もっと見る（あと{total - posts.length}件）
+                  <button
+                    onClick={loadMore}
+                    className="text-xs font-bold text-accent bg-accent/10 hover:bg-accent/15 transition-colors rounded-full px-4 py-2"
+                  >
+                    ▼ あと {total - posts.length} 件 読み込む
                   </button>
                 )}
               </div>
             )}
             {!canLoadMore && !random && posts.length >= POSTS_PAGE_SIZE && (
               <p className="text-center text-[10px] text-text-mute py-4">
-                💭 すべて表示しました（全{total}件）
+                🌙 すべて表示しました（全 {total} 件）
               </p>
             )}
           </>
