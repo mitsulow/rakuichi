@@ -10,8 +10,6 @@ import { SnsIcon, getPlatformLabel } from "@/components/ui/SnsIcon";
 import { EdoIcon } from "@/components/ui/EdoIcon";
 import { ContactModal } from "./ContactModal";
 import { QRModal } from "./QRModal";
-import { MigrationBar } from "./MigrationBar";
-import { SeedStage } from "./SeedStage";
 import { MentorshipSection } from "./MentorshipSection";
 import { AspireButton } from "./AspireButton";
 import type { Profile, Badge, ExternalLink, Shop } from "@/lib/types";
@@ -21,7 +19,6 @@ interface MyzaStorefrontProps {
   badges: Badge[];
   externalLinks: ExternalLink[];
   shops: Shop[];
-  totalSeeds: number;
   isOwner?: boolean;
 }
 
@@ -30,7 +27,6 @@ export function MyzaStorefront({
   badges,
   externalLinks,
   shops,
-  totalSeeds,
   isOwner = false,
 }: MyzaStorefrontProps) {
   const [showContact, setShowContact] = useState(false);
@@ -256,55 +252,6 @@ export function MyzaStorefront({
               ))}
             </div>
           )}
-
-          {/* Status — "今" */}
-          {profile.status_line && (
-            <div
-              className="mt-3 rounded-xl px-3 py-2.5 relative"
-              style={{
-                background: "linear-gradient(135deg, #fff9f0 0%, #fdf6e8 100%)",
-                border: "1px solid #d4a04340",
-              }}
-            >
-              <div className="flex items-start gap-2">
-                <span
-                  className="text-[10px] font-bold text-white px-1.5 py-0.5 rounded mt-0.5 flex-shrink-0"
-                  style={{ background: "#d4a043" }}
-                >
-                  今
-                </span>
-                <p className="text-xs text-text-sub flex-1">
-                  {profile.status_line}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Migration bar — THE story, big and clear */}
-          <div
-            className="mt-4 p-3 rounded-xl"
-            style={{ background: "#f5e8d5" }}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold text-text-sub">
-                🌾 ライスワーク → ライフワーク
-              </span>
-              <span className="text-lg font-bold text-accent">
-                {profile.migration_percent ?? 0}%
-              </span>
-            </div>
-            <MigrationBar
-            percent={profile.migration_percent ?? 0}
-            riceWork={profile.rice_work}
-            lifeWork={profile.life_work}
-            compact
-          />
-        </div>
-
-        {/* Seed stage */}
-        <div className="mt-3 pt-3 border-t border-border">
-          <SeedStage count={totalSeeds} showProgress />
-        </div>
 
         {/* Shops — the actual storefront */}
         {(shops.length > 0 || isOwner) && (

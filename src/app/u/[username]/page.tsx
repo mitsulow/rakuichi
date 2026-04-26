@@ -101,7 +101,6 @@ export default function ProfilePage() {
         badges={badges}
         externalLinks={externalLinks}
         shops={shops}
-        totalSeeds={totalSeeds}
         isOwner={isOwner}
       />
 

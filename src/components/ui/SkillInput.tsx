@@ -62,15 +62,15 @@ const DEFAULT_SUGGESTED = [
 ];
 
 /**
- * Tag-style input that fills cells one-by-one. Press Enter (NOT comma) to
- * commit a tag — typing "野菜、お米" will keep the comma in the tag instead
- * of splitting, because adding things one-by-one is part of the UX.
- * The latest-added tag briefly pops with a scale animation.
+ * Cell-by-cell tag input. Each entry is a discrete "drop into the box"
+ * action — type, hit Enter (or tap the ＋), and the new tag pops into the
+ * row. Comma is treated as a literal character so phrases like "野菜、お米"
+ * stay as one tag. Built around the joy of watching the row fill up.
  */
 export function SkillInput({
   value,
   onChange,
-  placeholder = "1個ずつ入れていこう",
+  placeholder = "1個目を入れてみよう",
   maxCount = 100,
   suggestions = DEFAULT_SUGGESTED,
   variant = "accent",
@@ -79,10 +79,9 @@ export function SkillInput({
   const [recentlyAdded, setRecentlyAdded] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Clear the recent-add highlight after the pop animation finishes
   useEffect(() => {
     if (!recentlyAdded) return;
-    const t = setTimeout(() => setRecentlyAdded(null), 600);
+    const t = setTimeout(() => setRecentlyAdded(null), 700);
     return () => clearTimeout(t);
   }, [recentlyAdded]);
 
@@ -94,7 +93,6 @@ export function SkillInput({
     onChange([...value, s]);
     setDraft("");
     setRecentlyAdded(s);
-    // Re-focus the input so the user can keep typing the next one
     requestAnimationFrame(() => inputRef.current?.focus());
   };
 
@@ -111,18 +109,8 @@ export function SkillInput({
     }
   };
 
-  const tagColors =
-    variant === "indigo"
-      ? {
-          bg: "bg-[#2b3a67]/15",
-          text: "text-[#2b3a67]",
-          ring: "ring-[#2b3a67]/40",
-        }
-      : {
-          bg: "bg-accent/15",
-          text: "text-accent",
-          ring: "ring-accent/40",
-        };
+  const themeColor = variant === "indigo" ? "#2b3a67" : "#c94d3a";
+  const tagBg = variant === "indigo" ? "#2b3a6715" : "#c94d3a15";
 
   const filteredSuggestions = suggestions.filter(
     (s) => !value.some((v) => v.toLowerCase() === s.toLowerCase())
@@ -130,54 +118,130 @@ export function SkillInput({
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap gap-1.5 p-2 bg-bg border border-border rounded-xl min-h-[56px] focus-within:border-accent transition-colors">
-        {value.map((skill, i) => {
-          const isFresh = skill === recentlyAdded;
-          return (
-            <span
-              key={`${skill}-${i}`}
-              className={`inline-flex items-center gap-1 ${tagColors.bg} ${tagColors.text} rounded-full pl-3 pr-1.5 py-1 text-xs font-medium transition-transform ${
-                isFresh ? `ring-2 ${tagColors.ring} scale-110` : ""
-              }`}
-              style={{
-                animation: isFresh ? "tag-pop 0.4s ease-out" : undefined,
-              }}
-            >
-              {skill}
-              <button
-                type="button"
-                onClick={() => removeAt(i)}
-                className="hover:bg-black/10 rounded-full w-4 h-4 flex items-center justify-center text-[10px]"
-                aria-label="削除"
-              >
-                ✕
-              </button>
-            </span>
-          );
-        })}
-        <input
-          ref={inputRef}
-          type="text"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={() => draft && addSkill(draft)}
-          placeholder={value.length === 0 ? placeholder : ""}
-          className="flex-1 min-w-[120px] bg-transparent text-sm focus:outline-none px-1"
-          maxLength={40}
-        />
+      {/* Counter row */}
+      <div className="flex items-baseline gap-1.5">
+        <span
+          className="text-2xl font-bold leading-none transition-colors"
+          style={{ color: themeColor }}
+        >
+          {value.length}
+        </span>
+        <span className="text-xs text-text-mute">個</span>
+        <span className="text-[10px] text-text-mute ml-1">
+          / {maxCount}
+        </span>
+        {value.length === 0 && (
+          <span
+            className="text-[10px] ml-auto animate-pulse font-medium"
+            style={{ color: themeColor }}
+          >
+            ↓ Enter で 1 個ずつ追加
+          </span>
+        )}
       </div>
+
+      {/* Tag row — only shown when there are tags */}
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 p-2 bg-bg/40 border border-dashed border-border rounded-xl min-h-[44px]">
+          {value.map((skill, i) => {
+            const isFresh = skill === recentlyAdded;
+            return (
+              <span
+                key={`${skill}-${i}`}
+                className={`group inline-flex items-center gap-1 rounded-full pl-3 pr-1 py-1 text-xs font-medium ${
+                  isFresh ? "ring-2 scale-110" : ""
+                }`}
+                style={{
+                  background: tagBg,
+                  color: themeColor,
+                  ...(isFresh && {
+                    animation: "tag-pop 0.55s cubic-bezier(.34,1.56,.64,1)",
+                    boxShadow: `0 0 0 2px ${themeColor}40`,
+                  }),
+                }}
+              >
+                <span
+                  className="text-[9px] font-bold opacity-50 mr-0.5"
+                  style={{ color: themeColor }}
+                >
+                  {i + 1}
+                </span>
+                {skill}
+                <button
+                  type="button"
+                  onClick={() => removeAt(i)}
+                  className="hover:bg-black/10 rounded-full w-4 h-4 flex items-center justify-center text-[10px] opacity-60 group-hover:opacity-100"
+                  aria-label="削除"
+                >
+                  ✕
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Big input box with ＋ button */}
+      {value.length < maxCount && (
+        <div className="relative">
+          <input
+            ref={inputRef}
+            type="text"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={() => draft && addSkill(draft)}
+            placeholder={
+              value.length === 0
+                ? placeholder
+                : `${value.length + 1}個目を入れる`
+            }
+            className="w-full bg-card border-2 border-border rounded-xl pl-4 pr-12 py-3 text-base font-medium focus:outline-none transition-colors"
+            style={{
+              borderColor: draft ? themeColor : undefined,
+            }}
+            maxLength={40}
+          />
+          <button
+            type="button"
+            onClick={() => addSkill(draft)}
+            disabled={!draft.trim()}
+            aria-label="追加"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full text-white text-base font-bold flex items-center justify-center transition-all shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
+            style={{
+              background: draft.trim() ? themeColor : "#cccccc",
+              transform: draft.trim()
+                ? "translateY(-50%) scale(1)"
+                : "translateY(-50%) scale(0.85)",
+              transition: "all 0.15s",
+            }}
+          >
+            ＋
+          </button>
+        </div>
+      )}
 
       {/* Suggestions — tap to drop one cell into the row */}
       {value.length < maxCount && filteredSuggestions.length > 0 && (
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1 pt-0.5">
           <span className="text-[10px] text-text-mute py-0.5">候補：</span>
           {filteredSuggestions.slice(0, 16).map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => addSkill(s)}
-              className="text-[10px] text-text-mute hover:text-accent hover:bg-accent/5 border border-border hover:border-accent rounded-full px-2 py-0.5 transition-colors"
+              className="text-[10px] text-text-mute border border-border rounded-full px-2 py-0.5 transition-colors"
+              style={{
+                ["--hover-color" as string]: themeColor,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = themeColor;
+                e.currentTarget.style.borderColor = themeColor;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "";
+                e.currentTarget.style.borderColor = "";
+              }}
             >
               + {s}
             </button>
@@ -185,22 +249,18 @@ export function SkillInput({
         </div>
       )}
 
-      <p className="text-[10px] text-text-mute">
-        Enter で追加・✕で削除（{value.length}/{maxCount}）
-      </p>
-
       <style jsx>{`
         @keyframes tag-pop {
           0% {
             opacity: 0;
-            transform: scale(0.6);
+            transform: translateY(-12px) scale(0.5);
           }
-          60% {
-            transform: scale(1.18);
+          50% {
+            transform: translateY(0) scale(1.18);
           }
           100% {
             opacity: 1;
-            transform: scale(1);
+            transform: translateY(0) scale(1);
           }
         }
       `}</style>
