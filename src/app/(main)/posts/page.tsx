@@ -140,38 +140,40 @@ export default function PostsPage() {
         </a>
       )}
 
-      {/* Compact filter strip — region + random + count on one line */}
-      <div className="flex items-center gap-2">
-        <div className="flex-1">
-          <RegionFilter
-            scope={scope}
-            onChange={(s) => {
-              setScope(s);
-              setRandom(false);
-            }}
-            userPrefecture={profile?.prefecture ?? null}
-          />
+      {/* Filter strip + meta — visually unified, separates composer from feed */}
+      <div className="pt-3 border-t border-border space-y-2">
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <RegionFilter
+              scope={scope}
+              onChange={(s) => {
+                setScope(s);
+                setRandom(false);
+              }}
+              userPrefecture={profile?.prefecture ?? null}
+            />
+          </div>
+          <button
+            onClick={random ? () => setRandom(false) : handleRandomize}
+            className={`text-xs px-3 py-2.5 rounded-xl font-medium transition-colors whitespace-nowrap ${
+              random
+                ? "bg-accent text-white border border-accent"
+                : "bg-card text-text-sub border border-border hover:border-accent"
+            }`}
+            title={random ? "新しい順に戻す" : "ランダムで眺める"}
+          >
+            {random ? "🆕 新着" : "🎲 ランダム"}
+          </button>
         </div>
-        <button
-          onClick={random ? () => setRandom(false) : handleRandomize}
-          className={`text-xs px-3 py-2.5 rounded-xl font-medium transition-colors whitespace-nowrap ${
-            random
-              ? "bg-accent text-white border border-accent"
-              : "bg-card text-text-sub border border-border hover:border-accent"
-          }`}
-          title={random ? "新しい順に戻す" : "ランダムで眺める"}
-        >
-          {random ? "🆕 新着" : "🎲 ランダム"}
-        </button>
-      </div>
 
-      <div className="flex items-center gap-2 text-[11px] text-text-mute px-1 py-1 border-t border-border">
-        <span className="font-medium">
-          {random ? "🎲 ランダム" : "🆕 新しい順"}
-        </span>
-        <span className="text-text-mute/40">／</span>
-        <span>{scopeLabel(scope)}</span>
-        <span className="ml-auto">{total}件</span>
+        <div className="flex items-center gap-2 text-[11px] text-text-mute px-1">
+          <span className="font-medium">
+            {random ? "🎲 ランダム" : "🆕 新しい順"}
+          </span>
+          <span className="text-text-mute/40">／</span>
+          <span>{scopeLabel(scope)}</span>
+          <span className="ml-auto">{total}件</span>
+        </div>
       </div>
 
       {/* Posts */}
