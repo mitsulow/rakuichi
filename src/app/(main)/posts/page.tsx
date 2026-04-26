@@ -127,17 +127,29 @@ export default function PostsPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-lg font-bold">💭 情緒</h1>
-        <p className="text-xs text-text-mute mt-0.5">
-          店主たちのつぶやき・今日のこと・シェアしたいもの
+    <div className="space-y-3">
+      {/* Edo-style header */}
+      <div
+        className="text-center py-3 px-4 rounded-2xl border-2"
+        style={{
+          borderColor: "#c94d3a40",
+          background:
+            "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 50%, #fdf6e9 100%)",
+        }}
+      >
+        <h1
+          className="text-xl font-bold tracking-wide leading-tight"
+          style={{ color: "#c94d3a" }}
+        >
+          💭 情 緒
+        </h1>
+        <p className="text-[11px] text-text-sub mt-1 leading-snug">
+          店主たちのつぶやき ・ 今日のこと ・ シェアしたいもの
         </p>
       </div>
 
-      {/* Region filter */}
-      <div>
-        <div className="text-[10px] text-text-mute mb-1 px-1">地域で絞る</div>
+      {/* Single-row controls: region filter + random toggle */}
+      <div className="grid grid-cols-[1fr_auto] gap-2">
         <RegionFilter
           scope={scope}
           onChange={(s) => {
@@ -146,24 +158,21 @@ export default function PostsPage() {
           }}
           userPrefecture={profile?.prefecture ?? null}
         />
-      </div>
-
-      {/* Random button */}
-      <div className="flex items-center justify-between">
-        <p className="text-[11px] text-text-mute">
-          {random ? "ランダムに並べてます" : `全${total}件`}
-        </p>
         <button
           onClick={random ? () => setRandom(false) : handleRandomize}
-          className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+          className={`text-xs px-3 py-2.5 rounded-xl font-medium transition-colors whitespace-nowrap ${
             random
               ? "bg-accent text-white"
-              : "bg-card text-text-sub border border-border"
+              : "bg-card text-text-sub border border-border hover:border-accent"
           }`}
         >
-          {random ? "🎲 新しい順に戻す" : "🎲 ランダムで観る"}
+          {random ? "🎲 ON" : "🎲 ランダム"}
         </button>
       </div>
+
+      <p className="text-center text-[11px] text-text-mute">
+        {random ? "🎲 ランダムに並べてます" : `今 ${total}件 の情緒`}
+      </p>
 
       {/* Composer or login prompt */}
       {user ? (

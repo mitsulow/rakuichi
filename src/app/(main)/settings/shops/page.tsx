@@ -227,6 +227,8 @@ interface ShopFormProps {
 
 function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
   const [saving, setSaving] = useState(false);
+  // Editing existing? auto-open advanced. New? hide advanced for the 3-tap flow.
+  const [showAdvanced, setShowAdvanced] = useState(Boolean(initial));
   const [form, setForm] = useState({
     category: initial?.category ?? "craft",
     name: initial?.name ?? "",
@@ -282,10 +284,25 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
         </h1>
       </div>
 
-      {/* Category */}
+      {!initial && (
+        <div
+          className="rounded-xl border border-accent/30 px-3 py-2 text-[11px] text-text-sub"
+          style={{
+            background:
+              "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 100%)",
+          }}
+        >
+          🌱 3タップで出せます: <strong>ジャンル → 名前 → 出す</strong>。
+          値段や物々交換は「詳しく設定」で後から付けてもOK。
+        </div>
+      )}
+
+      {/* 1. Category */}
       <Card>
         <div className="space-y-2">
-          <label className="text-xs text-text-mute block">カテゴリ</label>
+          <label className="text-xs text-text-mute block">
+            <span className="font-bold text-text-sub">1.</span> ジャンル
+          </label>
           <div className="grid grid-cols-3 gap-1.5">
             {CATEGORIES.map((c) => (
               <button
@@ -306,13 +323,29 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
         </div>
       </Card>
 
-      {/* Images */}
+      {/* 2. Name (essential, always visible) */}
+      <Card>
+        <div>
+          <label className="text-xs text-text-mute block mb-1">
+            <span className="font-bold text-text-sub">2.</span> 楽座の名前
+          </label>
+          <input
+            type="text"
+            value={form.name}
+            onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+            placeholder="例：陶芸体験60分／自家製味噌"
+            className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm focus:border-accent focus:outline-none"
+            required
+          />
+        </div>
+      </Card>
+
+      {/* 3. Photo (optional) */}
       <Card>
         <div className="space-y-2">
-          <label className="text-xs text-text-mute block">📸 商品・サービスの画像</label>
-          <p className="text-[10px] text-text-mute">
-            どんな物・サービスを提供するか写真で伝えよう。最大4枚
-          </p>
+          <label className="text-xs text-text-mute block">
+            <span className="font-bold text-text-sub">3.</span> 写真（任意・最大4枚）
+          </label>
           <ImageUpload
             bucket="shop-images"
             userId={userId}
@@ -326,116 +359,126 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
         </div>
       </Card>
 
-      {/* Name & description */}
-      <Card>
-        <div className="space-y-3">
-          <div>
-            <label className="text-xs text-text-mute block mb-1">楽座の名前</label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-              placeholder="例：陶芸体験60分"
-              className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm focus:border-accent focus:outline-none"
-              required
-            />
-          </div>
-          <div>
-            <label className="text-xs text-text-mute block mb-1">内容・想い</label>
-            <textarea
-              value={form.description}
-              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-              rows={3}
-              placeholder="どんなサービス？どんな想いでやってる？"
-              className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm resize-none focus:border-accent focus:outline-none"
-            />
-          </div>
-        </div>
-      </Card>
+      {/* Advanced settings — collapsed by default for new shops */}
+      <button
+        type="button"
+        onClick={() => setShowAdvanced(!showAdvanced)}
+        className="w-full text-xs text-text-sub hover:text-accent py-2 border-t border-dashed border-border"
+      >
+        {showAdvanced ? "▲ 詳しい設定を閉じる" : "▼ 詳しく設定する（説明文・価格・物々交換など）"}
+      </button>
 
-      {/* Pricing mode */}
-      <Card>
-        <div className="space-y-3">
-          <h3 className="text-sm font-bold text-text-sub">受け取り方</h3>
-
-          {/* Trial mode toggle */}
-          <label className="flex items-start gap-2.5 p-3 rounded-xl border-2 cursor-pointer transition-colors border-accent/40 bg-accent/5">
-            <input
-              type="radio"
-              name="mode"
-              checked={form.is_trial}
-              onChange={() => setForm((p) => ({ ...p, is_trial: true }))}
-              className="mt-1"
-            />
-            <div className="flex-1">
-              <div className="text-sm font-medium">🌱 お試し出品（0円〜）</div>
-              <div className="text-xs text-text-mute mt-0.5">
-                「まだ値段をつける自信がない」人はこっち。
-                物々交換や投げ銭で受け取れる。実績を積んだら正式価格に切り替えよう。
-              </div>
+      {showAdvanced && (
+        <>
+          {/* Description */}
+          <Card>
+            <div>
+              <label className="text-xs text-text-mute block mb-1">
+                内容・想い
+              </label>
+              <textarea
+                value={form.description}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, description: e.target.value }))
+                }
+                rows={3}
+                placeholder="どんなサービス？どんな想いでやってる？"
+                className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm resize-none focus:border-accent focus:outline-none"
+              />
             </div>
-          </label>
+          </Card>
 
-          <label className="flex items-start gap-2.5 p-3 rounded-xl border-2 cursor-pointer transition-colors border-border bg-bg">
-            <input
-              type="radio"
-              name="mode"
-              checked={!form.is_trial}
-              onChange={() => setForm((p) => ({ ...p, is_trial: false }))}
-              className="mt-1"
-            />
-            <div className="flex-1">
-              <div className="text-sm font-medium">💴 価格を設定する</div>
-              <div className="text-xs text-text-mute mt-0.5">
-                日本円で価格を決めて出品
-              </div>
-              {!form.is_trial && (
-                <div className="mt-2">
-                  <input
-                    type="number"
-                    value={form.price_jpy}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, price_jpy: e.target.value }))
-                    }
-                    placeholder="3000"
-                    min="0"
-                    className="w-32 bg-bg-card border border-border rounded-lg px-2 py-1.5 text-sm focus:border-accent focus:outline-none"
-                  />
-                  <span className="text-sm text-text-sub ml-2">円</span>
+          {/* Pricing mode */}
+          <Card>
+            <div className="space-y-3">
+              <h3 className="text-sm font-bold text-text-sub">受け取り方</h3>
+
+              <label className="flex items-start gap-2.5 p-3 rounded-xl border-2 cursor-pointer transition-colors border-accent/40 bg-accent/5">
+                <input
+                  type="radio"
+                  name="mode"
+                  checked={form.is_trial}
+                  onChange={() => setForm((p) => ({ ...p, is_trial: true }))}
+                  className="mt-1"
+                />
+                <div className="flex-1">
+                  <div className="text-sm font-medium">🌱 お試し出品（0円〜）</div>
+                  <div className="text-xs text-text-mute mt-0.5">
+                    値段をつける自信がない人はこっち。物々交換や投げ銭で受け取れる。
+                  </div>
                 </div>
-              )}
-            </div>
-          </label>
+              </label>
 
-          {/* Additional options */}
-          <div className="pt-2 border-t border-border space-y-2">
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.accepts_barter}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, accepts_barter: e.target.checked }))
-                }
-              />
-              <span>🔄 物々交換も受ける</span>
-            </label>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.accepts_tip}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, accepts_tip: e.target.checked }))
-                }
-              />
-              <span>🪙 投げ銭（気持ち）も受ける</span>
-            </label>
-          </div>
-        </div>
-      </Card>
+              <label className="flex items-start gap-2.5 p-3 rounded-xl border-2 cursor-pointer transition-colors border-border bg-bg">
+                <input
+                  type="radio"
+                  name="mode"
+                  checked={!form.is_trial}
+                  onChange={() => setForm((p) => ({ ...p, is_trial: false }))}
+                  className="mt-1"
+                />
+                <div className="flex-1">
+                  <div className="text-sm font-medium">💴 価格を設定する</div>
+                  <div className="text-xs text-text-mute mt-0.5">
+                    日本円で価格を決めて出品
+                  </div>
+                  {!form.is_trial && (
+                    <div className="mt-2">
+                      <input
+                        type="number"
+                        value={form.price_jpy}
+                        onChange={(e) =>
+                          setForm((p) => ({ ...p, price_jpy: e.target.value }))
+                        }
+                        placeholder="3000"
+                        min="0"
+                        className="w-32 bg-bg-card border border-border rounded-lg px-2 py-1.5 text-sm focus:border-accent focus:outline-none"
+                      />
+                      <span className="text-sm text-text-sub ml-2">円</span>
+                    </div>
+                  )}
+                </div>
+              </label>
+
+              <div className="pt-2 border-t border-border space-y-2">
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.accepts_barter}
+                    onChange={(e) =>
+                      setForm((p) => ({
+                        ...p,
+                        accepts_barter: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>🔄 物々交換も受ける</span>
+                </label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.accepts_tip}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, accepts_tip: e.target.checked }))
+                    }
+                  />
+                  <span>🪙 投げ銭（気持ち）も受ける</span>
+                </label>
+              </div>
+            </div>
+          </Card>
+        </>
+      )}
 
       {/* Actions */}
-      <div className="flex gap-2">
-        <Button variant="ghost" size="md" type="button" onClick={onCancel} className="flex-1">
+      <div className="flex gap-2 sticky bottom-20 md:static z-10">
+        <Button
+          variant="ghost"
+          size="md"
+          type="button"
+          onClick={onCancel}
+          className="flex-1"
+        >
           キャンセル
         </Button>
         <Button
@@ -443,9 +486,15 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
           size="md"
           type="submit"
           disabled={!form.name.trim() || saving}
-          className="flex-1"
+          className="flex-1 shadow-lg"
         >
-          {saving ? "出店中..." : initial ? "保存する" : "🏪 楽座を出す"}
+          {saving
+            ? "出店中..."
+            : initial
+            ? "保存する"
+            : form.is_trial
+            ? "🌱 お試しで出す"
+            : "🏪 楽座を出す"}
         </Button>
       </div>
     </form>
