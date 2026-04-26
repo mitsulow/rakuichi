@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/Card";
 import { CategoryTag } from "@/components/ui/CategoryTag";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { ImageLightbox } from "@/components/ui/ImageLightbox";
+import { RichBody } from "@/components/feed/RichBody";
 import { useAuth } from "@/components/auth/AuthProvider";
 import {
   fetchShopById,
@@ -264,7 +265,7 @@ export default function ShopDetailPage({
         {shop.description && (
           <Card>
             <p className="text-sm whitespace-pre-wrap leading-relaxed">
-              {shop.description}
+              <RichBody body={shop.description} />
             </p>
           </Card>
         )}

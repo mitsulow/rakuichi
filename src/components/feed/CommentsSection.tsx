@@ -9,6 +9,7 @@ import {
   deleteComment,
 } from "@/lib/data";
 import { formatRelativeTime } from "@/lib/utils";
+import { RichBody } from "./RichBody";
 import type { Comment, Profile } from "@/lib/types";
 
 type CommentWithProfile = Comment & { profile?: Profile };
@@ -107,7 +108,7 @@ export function CommentsSection({
                     </Link>
                   )}
                   <p className="text-xs whitespace-pre-wrap mt-0.5">
-                    {c.body}
+                    <RichBody body={c.body} />
                   </p>
                 </div>
                 <div className="flex items-center gap-2 mt-0.5 text-[10px] text-text-mute px-1">

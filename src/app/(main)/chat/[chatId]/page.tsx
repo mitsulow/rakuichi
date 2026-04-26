@@ -18,6 +18,7 @@ import { TradeProposalModal } from "@/components/chat/TradeProposalModal";
 import { TradeProposalCard } from "@/components/chat/TradeProposalCard";
 import { TradeDiaryModal } from "@/components/chat/TradeDiaryModal";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
+import { RichBody } from "@/components/feed/RichBody";
 import type { Message, Profile, TradeProposal } from "@/lib/types";
 
 type Item =
@@ -224,7 +225,9 @@ export default function ChatConversationPage({
                     : "bg-card border border-border rounded-tl-sm"
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap">{msg.body}</p>
+                <p className="text-sm whitespace-pre-wrap">
+                  <RichBody body={msg.body} />
+                </p>
                 <p
                   className={`text-[10px] mt-0.5 ${
                     isMine ? "text-white/70" : "text-text-mute"
