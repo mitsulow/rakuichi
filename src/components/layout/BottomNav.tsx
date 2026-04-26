@@ -113,11 +113,22 @@ export function BottomNav() {
             <Link
               key={tab.label}
               href={tab.href}
-              className={`flex flex-col items-center gap-0.5 py-1 px-2 no-underline transition-colors min-w-[56px] relative ${
-                isActive ? "text-accent" : "text-text-mute"
+              className={`flex flex-col items-center gap-0.5 py-1 px-2 no-underline transition-all min-w-[56px] relative ${
+                isActive ? "text-accent" : "text-text-mute hover:text-text-sub"
               }`}
             >
-              <span className="relative inline-flex items-center justify-center">
+              {/* Active indicator: small dot above */}
+              {isActive && (
+                <span
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[3px] rounded-b-full"
+                  style={{ background: "#c94d3a" }}
+                />
+              )}
+              <span
+                className={`relative inline-flex items-center justify-center transition-transform ${
+                  isActive ? "scale-110" : ""
+                }`}
+              >
                 {tab.icon ? (
                   <EdoIcon name={tab.icon} size={22} />
                 ) : (
@@ -132,7 +143,13 @@ export function BottomNav() {
                   </span>
                 )}
               </span>
-              <span className="text-[10px] font-medium">{tab.label}</span>
+              <span
+                className={`text-[10px] transition-all ${
+                  isActive ? "font-bold" : "font-medium"
+                }`}
+              >
+                {tab.label}
+              </span>
             </Link>
           );
         })}
