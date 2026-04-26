@@ -229,10 +229,10 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled, 
                 /* cancelled */
               }
             }}
-            title="共有"
+            title="シェア"
             className="flex items-center gap-1 text-sm px-2.5 py-1 rounded-full text-text-sub hover:bg-bg transition-colors ml-auto"
           >
-            <span>⤴</span>
+            <span>📤</span>
           </button>
         </div>
 

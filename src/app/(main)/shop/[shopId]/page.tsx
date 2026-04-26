@@ -156,7 +156,7 @@ export default function ShopDetailPage({
           className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-lg shadow-md"
           aria-label="シェア"
         >
-          ⤴
+          📤
         </button>
         {shareToast && (
           <div className="absolute top-16 right-3 bg-black/80 text-white text-xs px-3 py-1.5 rounded-full">
