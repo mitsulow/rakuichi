@@ -16,6 +16,7 @@ import {
   deletePost,
   POSTS_PAGE_SIZE,
 } from "@/lib/data";
+import { createClient } from "@/lib/supabase/client";
 import type { Post } from "@/lib/types";
 
 /**
@@ -27,6 +28,7 @@ export default function PostsPage() {
   const [random, setRandom] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [newPostsCount, setNewPostsCount] = useState(0);
   // Start empty — older cached data may have been filtered. Always fetch fresh.
   const [posts, setPosts] = useState<Post[]>([]);
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
@@ -98,6 +100,44 @@ export default function PostsPage() {
     setPage(nextPage);
     setLoadingMore(false);
   }, [loadingMore, canLoadMore, page, scope, searchTerm]);
+
+  // Realtime: track new posts arriving while user is viewing
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel("posts-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "posts" },
+        (payload) => {
+          const newPost = payload.new as { user_id?: string };
+          // Don't count the user's own new posts (already prepended via composer)
+          if (newPost?.user_id && newPost.user_id !== user?.id) {
+            setNewPostsCount((c) => c + 1);
+          }
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const refreshNewPosts = async () => {
+    const prefectures = regionToPrefectures(scope);
+    const { posts: list, total } = await fetchPostsPaged(
+      0,
+      POSTS_PAGE_SIZE,
+      prefectures,
+      random,
+      searchTerm
+    );
+    setPosts(list as Post[]);
+    setTotal(total);
+    setPage(0);
+    setNewPostsCount(0);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   useEffect(() => {
     if (!sentinelRef.current || !canLoadMore) return;
@@ -217,6 +257,17 @@ export default function PostsPage() {
           <span className="ml-auto">{total}件</span>
         </div>
       </div>
+
+      {/* New posts indicator — appears when realtime detects new posts */}
+      {newPostsCount > 0 && !loading && (
+        <button
+          onClick={refreshNewPosts}
+          className="w-full sticky top-14 z-30 bg-accent text-white rounded-full py-2 text-xs font-bold hover:opacity-90 transition shadow-lg flex items-center justify-center gap-2"
+        >
+          <span>🆕 新着 {newPostsCount} 件</span>
+          <span className="opacity-70">↑ タップで読み込み</span>
+        </button>
+      )}
 
       {/* Posts */}
       <div className="space-y-3">
