@@ -265,9 +265,14 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
           ) : (
             <button
               onClick={() => setIsExpanded(true)}
-              className="w-full bg-bg rounded-xl p-3 text-sm text-text-mute text-left hover:bg-border/50 transition-colors"
+              className="w-full rounded-xl px-3.5 py-3 text-sm text-text-sub text-left transition-all hover:shadow-sm border border-border hover:border-accent/40"
+              style={{
+                background:
+                  "linear-gradient(135deg, #fffaf0 0%, #fdf6e9 100%)",
+              }}
             >
-              今日の出来事、他のSNSのリンクも貼れます...
+              <span className="text-text-mute">✏️</span>{" "}
+              今日の出来事 ・ 嬉しかったこと ・ 仲間に伝えたいこと…
             </button>
           )}
         </div>
