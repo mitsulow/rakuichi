@@ -6,8 +6,8 @@ import { Avatar } from "@/components/ui/Avatar";
 import { BadgeList } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { CategoryTag } from "@/components/ui/CategoryTag";
 import { SnsIcon, getPlatformLabel } from "@/components/ui/SnsIcon";
+import { EdoIcon } from "@/components/ui/EdoIcon";
 import { ContactModal } from "./ContactModal";
 import { QRModal } from "./QRModal";
 import { MigrationBar } from "./MigrationBar";
@@ -35,16 +35,36 @@ export function MyzaStorefront({
 }: MyzaStorefrontProps) {
   const [showContact, setShowContact] = useState(false);
   const [showQR, setShowQR] = useState(false);
-
-  const levelText = [
-    profile.life_work,
-    profile.life_work_level,
-    profile.life_work_years ? `移行${profile.life_work_years}年目` : null,
-  ]
-    .filter(Boolean)
-    .join(" ・ ");
+  const [showAllShops, setShowAllShops] = useState(false);
+  const [shareToast, setShareToast] = useState(false);
 
   const location = [profile.prefecture, profile.city].filter(Boolean).join(" ");
+
+  const handleShare = async () => {
+    if (typeof window === "undefined") return;
+    const url = `${window.location.origin}/u/${profile.username}`;
+    const title = `${profile.display_name} のマイページ — 楽市楽座`;
+    const text = profile.life_work
+      ? `${profile.display_name}（${profile.life_work}）のマイページ`
+      : title;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text, url });
+        return;
+      } catch {
+        /* fall through */
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareToast(true);
+      setTimeout(() => setShareToast(false), 2000);
+    } catch {
+      /* nothing */
+    }
+  };
+
+  const visibleShops = showAllShops ? shops : shops.slice(0, 4);
 
   return (
     <>
@@ -74,7 +94,15 @@ export function MyzaStorefront({
                 size="xl"
               />
             </div>
-            <div className="flex gap-1 ml-auto mb-1">
+            <div className="flex gap-1 ml-auto mb-1 relative">
+              <button
+                onClick={handleShare}
+                className="w-9 h-9 rounded-full bg-white border border-border flex items-center justify-center text-sm hover:bg-bg shadow-sm"
+                title="シェア"
+                aria-label="シェア"
+              >
+                ⤴
+              </button>
               <button
                 onClick={() => setShowQR(true)}
                 className="w-9 h-9 rounded-full bg-white border border-border flex items-center justify-center text-sm hover:bg-bg shadow-sm"
@@ -92,6 +120,11 @@ export function MyzaStorefront({
                 >
                   💬
                 </button>
+              )}
+              {shareToast && (
+                <div className="absolute top-11 right-0 bg-black/80 text-white text-[11px] px-2.5 py-1 rounded-full whitespace-nowrap">
+                  URLをコピーしました
+                </div>
               )}
             </div>
           </div>
@@ -254,60 +287,121 @@ export function MyzaStorefront({
         {(shops.length > 0 || isOwner) && (
           <div className="mt-4 pt-4 border-t border-border">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-xs text-text-mute">🏪 出品中の楽座</div>
+              <div className="text-xs font-medium text-text-sub">
+                🏪 出品中の楽座（{shops.length}座）
+              </div>
               {isOwner && (
-                <Link href="/settings/shops" className="text-xs text-accent no-underline hover:underline">
+                <Link
+                  href="/settings/shops"
+                  className="text-xs text-accent no-underline hover:underline"
+                >
                   {shops.length > 0 ? "管理" : "+ 楽座を出す"}
                 </Link>
               )}
             </div>
             {shops.length === 0 && isOwner && (
-              <div className="text-center py-4 border border-dashed border-border rounded-xl">
-                <p className="text-xs text-text-mute mb-2">まだ楽座がありません</p>
+              <div className="text-center py-6 border border-dashed border-border rounded-xl bg-bg/50">
+                <div className="flex justify-center mb-2 text-accent">
+                  <EdoIcon name="rakuza" size={32} />
+                </div>
+                <p className="text-xs text-text-mute mb-2">
+                  まだ楽座がありません
+                </p>
                 <Link href="/settings/shops" className="no-underline">
-                  <span className="text-xs text-accent">🌱 お試しで1つ出してみる →</span>
+                  <span className="text-xs text-accent font-medium">
+                    🌱 お試しで1つ出してみる →
+                  </span>
                 </Link>
               </div>
             )}
-            <div className="space-y-2">
-              {shops.slice(0, 3).map((shop) => (
-                <div
-                  key={shop.id}
-                  className="border border-border rounded-xl p-2.5 flex items-center gap-2.5"
-                >
-                  {shop.image_urls && shop.image_urls.length > 0 ? (
-                    <img
-                      src={shop.image_urls[0]}
-                      alt={shop.name}
-                      className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
-                    />
-                  ) : (
-                    <CategoryTag categoryId={shop.category} size="sm" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium line-clamp-1">{shop.name}</div>
-                    {shop.description && (
-                      <div className="text-xs text-text-mute line-clamp-1">{shop.description}</div>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end gap-0.5 text-xs">
-                    {shop.is_trial ? (
-                      <span className="text-accent font-medium">お試し</span>
-                    ) : shop.price_jpy != null ? (
-                      <span className="text-accent font-medium">
-                        ¥{shop.price_jpy.toLocaleString()}
-                      </span>
-                    ) : shop.price_text ? (
-                      <span className="text-accent font-medium">{shop.price_text}</span>
-                    ) : null}
-                    <div className="flex gap-0.5 text-[10px] text-text-mute">
-                      {shop.accepts_barter && <span title="物々交換可">🔄</span>}
-                      {shop.accepts_tip && <span title="投げ銭可">🪙</span>}
-                    </div>
-                  </div>
+            {shops.length > 0 && (
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  {visibleShops.map((shop) => (
+                    <Link
+                      key={shop.id}
+                      href={`/shop/${shop.id}`}
+                      className="no-underline"
+                    >
+                      <div
+                        className="rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col"
+                        style={{
+                          background:
+                            "linear-gradient(180deg, #fffaf0 0%, #fdf6e9 100%)",
+                        }}
+                      >
+                        <div className="relative aspect-square overflow-hidden bg-bg">
+                          {shop.image_urls && shop.image_urls.length > 0 ? (
+                            <img
+                              src={shop.image_urls[0]}
+                              alt={shop.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div
+                              className="w-full h-full flex items-center justify-center text-white"
+                              style={{
+                                background:
+                                  "linear-gradient(135deg, #c94d3a 0%, #d4a043 50%, #5a7d4a 100%)",
+                              }}
+                            >
+                              <EdoIcon
+                                name="rakuza"
+                                size={36}
+                                color="#ffffff"
+                              />
+                            </div>
+                          )}
+                          {shop.is_trial && (
+                            <div className="absolute top-1 right-1 text-[9px] font-bold text-white px-1.5 py-0.5 rounded-sm bg-accent shadow-sm">
+                              お試し
+                            </div>
+                          )}
+                          <div
+                            className="absolute inset-x-0 bottom-0 px-2 pt-6 pb-1.5"
+                            style={{
+                              background:
+                                "linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 100%)",
+                            }}
+                          >
+                            <div className="text-[11px] font-bold text-white line-clamp-2 leading-tight drop-shadow">
+                              {shop.name}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="px-2 py-1.5 flex items-center justify-between gap-1">
+                          <div className="text-xs font-bold text-accent truncate">
+                            {shop.is_trial
+                              ? "0円〜"
+                              : shop.price_jpy != null
+                              ? `¥${shop.price_jpy.toLocaleString()}`
+                              : shop.price_text ?? ""}
+                          </div>
+                          <div className="flex gap-0.5 text-[10px] flex-shrink-0">
+                            {shop.accepts_barter && (
+                              <span title="物々交換可">🔄</span>
+                            )}
+                            {shop.accepts_tip && (
+                              <span title="投げ銭可">🪙</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-              ))}
-            </div>
+                {shops.length > 4 && (
+                  <button
+                    onClick={() => setShowAllShops(!showAllShops)}
+                    className="w-full text-xs text-accent mt-2 py-1.5 hover:underline"
+                  >
+                    {showAllShops
+                      ? "▲ 閉じる"
+                      : `▼ 他 ${shops.length - 4}座 を見る`}
+                  </button>
+                )}
+              </>
+            )}
           </div>
         )}
 
