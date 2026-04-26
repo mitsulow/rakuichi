@@ -74,6 +74,19 @@ export interface TradeRecord {
   partner?: Profile;
 }
 
+export interface Notification {
+  id: string;
+  user_id: string;
+  actor_id: string | null;
+  type: "like" | "comment" | "callout_join" | "message" | string;
+  target_type: "post" | "callout" | "profile" | "chat" | null;
+  target_id: string | null;
+  payload: Record<string, unknown> | null;
+  read_at: string | null;
+  created_at: string;
+  actor?: Profile | null;
+}
+
 export interface Callout {
   id: string;
   user_id: string;

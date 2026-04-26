@@ -634,6 +634,54 @@ export async function setCalloutStatus(
 }
 
 // ============================================================
+// Notifications
+// ============================================================
+
+export async function fetchNotifications(userId: string, limit = 40) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("notifications")
+    .select("*, actor:profiles!notifications_actor_id_fkey(*)")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) {
+    console.error("fetchNotifications error:", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
+export async function fetchUnreadNotificationCount(userId: string) {
+  const supabase = createClient();
+  const { count, error } = await supabase
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .is("read_at", null);
+  if (error) {
+    console.error("fetchUnreadNotificationCount error:", error.message);
+    return 0;
+  }
+  return count ?? 0;
+}
+
+export async function markNotificationsRead(userId: string, ids?: string[]) {
+  const supabase = createClient();
+  let query = supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("user_id", userId)
+    .is("read_at", null);
+  if (ids && ids.length > 0) {
+    query = query.in("id", ids);
+  }
+  const { error } = await query;
+  if (error) return { error: error.message };
+  return { error: null };
+}
+
+// ============================================================
 // Skill search — find people by what they can do
 // ============================================================
 
