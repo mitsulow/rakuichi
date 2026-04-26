@@ -156,11 +156,12 @@ export default function PostsPage() {
           onClick={random ? () => setRandom(false) : handleRandomize}
           className={`text-xs px-3 py-2.5 rounded-xl font-medium transition-colors whitespace-nowrap ${
             random
-              ? "bg-accent text-white"
+              ? "bg-accent text-white border border-accent"
               : "bg-card text-text-sub border border-border hover:border-accent"
           }`}
+          title={random ? "新しい順に戻す" : "ランダムで眺める"}
         >
-          {random ? "🎲 ON" : "🎲"}
+          {random ? "🆕 新着" : "🎲 ランダム"}
         </button>
       </div>
 
