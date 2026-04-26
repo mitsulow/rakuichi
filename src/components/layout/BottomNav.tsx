@@ -17,9 +17,9 @@ type Tab = {
 
 const staticTabs: Tab[] = [
   { href: "/feed", label: "楽座", icon: "rakuza" },
-  { href: "/map", label: "マップ", icon: "map" },
+  { href: "/map", label: "地図", icon: "map" },
   { href: "/posts", label: "情緒", emoji: "💭" },
-  { href: "/chat", label: "文", emoji: "💬" },
+  { href: "/chat", label: "手紙", emoji: "💬" },
 ];
 
 export function BottomNav() {
@@ -97,7 +97,7 @@ export function BottomNav() {
 
   const tabs: Tab[] = [
     ...staticTabs,
-    { href: myHref, label: "マイページ", icon: "mypage" },
+    { href: myHref, label: "名刺", icon: "mypage" },
   ];
 
   return (

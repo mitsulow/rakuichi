@@ -8,7 +8,7 @@ import { EdoIcon, type EdoIconName } from "@/components/ui/EdoIcon";
 
 const tabs: Array<{ href: string; label: string; icon: EdoIconName | null; emoji?: string }> = [
   { href: "/feed", label: "楽座", icon: "rakuza" },
-  { href: "/map", label: "マップ", icon: "map" },
+  { href: "/map", label: "地図", icon: "map" },
   { href: "/posts", label: "情緒", icon: null, emoji: "💭" },
   { href: "/skills", label: "SKILL", icon: null, emoji: "🛠" },
   { href: "/callouts", label: "この指", icon: null, emoji: "🤚" },
