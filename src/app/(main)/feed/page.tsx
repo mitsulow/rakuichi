@@ -130,28 +130,6 @@ export default function FeedPage() {
       <WelcomeBanner />
       <WeeklyMarket />
 
-      {/* Edo-style noren header */}
-      <div className="relative">
-        <div
-          className="text-center py-3 px-4 flex items-center justify-center gap-3"
-          style={{
-            background:
-              "linear-gradient(180deg, #c94d3a 0%, #c94d3a 75%, transparent 100%)",
-            clipPath:
-              "polygon(0 0, 100% 0, 100% 75%, 95% 85%, 85% 75%, 75% 85%, 65% 75%, 55% 85%, 45% 75%, 35% 85%, 25% 75%, 15% 85%, 5% 75%, 0 85%)",
-          }}
-        >
-          <span style={{ fontSize: 22 }}>🏮</span>
-          <h1
-            className="text-lg font-bold text-white tracking-widest"
-            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}
-          >
-            楽 座
-          </h1>
-          <span style={{ fontSize: 22 }}>🏮</span>
-        </div>
-      </div>
-
       {/* Filters: region + category as dropdowns */}
       <div>
         <div className="text-[11px] text-text-sub font-medium mb-1.5 px-1">
@@ -293,97 +271,75 @@ export default function FeedPage() {
 }
 
 /**
- * 今日のピックアップ — large featured shop card.
- * Magazine-style: hero image on top with category badge, owner+title overlay,
- * and a warm washi-toned content strip below.
+ * 今日のピックアップ — compact horizontal featured shop card.
+ * Left: square image with ピックアップ ribbon. Right: title, owner, price.
  */
 function FeaturedShopCard({ shop }: { shop: ShopWithOwner }) {
   const router = useRouter();
   const image = shop.image_urls?.[0];
-  const category = CATEGORIES.find((c) => c.id === shop.category);
 
   return (
-    <div className="relative">
-      {/* Floating "今日のピックアップ" ribbon */}
-      <div className="absolute -top-2 left-3 z-20">
-        <div
-          className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-bold text-white rounded-full shadow-md"
-          style={{
-            background: "linear-gradient(135deg, #c94d3a 0%, #d4612e 100%)",
-          }}
-        >
-          <span>🌟</span>
-          <span className="tracking-wider">今日のピックアップ</span>
-        </div>
-      </div>
-
-      <Link href={`/shop/${shop.id}`} className="no-underline block">
-        <div
-          className="relative overflow-hidden rounded-2xl border-2 shadow-md hover:shadow-lg transition-shadow"
-          style={{
-            borderColor: "#c94d3a40",
-            background:
-              "linear-gradient(180deg, #fdf6e9 0%, #f5e8d5 100%)",
-          }}
-        >
-          {/* Hero image */}
-          <div className="relative aspect-[16/10] overflow-hidden bg-bg">
-            {image ? (
-              <img
-                src={image}
-                alt={shop.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div
-                className="w-full h-full flex items-center justify-center text-white"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #c94d3a 0%, #d4a043 50%, #5a7d4a 100%)",
-                }}
-              >
-                <EdoIcon name="rakuza" size={64} color="#ffffff" />
-              </div>
-            )}
-
-            {/* Bottom gradient + title overlay */}
+    <Link href={`/shop/${shop.id}`} className="no-underline block">
+      <div
+        className="relative overflow-hidden rounded-2xl border-2 shadow-md hover:shadow-lg transition-shadow flex"
+        style={{
+          borderColor: "#c94d3a40",
+          background: "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 100%)",
+        }}
+      >
+        {/* Left: square image */}
+        <div className="relative w-28 h-28 flex-shrink-0 overflow-hidden bg-bg">
+          {image ? (
+            <img
+              src={image}
+              alt={shop.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
             <div
-              className="absolute inset-x-0 bottom-0 p-3 pt-12"
+              className="w-full h-full flex items-center justify-center text-white"
               style={{
                 background:
-                  "linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 60%, transparent 100%)",
+                  "linear-gradient(135deg, #c94d3a 0%, #d4a043 50%, #5a7d4a 100%)",
               }}
             >
-              <div className="flex items-center gap-1.5 mb-1">
-                {category && (
-                  <span className="inline-flex items-center gap-1 text-[10px] bg-white/90 text-text px-1.5 py-0.5 rounded-full font-medium">
-                    {category.emoji} {category.label}
-                  </span>
-                )}
-                {shop.is_trial && (
-                  <span className="text-[10px] bg-accent text-white px-1.5 py-0.5 rounded-full font-bold">
-                    お試し
-                  </span>
-                )}
-              </div>
-              <h2 className="text-lg font-bold text-white leading-tight drop-shadow-md line-clamp-2">
-                {shop.name}
-              </h2>
+              <EdoIcon name="rakuza" size={32} color="#ffffff" />
             </div>
+          )}
+          {/* Top-left ピックアップ ribbon */}
+          <div className="absolute top-1 left-1">
+            <div
+              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold text-white rounded shadow-sm"
+              style={{
+                background: "linear-gradient(135deg, #c94d3a 0%, #d4612e 100%)",
+              }}
+            >
+              🌟 今日の一店
+            </div>
+          </div>
+        </div>
 
-            {/* Top-right: location pill */}
-            {shop.owner?.prefecture && (
-              <div className="absolute top-2 right-2">
-                <span className="inline-flex items-center gap-1 text-[10px] bg-white/85 backdrop-blur-sm text-text px-2 py-0.5 rounded-full font-medium">
+        {/* Right: info */}
+        <div className="flex-1 min-w-0 p-2.5 flex flex-col justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1 mb-0.5">
+              {shop.is_trial && (
+                <span className="text-[9px] bg-accent text-white px-1 py-0.5 rounded-sm font-bold flex-shrink-0">
+                  お試し
+                </span>
+              )}
+              {shop.owner?.prefecture && (
+                <span className="text-[10px] text-text-mute truncate">
                   📍 {shop.owner.prefecture}
                 </span>
-              </div>
-            )}
+              )}
+            </div>
+            <h2 className="text-sm font-bold text-text leading-snug line-clamp-2">
+              {shop.name}
+            </h2>
           </div>
 
-          {/* Content strip */}
-          <div className="p-3 flex items-center gap-3">
-            {/* Owner avatar — prominent */}
+          <div className="flex items-end justify-between gap-2 mt-1.5">
             {shop.owner && (
               <button
                 type="button"
@@ -392,51 +348,29 @@ function FeaturedShopCard({ shop }: { shop: ShopWithOwner }) {
                   e.stopPropagation();
                   router.push(`/u/${shop.owner!.username}`);
                 }}
-                className="ring-2 ring-accent/30 rounded-full hover:ring-accent transition flex-shrink-0"
-                title={`${shop.owner.display_name}のマイページ`}
+                className="flex items-center gap-1.5 min-w-0 hover:opacity-80 transition"
               >
                 <Avatar
                   src={shop.owner.avatar_url}
                   alt={shop.owner.display_name}
-                  size="md"
+                  size="sm"
                 />
+                <span className="text-[10px] text-text-sub truncate">
+                  {shop.owner.display_name}
+                </span>
               </button>
             )}
-
-            <div className="flex-1 min-w-0">
-              {shop.owner && (
-                <div className="text-[11px] text-text-sub truncate">
-                  {shop.owner.display_name}
-                  {shop.owner.life_work && (
-                    <span className="text-text-mute"> ・ {shop.owner.life_work}</span>
-                  )}
-                </div>
-              )}
-              {shop.description && (
-                <div className="text-xs text-text-sub line-clamp-2 mt-0.5">
-                  {shop.description}
-                </div>
-              )}
-            </div>
-
-            {/* Price block */}
-            <div className="text-right flex-shrink-0">
-              <div className="text-base font-bold text-accent leading-tight">
-                {shop.is_trial
-                  ? "0円〜"
-                  : shop.price_jpy != null
-                  ? `¥${shop.price_jpy.toLocaleString()}`
-                  : shop.price_text ?? "—"}
-              </div>
-              <div className="flex justify-end gap-0.5 text-xs mt-0.5">
-                {shop.accepts_barter && <span title="物々交換可">🔄</span>}
-                {shop.accepts_tip && <span title="投げ銭可">🪙</span>}
-              </div>
+            <div className="text-sm font-bold text-accent flex-shrink-0">
+              {shop.is_trial
+                ? "0円〜"
+                : shop.price_jpy != null
+                ? `¥${shop.price_jpy.toLocaleString()}`
+                : shop.price_text ?? ""}
             </div>
           </div>
         </div>
-      </Link>
-    </div>
+      </div>
+    </Link>
   );
 }
 

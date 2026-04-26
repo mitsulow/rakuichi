@@ -1,6 +1,7 @@
 import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { OnboardingGate } from "@/components/layout/OnboardingGate";
+import { InstallPrompt } from "@/components/layout/InstallPrompt";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { InAppBrowserWarning } from "@/components/auth/InAppBrowserWarning";
 
@@ -18,6 +19,7 @@ export default function MainLayout({
         <div className="max-w-[680px] mx-auto px-4 py-4">{children}</div>
       </main>
       <BottomNav />
+      <InstallPrompt />
     </AuthProvider>
   );
 }

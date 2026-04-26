@@ -1,0 +1,26 @@
+{
+  "name": "楽市楽座 — 日本人総フリーランス化計画",
+  "short_name": "楽市楽座",
+  "description": "全国のナチュラル・自然派のお店と人が集まる楽市楽座。",
+  "start_url": "/feed",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5ede0",
+  "theme_color": "#c94d3a",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
