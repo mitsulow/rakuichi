@@ -9,6 +9,7 @@ import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { WeeklyMarket } from "@/components/feed/WeeklyMarket";
 import { WelcomeBanner } from "@/components/feed/WelcomeBanner";
 import { AhouDansu } from "@/components/feed/AhouDansu";
+import { ProfileSuggestions } from "@/components/feed/ProfileSuggestions";
 import {
   RegionFilter,
   regionToPrefectures,
@@ -174,6 +175,9 @@ export default function FeedPage() {
       {!loading && featured.length > 0 && (
         <FeaturedCarousel shops={featured} />
       )}
+
+      {/* おすすめの座の民 — discover new villagers to follow */}
+      <ProfileSuggestions />
 
       {/* Subcategory quick-chips — お米とやさい・お魚とお肉 etc. front and center */}
       <div className="flex gap-1.5 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-1">

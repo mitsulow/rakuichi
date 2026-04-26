@@ -634,6 +634,36 @@ export async function setCalloutStatus(
 }
 
 // ============================================================
+// Profile suggestions — "おすすめの座の民"
+// ============================================================
+
+export async function fetchProfileSuggestions(
+  excludeUserId: string | null,
+  limit = 6
+) {
+  const supabase = createClient();
+  let query = supabase
+    .from("profiles")
+    .select("*")
+    .not("life_work", "is", null)
+    .not("avatar_url", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(limit * 4);
+  if (excludeUserId) query = query.neq("id", excludeUserId);
+  const { data } = await query;
+  if (!data) return [];
+  // Already-followed: filter client side (fetch follower's following list)
+  let followingSet = new Set<string>();
+  if (excludeUserId) {
+    const ids = await fetchFollowingIds(excludeUserId);
+    followingSet = new Set(ids);
+  }
+  return data
+    .filter((p) => !followingSet.has((p as { id: string }).id))
+    .slice(0, limit);
+}
+
+// ============================================================
 // のれんをくぐる (follow)
 // ============================================================
 
