@@ -775,6 +775,50 @@ export async function markNotificationsRead(userId: string, ids?: string[]) {
 }
 
 // ============================================================
+// Global search across types
+// ============================================================
+
+export async function searchProfilesByText(term: string, limit = 20) {
+  const supabase = createClient();
+  const t = term.trim();
+  if (!t) return [];
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .or(
+      `display_name.ilike.%${t}%,life_work.ilike.%${t}%,bio.ilike.%${t}%`
+    )
+    .limit(limit);
+  return data ?? [];
+}
+
+export async function searchShopsByText(term: string, limit = 20) {
+  const supabase = createClient();
+  const t = term.trim();
+  if (!t) return [];
+  const { data } = await supabase
+    .from("shops")
+    .select("*, owner:profiles!shops_owner_id_fkey(*)")
+    .or(`name.ilike.%${t}%,description.ilike.%${t}%`)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
+export async function searchCalloutsByText(term: string, limit = 20) {
+  const supabase = createClient();
+  const t = term.trim();
+  if (!t) return [];
+  const { data } = await supabase
+    .from("callouts")
+    .select("*, author:profiles!callouts_user_id_fkey(*)")
+    .or(`title.ilike.%${t}%,body.ilike.%${t}%`)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
+// ============================================================
 // Skill search — find people by what they can do
 // ============================================================
 

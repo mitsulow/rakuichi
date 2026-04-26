@@ -94,6 +94,14 @@ export function Header() {
             })}
           </nav>
           <div className="flex items-center gap-1.5">
+            <Link
+              href="/search"
+              className="w-9 h-9 rounded-full hover:bg-bg flex items-center justify-center text-base no-underline transition-colors"
+              aria-label="検索"
+              title="検索"
+            >
+              🔍
+            </Link>
             {user && (
               <Link
                 href="/notifications"
