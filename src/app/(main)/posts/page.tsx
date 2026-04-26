@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { PostComposer } from "@/components/feed/PostComposer";
 import { PostCard } from "@/components/feed/PostCard";
 import {
@@ -175,14 +174,27 @@ export default function PostsPage() {
       </div>
 
       {/* Posts */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {loading ? (
-          <LoadingScreen step="情緒を読み込み中..." />
+          <PostsSkeleton />
         ) : posts.length === 0 ? (
-          <div className="text-center py-12 text-text-mute">
-            <p className="text-4xl mb-3">💭</p>
-            <p className="text-sm">このエリアに情緒はまだありません</p>
-            <p className="text-xs mt-1">最初の情緒を投げてみよう</p>
+          <div
+            className="text-center py-12 px-6 rounded-2xl border-2 border-dashed"
+            style={{
+              borderColor: "#c94d3a40",
+              background:
+                "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 100%)",
+            }}
+          >
+            <p className="text-5xl mb-3">💭</p>
+            <p className="text-sm font-bold" style={{ color: "#c94d3a" }}>
+              このエリアにはまだ情緒がありません
+            </p>
+            <p className="text-xs text-text-sub mt-1.5">
+              {user
+                ? "最初の一言を投げて、フィードを始めよう"
+                : "ログインして、最初の情緒を投げてみよう"}
+            </p>
           </div>
         ) : (
           <>
@@ -233,6 +245,31 @@ export default function PostsPage() {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function PostsSkeleton() {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div
+          key={i}
+          className="rounded-2xl bg-card border border-border p-4 animate-pulse"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-12 h-12 rounded-full bg-bg" />
+            <div className="flex-1 space-y-2">
+              <div className="h-3 w-1/3 bg-bg rounded" />
+              <div className="h-2.5 w-1/2 bg-bg rounded" />
+            </div>
+          </div>
+          <div className="mt-3 space-y-2">
+            <div className="h-3 w-full bg-bg rounded" />
+            <div className="h-3 w-5/6 bg-bg rounded" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
