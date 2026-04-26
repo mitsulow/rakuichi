@@ -144,30 +144,40 @@ export default function FeedPage() {
       <WeeklyMarket />
 
       {/* Village functions — quick links discoverable on mobile */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-4 gap-1.5">
         <Link
           href="/skills"
-          className="rounded-xl border border-border hover:border-accent transition-colors px-3 py-2 flex items-center gap-2 no-underline bg-card"
+          className="rounded-xl border border-border hover:border-accent transition-colors px-2 py-2.5 flex flex-col items-center gap-0.5 no-underline bg-card text-center"
         >
           <span className="text-lg">🛠</span>
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-bold leading-tight">SKILL検索</div>
-            <div className="text-[10px] text-text-mute leading-tight">
-              特技で人を探す
-            </div>
-          </div>
+          <span className="text-[10px] font-bold leading-tight">
+            SKILL
+          </span>
         </Link>
         <Link
           href="/callouts"
-          className="rounded-xl border border-border hover:border-accent transition-colors px-3 py-2 flex items-center gap-2 no-underline bg-card"
+          className="rounded-xl border border-border hover:border-accent transition-colors px-2 py-2.5 flex flex-col items-center gap-0.5 no-underline bg-card text-center"
         >
           <span className="text-lg">🤚</span>
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-bold leading-tight">この指とまれ</div>
-            <div className="text-[10px] text-text-mute leading-tight">
-              仲間を集める
-            </div>
-          </div>
+          <span className="text-[10px] font-bold leading-tight">
+            この指
+          </span>
+        </Link>
+        <Link
+          href="/search"
+          className="rounded-xl border border-border hover:border-accent transition-colors px-2 py-2.5 flex flex-col items-center gap-0.5 no-underline bg-card text-center"
+        >
+          <span className="text-lg">🔍</span>
+          <span className="text-[10px] font-bold leading-tight">検索</span>
+        </Link>
+        <Link
+          href="/rankings"
+          className="rounded-xl border border-border hover:border-accent transition-colors px-2 py-2.5 flex flex-col items-center gap-0.5 no-underline bg-card text-center"
+        >
+          <span className="text-lg">🏮</span>
+          <span className="text-[10px] font-bold leading-tight">
+            ランキング
+          </span>
         </Link>
       </div>
 
@@ -193,22 +203,30 @@ export default function FeedPage() {
         >
           全部
         </button>
-        {SUBCATEGORIES.map((sub) => (
-          <button
-            key={sub.id}
-            onClick={() => {
-              setSelectedCategory(sub.category);
-              setSelectedSubcategory(sub.id);
-            }}
-            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border whitespace-nowrap transition-colors ${
-              selectedSubcategory === sub.id
-                ? "bg-accent text-white border-accent"
-                : "bg-card border-border hover:border-accent/40"
-            }`}
-          >
-            {sub.emoji} {sub.label}
-          </button>
-        ))}
+        {SUBCATEGORIES.map((sub) => {
+          const active = selectedSubcategory === sub.id;
+          return (
+            <button
+              key={sub.id}
+              onClick={() => {
+                setSelectedCategory(sub.category);
+                setSelectedSubcategory(sub.id);
+              }}
+              className={`flex-shrink-0 pl-1.5 pr-3 py-1 rounded-full text-xs font-medium border whitespace-nowrap transition-colors flex items-center gap-1 ${
+                active
+                  ? "bg-accent text-white border-accent"
+                  : "bg-card border-border hover:border-accent/40"
+              }`}
+            >
+              <img
+                src={sub.icon}
+                alt=""
+                className="w-7 h-7 object-contain flex-shrink-0"
+              />
+              <span>{sub.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Filters: single row (region + category) — labels live inside the dropdowns themselves */}
