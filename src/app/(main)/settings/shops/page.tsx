@@ -14,7 +14,11 @@ import { Button } from "@/components/ui/Button";
 import { CategoryTag } from "@/components/ui/CategoryTag";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
-import { CATEGORIES } from "@/lib/constants";
+import {
+  CATEGORIES,
+  DELIVERY_METHODS,
+  getSubcategoriesFor,
+} from "@/lib/constants";
 import { getCached, setCached } from "@/lib/cache";
 import type { Shop } from "@/lib/types";
 
@@ -231,14 +235,20 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
   const [showAdvanced, setShowAdvanced] = useState(Boolean(initial));
   const [form, setForm] = useState({
     category: initial?.category ?? "craft",
+    subcategory: initial?.subcategory ?? null,
     name: initial?.name ?? "",
     description: initial?.description ?? "",
     is_trial: initial?.is_trial ?? !initial,
     price_jpy: initial?.price_jpy?.toString() ?? "",
     accepts_barter: initial?.accepts_barter ?? true,
     accepts_tip: initial?.accepts_tip ?? false,
+    delivery_methods: initial?.delivery_methods ?? [],
     image_urls: initial?.image_urls ?? [],
   });
+
+  const availableSubcategories = getSubcategoriesFor(
+    form.category as (typeof CATEGORIES)[number]["id"]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -247,12 +257,14 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
     setSaving(true);
     const payload = {
       category: form.category,
+      subcategory: form.subcategory,
       name: form.name.trim(),
       description: form.description.trim() || null,
       is_trial: form.is_trial,
       price_jpy: form.is_trial ? null : form.price_jpy ? parseInt(form.price_jpy) : null,
       accepts_barter: form.accepts_barter,
       accepts_tip: form.accepts_tip,
+      delivery_methods: form.delivery_methods,
       image_urls: form.image_urls,
     };
 
@@ -308,7 +320,13 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
               <button
                 key={c.id}
                 type="button"
-                onClick={() => setForm((p) => ({ ...p, category: c.id }))}
+                onClick={() =>
+                  setForm((p) => ({
+                    ...p,
+                    category: c.id,
+                    subcategory: null, // reset when parent changes
+                  }))
+                }
                 className={`px-2 py-2 rounded-xl text-xs border transition-colors ${
                   form.category === c.id
                     ? "bg-accent text-white border-accent"
@@ -320,6 +338,45 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
               </button>
             ))}
           </div>
+
+          {/* Subcategory — only shown if the parent has any */}
+          {availableSubcategories.length > 0 && (
+            <div className="pt-2">
+              <label className="text-[11px] text-text-mute block mb-1.5">
+                細かいジャンル（任意）
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, subcategory: null }))}
+                  className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
+                    form.subcategory === null
+                      ? "bg-text-sub text-white border-text-sub"
+                      : "bg-card border-border hover:border-accent"
+                  }`}
+                >
+                  指定しない
+                </button>
+                {availableSubcategories.map((sub) => (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() =>
+                      setForm((p) => ({ ...p, subcategory: sub.id }))
+                    }
+                    className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
+                      form.subcategory === sub.id
+                        ? "bg-accent text-white border-accent"
+                        : "bg-card border-border hover:border-accent"
+                    }`}
+                    title={sub.description}
+                  >
+                    {sub.emoji} {sub.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </Card>
 
@@ -464,6 +521,55 @@ function ShopForm({ initial, userId, onCancel, onSaved }: ShopFormProps) {
                   />
                   <span>🪙 投げ銭（気持ち）も受ける</span>
                 </label>
+              </div>
+            </div>
+          </Card>
+
+          {/* Delivery methods — multi-select */}
+          <Card>
+            <div className="space-y-2">
+              <h3 className="text-sm font-bold text-text-sub">
+                📦 受け渡しの方法
+              </h3>
+              <p className="text-[11px] text-text-mute">
+                どの方法で渡せるか（複数選択可）。発送できる範囲が広いほど、遠くの人とも交換できる。
+              </p>
+              <div className="space-y-1.5 pt-1">
+                {DELIVERY_METHODS.map((d) => {
+                  const checked = form.delivery_methods.includes(d.id);
+                  return (
+                    <label
+                      key={d.id}
+                      className={`flex items-start gap-2.5 p-2.5 rounded-xl border cursor-pointer transition-colors ${
+                        checked
+                          ? "border-accent bg-accent/5"
+                          : "border-border bg-bg hover:border-accent/40"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) =>
+                          setForm((p) => ({
+                            ...p,
+                            delivery_methods: e.target.checked
+                              ? [...p.delivery_methods, d.id]
+                              : p.delivery_methods.filter((m) => m !== d.id),
+                          }))
+                        }
+                        className="mt-0.5"
+                      />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium">
+                          {d.emoji} {d.label}
+                        </div>
+                        <div className="text-[11px] text-text-mute mt-0.5">
+                          {d.description}
+                        </div>
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
             </div>
           </Card>

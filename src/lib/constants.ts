@@ -12,6 +12,109 @@ export const CATEGORIES = [
 
 export type CategoryId = (typeof CATEGORIES)[number]["id"];
 
+/**
+ * Subcategories — refines a top-level CATEGORIES entry.
+ * Currently focused on 食 because rice/vegetables/fish/meat are the most
+ * exchange-friendly resources in the village economy. A 漁師 with fresh
+ * fish wants to barter with a 農家's rice; both want to be findable.
+ *
+ * `category` field maps each subcategory to a parent CategoryId.
+ * Empty parent means "applies to any category" (none yet).
+ */
+export const SUBCATEGORIES = [
+  // 食 ——————————————————————————————————————————————
+  {
+    id: "rice_veg",
+    category: "food" as CategoryId,
+    emoji: "🌾",
+    label: "お米とやさい",
+    description: "自然栽培米、無農薬野菜、果物、ハーブ。物々交換の本丸。",
+  },
+  {
+    id: "fish_meat",
+    category: "food" as CategoryId,
+    emoji: "🐟",
+    label: "お魚とお肉",
+    description: "漁師の獲った魚、猟師の獲ったジビエ、天然・自家養鶏の肉。",
+  },
+  {
+    id: "processed",
+    category: "food" as CategoryId,
+    emoji: "🥫",
+    label: "加工食品",
+    description: "味噌、醤油、漬物、梅干し、塩、パン、麺類。",
+  },
+  {
+    id: "sweets",
+    category: "food" as CategoryId,
+    emoji: "🍡",
+    label: "お菓子・スイーツ",
+    description: "和菓子、洋菓子、甘味、ヴィーガンスイーツ。",
+  },
+  {
+    id: "drink",
+    category: "food" as CategoryId,
+    emoji: "🍵",
+    label: "飲み物",
+    description: "お茶、コーヒー、お酒、自家発酵ドリンク、シロップ。",
+  },
+] as const;
+
+export type SubcategoryId = (typeof SUBCATEGORIES)[number]["id"];
+
+export function getSubcategory(id: string | null | undefined) {
+  if (!id) return undefined;
+  return SUBCATEGORIES.find((s) => s.id === id);
+}
+
+export function getSubcategoriesFor(categoryId: CategoryId) {
+  return SUBCATEGORIES.filter((s) => s.category === categoryId);
+}
+
+/**
+ * Delivery methods — how the buyer/exchanger receives the goods or service.
+ * Multi-select: a 漁師 can offer both 直送 (shipping) and 引き取り (pickup),
+ * a マッサージ師 only 対面.
+ */
+export const DELIVERY_METHODS = [
+  {
+    id: "shipping",
+    emoji: "📦",
+    label: "発送",
+    description: "宅配便（ヤマト・佐川・郵便など）で全国へ",
+  },
+  {
+    id: "meet",
+    emoji: "🤝",
+    label: "対面",
+    description: "お店・出張・体験など、直接会って提供",
+  },
+  {
+    id: "pickup",
+    emoji: "🏠",
+    label: "引き取り",
+    description: "産地・自宅まで取りに来てもらう / 待ち合わせ",
+  },
+  {
+    id: "online",
+    emoji: "💻",
+    label: "オンライン",
+    description: "ZoomやLINEなど、画面越しで提供",
+  },
+  {
+    id: "mail",
+    emoji: "✉",
+    label: "メール便",
+    description: "ポスト投函の小物・書類",
+  },
+] as const;
+
+export type DeliveryMethodId = (typeof DELIVERY_METHODS)[number]["id"];
+
+export function getDeliveryMethod(id: string) {
+  return DELIVERY_METHODS.find((d) => d.id === id);
+}
+
 export const BADGE_TYPES = [
   { id: "verified", emoji: "✅", label: "本人確認済み", description: "身分証確認で付与" },
   { id: "sekaimura", emoji: "🏡", label: "セカイムラ住民", description: "セカイムラ／レイビレッジ現地に住んでいる" },

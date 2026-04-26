@@ -31,6 +31,7 @@ export interface Shop {
   id: string;
   owner_id: string;
   category: CategoryId;
+  subcategory: string | null;
   name: string;
   description: string | null;
   price_text: string | null;
@@ -38,6 +39,7 @@ export interface Shop {
   is_trial: boolean;
   accepts_barter: boolean;
   accepts_tip: boolean;
+  delivery_methods: string[];
   image_urls: string[];
   created_at: string;
   updated_at: string;

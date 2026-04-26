@@ -18,7 +18,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { fetchAllShops, SHOPS_PAGE_SIZE } from "@/lib/data";
 import { EdoIcon } from "@/components/ui/EdoIcon";
 import { getCached, setCached } from "@/lib/cache";
-import { CATEGORIES } from "@/lib/constants";
+import { CATEGORIES, SUBCATEGORIES, getSubcategory } from "@/lib/constants";
 import type { Shop, Profile } from "@/lib/types";
 
 interface ShopWithOwner extends Shop {
@@ -33,6 +33,7 @@ export default function FeedPage() {
   const { user, profile } = useAuth();
   const [scope, setScope] = useState<RegionScope>({ kind: "world" });
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [shops, setShops] = useState<ShopWithOwner[]>(() => {
     if (typeof window === "undefined") return [];
     return getCached<ShopWithOwner[]>("feed:shops") ?? [];
@@ -62,12 +63,13 @@ export default function FeedPage() {
           selectedCategory,
           0,
           SHOPS_PAGE_SIZE,
-          prefectures
+          prefectures,
+          selectedSubcategory
         );
         if (cancelled) return;
         setShops(list as ShopWithOwner[]);
         setTotal(total);
-        if (!selectedCategory && scope.kind === "japan") {
+        if (!selectedCategory && !selectedSubcategory && scope.kind === "japan") {
           setCached("feed:shops", list);
         }
       } finally {
@@ -79,7 +81,7 @@ export default function FeedPage() {
       cancelled = true;
       clearTimeout(failsafe);
     };
-  }, [scope, selectedCategory]);
+  }, [scope, selectedCategory, selectedSubcategory]);
 
   const canLoadMore = shops.length < total;
 
@@ -92,12 +94,13 @@ export default function FeedPage() {
       selectedCategory,
       nextPage,
       SHOPS_PAGE_SIZE,
-      prefectures
+      prefectures,
+      selectedSubcategory
     );
     setShops((prev) => [...prev, ...(more as ShopWithOwner[])]);
     setPage(nextPage);
     setLoadingMore(false);
-  }, [loadingMore, canLoadMore, page, selectedCategory, scope]);
+  }, [loadingMore, canLoadMore, page, selectedCategory, selectedSubcategory, scope]);
 
   useEffect(() => {
     if (!sentinelRef.current || !canLoadMore) return;
@@ -144,6 +147,38 @@ export default function FeedPage() {
         <FeaturedCarousel shops={featured} />
       )}
 
+      {/* Subcategory quick-chips — お米とやさい・お魚とお肉 etc. front and center */}
+      <div className="flex gap-1.5 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-1">
+        <button
+          onClick={() => {
+            setSelectedSubcategory(null);
+          }}
+          className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border whitespace-nowrap transition-colors ${
+            selectedSubcategory === null
+              ? "bg-accent text-white border-accent"
+              : "bg-card border-border hover:border-accent/40"
+          }`}
+        >
+          全部
+        </button>
+        {SUBCATEGORIES.map((sub) => (
+          <button
+            key={sub.id}
+            onClick={() => {
+              setSelectedCategory(sub.category);
+              setSelectedSubcategory(sub.id);
+            }}
+            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border whitespace-nowrap transition-colors ${
+              selectedSubcategory === sub.id
+                ? "bg-accent text-white border-accent"
+                : "bg-card border-border hover:border-accent/40"
+            }`}
+          >
+            {sub.emoji} {sub.label}
+          </button>
+        ))}
+      </div>
+
       {/* Filters: single row (region + category) — labels live inside the dropdowns themselves */}
       <div className="grid grid-cols-2 gap-2">
         <RegionFilter
@@ -153,7 +188,12 @@ export default function FeedPage() {
         />
         <select
           value={selectedCategory ?? ""}
-          onChange={(e) => setSelectedCategory(e.target.value || null)}
+          onChange={(e) => {
+            const next = e.target.value || null;
+            setSelectedCategory(next);
+            // Changing the parent invalidates any active subcategory
+            setSelectedSubcategory(null);
+          }}
           className="w-full bg-card border border-border rounded-xl px-3 py-2.5 text-sm focus:border-accent focus:outline-none appearance-none pr-8 bg-no-repeat"
           style={{
             backgroundImage:
@@ -449,6 +489,7 @@ function FeaturedShopBody({ shop }: { shop: ShopWithOwner }) {
 function ShopCard({ shop }: { shop: ShopWithOwner }) {
   const router = useRouter();
   const image = shop.image_urls?.[0];
+  const sub = getSubcategory(shop.subcategory);
 
   return (
     <Link href={`/shop/${shop.id}`} className="no-underline block group">
@@ -482,6 +523,15 @@ function ShopCard({ shop }: { shop: ShopWithOwner }) {
               }}
             >
               <EdoIcon name="rakuza" size={40} color="#ffffff" />
+            </div>
+          )}
+
+          {/* Subcategory badge top-left (e.g. 🌾 お米とやさい) */}
+          {sub && (
+            <div className="absolute top-1.5 left-1.5 pointer-events-none">
+              <div className="text-[9px] font-bold bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full shadow-sm">
+                {sub.emoji} {sub.label}
+              </div>
             </div>
           )}
 

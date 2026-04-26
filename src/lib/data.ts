@@ -499,6 +499,7 @@ export async function fetchWishes(userId: string) {
 
 export interface ShopInput {
   category: string;
+  subcategory?: string | null;
   name: string;
   description?: string | null;
   price_text?: string | null;
@@ -506,6 +507,7 @@ export interface ShopInput {
   is_trial?: boolean;
   accepts_barter?: boolean;
   accepts_tip?: boolean;
+  delivery_methods?: string[];
   image_urls?: string[];
 }
 
@@ -516,6 +518,7 @@ export async function createShop(ownerId: string, input: ShopInput) {
     .insert({
       owner_id: ownerId,
       category: input.category,
+      subcategory: input.subcategory ?? null,
       name: input.name,
       description: input.description ?? null,
       price_text: input.price_text ?? null,
@@ -523,6 +526,7 @@ export async function createShop(ownerId: string, input: ShopInput) {
       is_trial: input.is_trial ?? false,
       accepts_barter: input.accepts_barter ?? true,
       accepts_tip: input.accepts_tip ?? false,
+      delivery_methods: input.delivery_methods ?? [],
       image_urls: input.image_urls ?? [],
     })
     .select()
@@ -777,7 +781,8 @@ export async function fetchAllShops(
   category?: string | null,
   page = 0,
   pageSize = SHOPS_PAGE_SIZE,
-  prefectures?: string[] | null
+  prefectures?: string[] | null,
+  subcategory?: string | null
 ) {
   const supabase = createClient();
   const from = page * pageSize;
@@ -794,6 +799,7 @@ export async function fetchAllShops(
     .order("created_at", { ascending: false })
     .range(from, to);
   if (category) query = query.eq("category", category);
+  if (subcategory) query = query.eq("subcategory", subcategory);
   if (prefectures && prefectures.length > 0) {
     query = query.in("owner.prefecture", prefectures);
   }

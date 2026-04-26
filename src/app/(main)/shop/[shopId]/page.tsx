@@ -17,6 +17,7 @@ import {
   fetchShopsByOwner,
 } from "@/lib/data";
 import { getCategoryByKey } from "@/lib/utils";
+import { getSubcategory, getDeliveryMethod } from "@/lib/constants";
 import type { Shop, Profile } from "@/lib/types";
 
 type ShopWithOwner = Shop & { owner?: Profile | null };
@@ -166,9 +167,17 @@ export default function ShopDetailPage({
 
       {/* Content */}
       <div className="px-4 space-y-4">
-        {/* Category + trial badge */}
+        {/* Category + subcategory + trial badge */}
         <div className="flex items-center gap-2 flex-wrap">
           <CategoryTag categoryId={shop.category} size="sm" />
+          {(() => {
+            const sub = getSubcategory(shop.subcategory);
+            return sub ? (
+              <span className="text-[10px] bg-accent/15 text-accent px-2 py-0.5 rounded-full font-medium">
+                {sub.emoji} {sub.label}
+              </span>
+            ) : null;
+          })()}
           {shop.is_trial && (
             <span className="text-[10px] bg-accent/20 text-accent px-2 py-0.5 rounded-full font-medium">
               🌱 お試し出品
@@ -220,6 +229,30 @@ export default function ShopDetailPage({
             </div>
           </div>
         </div>
+
+        {/* Delivery methods */}
+        {shop.delivery_methods && shop.delivery_methods.length > 0 && (
+          <div className="rounded-xl border border-border bg-card px-3 py-2">
+            <div className="text-[10px] text-text-mute font-medium tracking-widest mb-1">
+              受 け 渡 し
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {shop.delivery_methods.map((id) => {
+                const d = getDeliveryMethod(id);
+                if (!d) return null;
+                return (
+                  <span
+                    key={id}
+                    className="inline-flex items-center gap-1 text-[11px] bg-bg rounded-full px-2.5 py-1 border border-border"
+                    title={d.description}
+                  >
+                    {d.emoji} {d.label}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Description */}
         {shop.description && (
