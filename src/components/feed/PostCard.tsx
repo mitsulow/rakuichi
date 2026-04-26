@@ -11,6 +11,7 @@ import { formatRelativeTime } from "@/lib/utils";
 import { toggleLike } from "@/lib/data";
 import { EmbedCard } from "./EmbedCard";
 import { CommentsSection } from "./CommentsSection";
+import { RichBody } from "./RichBody";
 import { useAuth } from "@/components/auth/AuthProvider";
 import type { Post } from "@/lib/types";
 
@@ -116,9 +117,9 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled, 
           )}
         </div>
 
-        {/* Body */}
+        {/* Body — with #hashtag/@mention/URL auto-linking */}
         <p className="text-[14px] mt-3 whitespace-pre-wrap leading-relaxed">
-          {post.body}
+          <RichBody body={post.body} />
         </p>
 
         {/* Platform embed */}
