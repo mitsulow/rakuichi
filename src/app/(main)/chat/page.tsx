@@ -70,15 +70,45 @@ export default function ChatListPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-lg font-bold">💬 文（ふみ）</h1>
+    <div className="space-y-3">
+      <div
+        className="text-center py-3 px-4 rounded-2xl border-2"
+        style={{
+          borderColor: "#c94d3a40",
+          background:
+            "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 50%, #fdf6e9 100%)",
+        }}
+      >
+        <h1
+          className="text-xl font-bold tracking-wide leading-tight"
+          style={{ color: "#c94d3a" }}
+        >
+          ✉ 手 紙
+        </h1>
+        <p className="text-[11px] text-text-sub mt-1 leading-snug">
+          座の民との 文（ふみ）のやり取り
+        </p>
+      </div>
 
       {chats.length === 0 ? (
-        <div className="text-center py-12 text-text-mute">
-          <p className="text-4xl mb-3">📜</p>
-          <p className="text-sm">まだ文のやり取りがありません</p>
-          <p className="text-xs mt-1">
-            マイページの「💬 連絡を取る」から始められます
+        <div
+          className="text-center py-8 px-6 rounded-2xl border-2 border-dashed"
+          style={{
+            borderColor: "#c94d3a40",
+            background:
+              "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 100%)",
+          }}
+        >
+          <img
+            src="/icons/empty-chat.png"
+            alt=""
+            className="w-32 h-32 mx-auto mb-3"
+          />
+          <p className="text-sm font-bold" style={{ color: "#c94d3a" }}>
+            まだ手紙のやり取りがありません
+          </p>
+          <p className="text-xs text-text-sub mt-1.5">
+            誰かの名刺を見て「💬 連絡を取る」から始められます
           </p>
         </div>
       ) : (

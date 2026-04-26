@@ -281,15 +281,26 @@ export default function FeedPage() {
       {loading ? (
         <LoadingScreen step="楽座を読み込み中..." />
       ) : shops.length === 0 ? (
-        <div className="text-center py-12 text-text-mute">
-          <div className="flex justify-center mb-3 text-accent">
-            <EdoIcon name="rakuza" size={48} />
-          </div>
-          <p className="text-sm">
+        <div
+          className="text-center py-8 px-6 rounded-2xl border-2 border-dashed"
+          style={{
+            borderColor: "#c94d3a40",
+            background:
+              "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 100%)",
+          }}
+        >
+          <img
+            src="/icons/empty-feed.png"
+            alt=""
+            className="w-36 h-36 mx-auto mb-3 rounded-xl"
+          />
+          <p className="text-sm font-bold" style={{ color: "#c94d3a" }}>
             このエリア・ジャンルの楽座はまだありません
           </p>
-          <p className="text-xs mt-1">
-            {user ? "最初の楽座を出してみよう" : "登録して最初の楽座を出そう"}
+          <p className="text-xs text-text-sub mt-1.5">
+            {user
+              ? "最初の楽座を出して、市場を始めよう"
+              : "登録して最初の楽座を出そう"}
           </p>
         </div>
       ) : (

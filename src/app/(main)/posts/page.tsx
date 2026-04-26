@@ -182,14 +182,18 @@ export default function PostsPage() {
           <PostsSkeleton />
         ) : posts.length === 0 ? (
           <div
-            className="text-center py-12 px-6 rounded-2xl border-2 border-dashed"
+            className="text-center py-8 px-6 rounded-2xl border-2 border-dashed"
             style={{
               borderColor: "#c94d3a40",
               background:
                 "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 100%)",
             }}
           >
-            <p className="text-5xl mb-3">💭</p>
+            <img
+              src="/icons/empty-posts.png"
+              alt=""
+              className="w-32 h-32 mx-auto mb-3"
+            />
             <p className="text-sm font-bold" style={{ color: "#c94d3a" }}>
               このエリアにはまだ情緒がありません
             </p>
