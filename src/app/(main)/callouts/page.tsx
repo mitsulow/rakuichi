@@ -92,10 +92,25 @@ export default function CalloutsPage() {
           ))}
         </div>
       ) : callouts.length === 0 ? (
-        <div className="text-center py-12 text-text-mute">
-          <p className="text-3xl mb-2">🤚</p>
-          <p className="text-sm">まだ呼びかけはありません</p>
-          <p className="text-[11px] mt-1">最初の指をあげてみよう</p>
+        <div
+          className="text-center py-8 px-6 rounded-2xl border-2 border-dashed"
+          style={{
+            borderColor: "#c94d3a40",
+            background:
+              "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 100%)",
+          }}
+        >
+          <img
+            src="/icons/empty-callouts.png"
+            alt=""
+            className="w-32 h-32 mx-auto mb-3"
+          />
+          <p className="text-sm font-bold" style={{ color: "#c94d3a" }}>
+            まだ呼びかけはありません
+          </p>
+          <p className="text-xs text-text-sub mt-1">
+            最初の指をあげて、仲間を集めよう
+          </p>
         </div>
       ) : (
         <div className="space-y-2">

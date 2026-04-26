@@ -115,9 +115,26 @@ export default function SkillsSearchPage() {
               ))}
             </div>
           ) : popular.length === 0 ? (
-            <p className="text-xs text-text-mute py-4 text-center">
-              まだ誰もスキルを登録していません
-            </p>
+            <div
+              className="text-center py-8 px-6 rounded-2xl border-2 border-dashed"
+              style={{
+                borderColor: "#c94d3a40",
+                background:
+                  "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 100%)",
+              }}
+            >
+              <img
+                src="/icons/empty-skills.png"
+                alt=""
+                className="w-28 h-28 mx-auto mb-3"
+              />
+              <p className="text-sm font-bold" style={{ color: "#c94d3a" }}>
+                まだ誰もスキルを登録していません
+              </p>
+              <p className="text-xs text-text-sub mt-1">
+                マイページを編集して、最初の一人になろう
+              </p>
+            </div>
           ) : (
             <div className="flex flex-wrap gap-1.5">
               {popular.map((p) => (

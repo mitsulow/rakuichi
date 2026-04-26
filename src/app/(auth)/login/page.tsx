@@ -32,14 +32,31 @@ function LoginInner() {
   return (
     <div className="min-h-screen flex flex-col bg-bg">
       <InAppBrowserWarning />
-      <div className="flex-1 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-8 text-center">
+      <div className="flex-1 flex items-center justify-center px-4 py-6">
+      <div className="w-full max-w-sm space-y-6 text-center">
         <div className="flex justify-center">
           <Logo size="md" />
         </div>
 
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold">楽市楽座へようこそ</h1>
+        {/* Hero illustration */}
+        <div
+          className="overflow-hidden rounded-2xl border-2 shadow-md"
+          style={{ borderColor: "#c94d3a40" }}
+        >
+          <img
+            src="/icons/welcome-hero.png"
+            alt="楽市楽座のイメージ"
+            className="w-full h-auto block"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <h1
+            className="text-2xl font-bold tracking-wide"
+            style={{ color: "#c94d3a" }}
+          >
+            楽市楽座へようこそ
+          </h1>
           <p className="text-sm text-text-sub">
             AIの時代、自分の腕一本で。
           </p>

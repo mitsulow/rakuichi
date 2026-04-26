@@ -102,24 +102,31 @@ export default function MapPage() {
 
   return (
     <div className="space-y-3 relative">
-      {/* Hero — bold tagline only, FAB handles the action */}
+      {/* Hero — bold tagline + small archipelago illustration */}
       <div
-        className="text-center py-3 px-4 rounded-2xl border-2"
+        className="rounded-2xl border-2 px-4 py-3 flex items-center gap-3"
         style={{
           borderColor: "#c94d3a40",
           background:
             "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 50%, #fdf6e9 100%)",
         }}
       >
-        <h1
-          className="text-xl font-bold tracking-wide leading-tight"
-          style={{ color: "#c94d3a" }}
-        >
-          自然派・本格派・ナチュラル
-        </h1>
-        <p className="text-[11px] text-text-sub mt-1 leading-snug">
-          全国の自然食 ・ 代替医療 ・ 自然療法 ・ ナチュラルな店
-        </p>
+        <img
+          src="/icons/empty-map.png"
+          alt=""
+          className="w-16 h-16 flex-shrink-0"
+        />
+        <div className="flex-1 text-left">
+          <h1
+            className="text-base font-bold tracking-wide leading-tight"
+            style={{ color: "#c94d3a" }}
+          >
+            自然派・本格派・ナチュラル
+          </h1>
+          <p className="text-[11px] text-text-sub mt-0.5 leading-snug">
+            全国の自然食 ・ 代替医療 ・ 自然療法
+          </p>
+        </div>
       </div>
 
       {/* Single-row filter — type + category */}

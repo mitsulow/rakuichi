@@ -71,16 +71,25 @@ export default function RankingsPage() {
   const emoji = tab === "seed" ? "🌱" : tab === "exchange" ? "🔄" : "🎓";
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="w-9 h-9 rounded-full hover:bg-bg-card flex items-center justify-center text-lg -ml-1"
+    <div className="space-y-3">
+      {/* Washi hero */}
+      <div
+        className="text-center py-3 px-4 rounded-2xl border-2"
+        style={{
+          borderColor: "#c94d3a40",
+          background:
+            "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 50%, #fdf6e9 100%)",
+        }}
+      >
+        <h1
+          className="text-xl font-bold tracking-wide leading-tight"
+          style={{ color: "#c94d3a" }}
         >
-          ←
-        </button>
-        <h1 className="text-lg font-bold">🏮 楽市ランキング</h1>
+          🏮 楽市ランキング
+        </h1>
+        <p className="text-[11px] text-text-sub mt-1 leading-snug">
+          売上ではなく ・ どれだけ交わったか
+        </p>
       </div>
 
       {/* Dashboard */}
@@ -109,11 +118,6 @@ export default function RankingsPage() {
           )}
         </Card>
       )}
-
-      <p className="text-xs text-text-mute px-2">
-        楽市楽座には「売上ランキング」はありません。
-        大切なのは金額の大小じゃなく、どれだけ交わったか。
-      </p>
 
       {/* Tabs */}
       <div className="flex gap-1.5 overflow-x-auto hide-scrollbar">
