@@ -634,6 +634,60 @@ export async function setCalloutStatus(
 }
 
 // ============================================================
+// のれんをくぐる (follow)
+// ============================================================
+
+export async function followUser(followerId: string, followingId: string) {
+  const supabase = createClient();
+  const { error } = await supabase.from("follows").insert({
+    follower_id: followerId,
+    following_id: followingId,
+  });
+  if (error) return { error: error.message };
+  return { error: null };
+}
+
+export async function unfollowUser(followerId: string, followingId: string) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("follows")
+    .delete()
+    .eq("follower_id", followerId)
+    .eq("following_id", followingId);
+  if (error) return { error: error.message };
+  return { error: null };
+}
+
+export async function isFollowing(followerId: string, followingId: string) {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("follows")
+    .select("follower_id")
+    .eq("follower_id", followerId)
+    .eq("following_id", followingId)
+    .maybeSingle();
+  return !!data;
+}
+
+export async function fetchFollowCounts(userId: string) {
+  const supabase = createClient();
+  const [followersRes, followingRes] = await Promise.all([
+    supabase
+      .from("follows")
+      .select("follower_id", { count: "exact", head: true })
+      .eq("following_id", userId),
+    supabase
+      .from("follows")
+      .select("follower_id", { count: "exact", head: true })
+      .eq("follower_id", userId),
+  ]);
+  return {
+    followers: followersRes.count ?? 0,
+    following: followingRes.count ?? 0,
+  };
+}
+
+// ============================================================
 // Notifications
 // ============================================================
 

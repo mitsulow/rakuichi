@@ -37,6 +37,11 @@ const TYPE_META: Record<
     verb: "あなたに文を送りました",
     targetPath: (n) => (n.target_id ? `/chat/${n.target_id}` : "/chat"),
   },
+  follow: {
+    emoji: "🏮",
+    verb: "あなたののれんをくぐりました",
+    targetPath: (n) => (n.actor ? `/u/${n.actor.username}` : "/feed"),
+  },
 };
 
 export default function NotificationsPage() {

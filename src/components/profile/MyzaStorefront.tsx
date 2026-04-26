@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
 import { BadgeList } from "@/components/ui/Badge";
@@ -12,6 +12,13 @@ import { ContactModal } from "./ContactModal";
 import { QRModal } from "./QRModal";
 import { MentorshipSection } from "./MentorshipSection";
 import { AspireButton } from "./AspireButton";
+import {
+  followUser,
+  unfollowUser,
+  isFollowing,
+  fetchFollowCounts,
+} from "@/lib/data";
+import { useAuth } from "@/components/auth/AuthProvider";
 import type { Profile, Badge, ExternalLink, Shop } from "@/lib/types";
 
 interface MyzaStorefrontProps {
@@ -29,10 +36,44 @@ export function MyzaStorefront({
   shops,
   isOwner = false,
 }: MyzaStorefrontProps) {
+  const { user } = useAuth();
   const [showContact, setShowContact] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [showAllShops, setShowAllShops] = useState(false);
   const [shareToast, setShareToast] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const [followBusy, setFollowBusy] = useState(false);
+  const [counts, setCounts] = useState({ followers: 0, following: 0 });
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const c = await fetchFollowCounts(profile.id);
+      if (!cancelled) setCounts(c);
+      if (user && user.id !== profile.id) {
+        const did = await isFollowing(user.id, profile.id);
+        if (!cancelled) setFollowing(did);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [profile.id, user]);
+
+  const handleFollow = async () => {
+    if (!user || followBusy || isOwner) return;
+    setFollowBusy(true);
+    if (following) {
+      await unfollowUser(user.id, profile.id);
+      setFollowing(false);
+      setCounts((c) => ({ ...c, followers: Math.max(0, c.followers - 1) }));
+    } else {
+      await followUser(user.id, profile.id);
+      setFollowing(true);
+      setCounts((c) => ({ ...c, followers: c.followers + 1 }));
+    }
+    setFollowBusy(false);
+  };
 
   const location = [profile.prefecture, profile.city].filter(Boolean).join(" ");
 
@@ -139,15 +180,40 @@ export function MyzaStorefront({
             </div>
           )}
 
-          {/* Connect/share strip — 3 prominent labeled buttons */}
-          <div className="flex gap-1.5 mt-3 relative">
+          {/* Follow counts */}
+          <div className="flex items-center gap-3 mt-2 text-[11px] text-text-mute">
+            <span>
+              <strong className="text-text">{counts.followers}</strong> 人がのれんをくぐっている
+            </span>
+            <span className="text-text-mute/40">／</span>
+            <span>
+              <strong className="text-text">{counts.following}</strong> 人をくぐっている
+            </span>
+          </div>
+
+          {/* Connect/share strip — 4 prominent labeled buttons */}
+          <div className="flex gap-1.5 mt-3 relative flex-wrap">
             {!isOwner && (
-              <button
-                onClick={() => setShowContact(true)}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-accent text-white rounded-full px-3 py-2 text-xs font-bold hover:opacity-90 transition shadow-sm"
-              >
-                💬 連絡を取る
-              </button>
+              <>
+                <button
+                  onClick={() => setShowContact(true)}
+                  className="flex-1 min-w-[80px] flex items-center justify-center gap-1.5 bg-accent text-white rounded-full px-3 py-2 text-xs font-bold hover:opacity-90 transition shadow-sm"
+                >
+                  💬 連絡
+                </button>
+                <button
+                  onClick={handleFollow}
+                  disabled={followBusy || !user}
+                  className={`flex-1 min-w-[80px] flex items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold transition border-2 ${
+                    following
+                      ? "bg-accent/15 border-accent text-accent"
+                      : "bg-card border-border hover:border-accent"
+                  } ${!user ? "opacity-50" : ""}`}
+                  title={!user ? "ログインが必要" : undefined}
+                >
+                  {following ? "🏮 のれん中" : "🏮 のれんをくぐる"}
+                </button>
+              </>
             )}
             <button
               onClick={handleShare}
@@ -155,7 +221,7 @@ export function MyzaStorefront({
                 isOwner ? "flex-1" : ""
               }`}
             >
-              📤 名刺をシェア
+              📤 シェア
             </button>
             <button
               onClick={() => setShowQR(true)}
