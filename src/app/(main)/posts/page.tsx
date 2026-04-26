@@ -128,50 +128,15 @@ export default function PostsPage() {
 
   return (
     <div className="space-y-3">
-      {/* Edo-style header */}
-      <div
-        className="text-center py-3 px-4 rounded-2xl border-2"
-        style={{
-          borderColor: "#c94d3a40",
-          background:
-            "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 50%, #fdf6e9 100%)",
-        }}
+      {/* Lightweight subtitle banner — paper-strip feel, not a heavy box */}
+      <p
+        className="text-center text-[12px] font-medium py-1"
+        style={{ color: "#c94d3a" }}
       >
-        <p
-          className="text-sm font-bold leading-snug"
-          style={{ color: "#c94d3a" }}
-        >
-          店主たちのつぶやきです
-        </p>
-      </div>
-
-      {/* Single-row controls: region filter + random toggle */}
-      <div className="grid grid-cols-[1fr_auto] gap-2">
-        <RegionFilter
-          scope={scope}
-          onChange={(s) => {
-            setScope(s);
-            setRandom(false);
-          }}
-          userPrefecture={profile?.prefecture ?? null}
-        />
-        <button
-          onClick={random ? () => setRandom(false) : handleRandomize}
-          className={`text-xs px-3 py-2.5 rounded-xl font-medium transition-colors whitespace-nowrap ${
-            random
-              ? "bg-accent text-white"
-              : "bg-card text-text-sub border border-border hover:border-accent"
-          }`}
-        >
-          {random ? "🎲 ON" : "🎲 ランダム"}
-        </button>
-      </div>
-
-      <p className="text-center text-[11px] text-text-mute">
-        {random ? "🎲 ランダムに並べてます" : `今 ${total}件 の情緒`}
+        💭 店主たちのつぶやき
       </p>
 
-      {/* Composer or login prompt */}
+      {/* Composer first — Twitter-style "post here" at top */}
       {user ? (
         <PostComposer user={user} onPostCreated={handlePostCreated} />
       ) : (
@@ -182,6 +147,34 @@ export default function PostsPage() {
           💭 情緒を投げるには → ログイン
         </a>
       )}
+
+      {/* Compact filter strip — region + random + count on one line */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <RegionFilter
+            scope={scope}
+            onChange={(s) => {
+              setScope(s);
+              setRandom(false);
+            }}
+            userPrefecture={profile?.prefecture ?? null}
+          />
+        </div>
+        <button
+          onClick={random ? () => setRandom(false) : handleRandomize}
+          className={`text-xs px-3 py-2.5 rounded-xl font-medium transition-colors whitespace-nowrap ${
+            random
+              ? "bg-accent text-white"
+              : "bg-card text-text-sub border border-border hover:border-accent"
+          }`}
+        >
+          {random ? "🎲 ON" : "🎲"}
+        </button>
+      </div>
+
+      <p className="text-[11px] text-text-mute px-1">
+        {random ? "🎲 ランダムに並べてます" : `${total}件の情緒`}
+      </p>
 
       {/* Posts */}
       <div className="space-y-4">
