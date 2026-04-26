@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, type TouchEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
@@ -112,16 +112,24 @@ export default function FeedPage() {
     return () => observer.disconnect();
   }, [canLoadMore, loadMore, shops.length]);
 
-  // 今日のピックアップ — deterministic daily pick from shops with images
+  // 本日のパワープッシュ楽座 — daily-rotating set (max 6) of shops with images
   const { featured, rest } = useMemo(() => {
-    const withImage = shops.filter((s) => s.image_urls && s.image_urls.length > 0);
-    if (withImage.length === 0) return { featured: null, rest: shops };
+    const withImage = shops.filter(
+      (s) => s.image_urls && s.image_urls.length > 0
+    );
+    if (withImage.length === 0) return { featured: [] as ShopWithOwner[], rest: shops };
     const now = new Date();
     const dayOfYear = Math.floor(
       (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000
     );
-    const pick = withImage[dayOfYear % withImage.length];
-    return { featured: pick, rest: shops.filter((s) => s.id !== pick.id) };
+    const start = dayOfYear % withImage.length;
+    const count = Math.min(6, withImage.length);
+    const picks: ShopWithOwner[] = [];
+    for (let i = 0; i < count; i++) {
+      picks.push(withImage[(start + i) % withImage.length]);
+    }
+    const pickedIds = new Set(picks.map((p) => p.id));
+    return { featured: picks, rest: shops.filter((s) => !pickedIds.has(s.id)) };
   }, [shops]);
 
   return (
@@ -130,8 +138,10 @@ export default function FeedPage() {
       <WelcomeBanner />
       <WeeklyMarket />
 
-      {/* 本日のパワープッシュ楽座 — moved above filters so it's the first thing in the eye */}
-      {!loading && featured && <FeaturedShopCard shop={featured} />}
+      {/* 本日のパワープッシュ楽座 — auto-rotating carousel, swipeable */}
+      {!loading && featured.length > 0 && (
+        <FeaturedCarousel shops={featured} />
+      )}
 
       {/* Filters: single row (region + category) — labels live inside the dropdowns themselves */}
       <div className="grid grid-cols-2 gap-2">
@@ -258,127 +268,115 @@ export default function FeedPage() {
 }
 
 /**
- * 本日のパワープッシュ楽座 — featured shop, full-width red ribbon header
- * + horizontal compact body (square image + info).
+ * 本日のパワープッシュ楽座 — auto-rotating, swipeable carousel
+ * of featured shops. The ribbon stays in place; only the body slides.
  */
-function FeaturedShopCard({ shop }: { shop: ShopWithOwner }) {
-  const router = useRouter();
-  const image = shop.image_urls?.[0];
+function FeaturedCarousel({ shops }: { shops: ShopWithOwner[] }) {
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const touchStart = useRef<number | null>(null);
+
+  // Auto-rotate every 4.5s
+  useEffect(() => {
+    if (shops.length <= 1 || paused) return;
+    const t = setInterval(() => {
+      setIndex((i) => (i + 1) % shops.length);
+    }, 4500);
+    return () => clearInterval(t);
+  }, [shops.length, paused]);
+
+  // Reset if the underlying list shrinks
+  useEffect(() => {
+    if (index >= shops.length) setIndex(0);
+  }, [shops.length, index]);
+
+  const onTouchStart = (e: TouchEvent<HTMLDivElement>) => {
+    touchStart.current = e.touches[0].clientX;
+    setPaused(true);
+  };
+  const onTouchEnd = (e: TouchEvent<HTMLDivElement>) => {
+    if (touchStart.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchStart.current;
+    if (Math.abs(dx) > 40) {
+      setIndex((i) => (i + (dx > 0 ? -1 : 1) + shops.length) % shops.length);
+    }
+    touchStart.current = null;
+    setTimeout(() => setPaused(false), 1000);
+  };
 
   return (
-    <Link href={`/shop/${shop.id}`} className="no-underline block">
+    <div
+      className="relative overflow-hidden rounded-2xl border-2 shadow-md"
+      style={{
+        borderColor: "#c94d3a",
+        background: "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 100%)",
+      }}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* Top ribbon — labels the section */}
       <div
-        className="relative overflow-hidden rounded-2xl border-2 shadow-md hover:shadow-lg transition-shadow"
+        className="text-center py-1 px-3 text-[11px] font-bold text-white tracking-widest"
         style={{
-          borderColor: "#c94d3a",
-          background: "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 100%)",
+          background:
+            "linear-gradient(90deg, #c94d3a 0%, #d4612e 50%, #c94d3a 100%)",
         }}
       >
-        {/* Top ribbon — full width, clearly labels what this is */}
+        🌟 本日のパワープッシュ楽座 🌟
+      </div>
+
+      {/* Sliding track */}
+      <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div
-          className="text-center py-1 px-3 text-[11px] font-bold text-white tracking-widest"
-          style={{
-            background: "linear-gradient(90deg, #c94d3a 0%, #d4612e 50%, #c94d3a 100%)",
-          }}
+          className="flex transition-transform duration-500 ease-in-out"
+          style={{ transform: `translateX(-${index * 100}%)` }}
         >
-          🌟 本日のパワープッシュ楽座 🌟
-        </div>
-
-        <div className="flex">
-          {/* Left: square image */}
-          <div className="relative w-28 h-28 flex-shrink-0 overflow-hidden bg-bg">
-            {image ? (
-              <img
-                src={image}
-                alt={shop.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div
-                className="w-full h-full flex items-center justify-center text-white"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #c94d3a 0%, #d4a043 50%, #5a7d4a 100%)",
-                }}
-              >
-                <EdoIcon name="rakuza" size={32} color="#ffffff" />
-              </div>
-            )}
-          </div>
-
-          {/* Right: info */}
-          <div className="flex-1 min-w-0 p-2.5 flex flex-col justify-between">
-            <div className="min-w-0">
-              <div className="flex items-center gap-1 mb-0.5">
-                {shop.is_trial && (
-                  <span className="text-[9px] bg-accent text-white px-1 py-0.5 rounded-sm font-bold flex-shrink-0">
-                    お試し
-                  </span>
-                )}
-                {shop.owner?.prefecture && (
-                  <span className="text-[10px] text-text-mute truncate">
-                    📍 {shop.owner.prefecture}
-                  </span>
-                )}
-              </div>
-              <h2 className="text-sm font-bold text-text leading-snug line-clamp-2">
-                {shop.name}
-              </h2>
+          {shops.map((shop) => (
+            <div key={shop.id} className="w-full flex-shrink-0">
+              <FeaturedShopBody shop={shop} />
             </div>
-
-            <div className="flex items-end justify-between gap-2 mt-1.5">
-              {shop.owner && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    router.push(`/u/${shop.owner!.username}`);
-                  }}
-                  className="flex items-center gap-1.5 min-w-0 hover:opacity-80 transition"
-                >
-                  <Avatar
-                    src={shop.owner.avatar_url}
-                    alt={shop.owner.display_name}
-                    size="sm"
-                  />
-                  <span className="text-[10px] text-text-sub truncate">
-                    {shop.owner.display_name}
-                  </span>
-                </button>
-              )}
-              <div className="text-sm font-bold text-accent flex-shrink-0">
-                {shop.is_trial
-                  ? "0円〜"
-                  : shop.price_jpy != null
-                  ? `¥${shop.price_jpy.toLocaleString()}`
-                  : shop.price_text ?? ""}
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
-    </Link>
+
+      {/* Dots */}
+      {shops.length > 1 && (
+        <div className="flex justify-center gap-1.5 pb-1.5">
+          {shops.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                setIndex(i);
+                setPaused(true);
+                setTimeout(() => setPaused(false), 4000);
+              }}
+              aria-label={`楽座 ${i + 1} を表示`}
+              className="rounded-full transition-all"
+              style={{
+                width: i === index ? 14 : 5,
+                height: 5,
+                background: i === index ? "#c94d3a" : "#c94d3a40",
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
 /**
- * Refined shop card — washi-toned background, larger owner avatar,
- * nobori-style trial flag, refined info strip.
+ * Body of one carousel slide (no ribbon, no border — those live on the wrapper).
+ * Slimmer than before: w-24 image, tighter padding.
  */
-function ShopCard({ shop }: { shop: ShopWithOwner }) {
+function FeaturedShopBody({ shop }: { shop: ShopWithOwner }) {
   const router = useRouter();
   const image = shop.image_urls?.[0];
 
   return (
     <Link href={`/shop/${shop.id}`} className="no-underline block">
-      <div
-        className="relative overflow-hidden rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow h-full flex flex-col"
-        style={{
-          background: "linear-gradient(180deg, #fffaf0 0%, #fdf6e9 100%)",
-        }}
-      >
-        <div className="relative aspect-square overflow-hidden bg-bg">
+      <div className="flex">
+        <div className="relative w-24 h-24 flex-shrink-0 overflow-hidden bg-bg">
           {image ? (
             <img
               src={image}
@@ -393,70 +391,50 @@ function ShopCard({ shop }: { shop: ShopWithOwner }) {
                   "linear-gradient(135deg, #c94d3a 0%, #d4a043 50%, #5a7d4a 100%)",
               }}
             >
-              <EdoIcon name="rakuza" size={48} color="#ffffff" />
+              <EdoIcon name="rakuza" size={28} color="#ffffff" />
             </div>
-          )}
-
-          {/* Title overlay */}
-          <div
-            className="absolute top-0 left-0 right-0 p-2.5 pb-6 pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)",
-            }}
-          >
-            <h3 className="text-sm font-bold text-white line-clamp-2 leading-tight drop-shadow-md">
-              {shop.name}
-            </h3>
-          </div>
-
-          {/* Nobori-style お試し flag — top-right */}
-          {shop.is_trial && (
-            <div className="absolute top-1.5 right-1.5 pointer-events-none">
-              <div
-                className="text-[9px] font-bold text-white px-1.5 py-0.5 rounded-sm shadow-sm"
-                style={{
-                  background: "#c94d3a",
-                  writingMode: "horizontal-tb",
-                  letterSpacing: "0.05em",
-                }}
-              >
-                お試し
-              </div>
-            </div>
-          )}
-
-          {/* Owner avatar — bigger, more visible */}
-          {shop.owner && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                router.push(`/u/${shop.owner!.username}`);
-              }}
-              className="absolute bottom-1.5 left-1.5 ring-2 ring-white rounded-full hover:scale-110 transition-transform shadow-md"
-              title={`${shop.owner.display_name}のマイページ`}
-              aria-label={`${shop.owner.display_name}のマイページへ`}
-            >
-              <Avatar
-                src={shop.owner.avatar_url}
-                alt={shop.owner.display_name}
-                size="md"
-              />
-            </button>
           )}
         </div>
-
-        {/* Info strip — name of owner + price */}
-        <div className="px-2.5 py-2 flex items-center justify-between gap-1">
-          <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 p-2 flex flex-col justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1 mb-0.5">
+              {shop.is_trial && (
+                <span className="text-[9px] bg-accent text-white px-1 py-0.5 rounded-sm font-bold flex-shrink-0">
+                  お試し
+                </span>
+              )}
+              {shop.owner?.prefecture && (
+                <span className="text-[10px] text-text-mute truncate">
+                  📍 {shop.owner.prefecture}
+                </span>
+              )}
+            </div>
+            <h2 className="text-sm font-bold text-text leading-snug line-clamp-2">
+              {shop.name}
+            </h2>
+          </div>
+          <div className="flex items-end justify-between gap-2 mt-1">
             {shop.owner && (
-              <div className="text-[10px] text-text-mute truncate">
-                {shop.owner.display_name}
-              </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  router.push(`/u/${shop.owner!.username}`);
+                }}
+                className="flex items-center gap-1 min-w-0 hover:opacity-80 transition"
+              >
+                <Avatar
+                  src={shop.owner.avatar_url}
+                  alt={shop.owner.display_name}
+                  size="sm"
+                />
+                <span className="text-[10px] text-text-sub truncate">
+                  {shop.owner.display_name}
+                </span>
+              </button>
             )}
-            <div className="text-xs font-bold text-accent truncate">
+            <div className="text-sm font-bold text-accent flex-shrink-0">
               {shop.is_trial
                 ? "0円〜"
                 : shop.price_jpy != null
@@ -464,9 +442,130 @@ function ShopCard({ shop }: { shop: ShopWithOwner }) {
                 : shop.price_text ?? ""}
             </div>
           </div>
-          <div className="flex gap-0.5 text-[11px] flex-shrink-0">
-            {shop.accepts_barter && <span title="物々交換可">🔄</span>}
-            {shop.accepts_tip && <span title="投げ銭可">🪙</span>}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+/**
+ * 立て札 (tatefuda) style shop card — vertical with a small kawara roof on top.
+ * Roof is decorative only; product info (image, name, price) stays clear.
+ */
+function ShopCard({ shop }: { shop: ShopWithOwner }) {
+  const router = useRouter();
+  const image = shop.image_urls?.[0];
+
+  return (
+    <Link href={`/shop/${shop.id}`} className="no-underline block group">
+      <div className="relative pt-2.5">
+        {/* Kawara roof — small trapezoidal tile peeking over the card top */}
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[88%] h-2.5 z-10"
+          style={{
+            background: "#8a4a3a",
+            clipPath: "polygon(8% 0, 92% 0, 100% 100%, 0 100%)",
+            boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.15)",
+          }}
+        />
+
+        <div
+          className="relative rounded-xl border border-border shadow-sm group-hover:shadow-md transition-shadow flex flex-col h-full overflow-hidden"
+          style={{
+            background:
+              "linear-gradient(180deg, #fffaf0 0%, #fdf6e9 60%, #f5e8d5 100%)",
+          }}
+        >
+          {/* Image */}
+          <div className="relative aspect-square overflow-hidden bg-bg">
+            {image ? (
+              <img
+                src={image}
+                alt={shop.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-full h-full flex items-center justify-center text-white"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #c94d3a 0%, #d4a043 50%, #5a7d4a 100%)",
+                }}
+              >
+                <EdoIcon name="rakuza" size={44} color="#ffffff" />
+              </div>
+            )}
+
+            {/* Nobori-style お試し flag */}
+            {shop.is_trial && (
+              <div className="absolute top-1.5 right-1.5 pointer-events-none">
+                <div
+                  className="text-[9px] font-bold text-white px-1.5 py-0.5 rounded-sm shadow-sm"
+                  style={{ background: "#c94d3a", letterSpacing: "0.05em" }}
+                >
+                  お試し
+                </div>
+              </div>
+            )}
+
+            {/* Owner avatar */}
+            {shop.owner && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  router.push(`/u/${shop.owner!.username}`);
+                }}
+                className="absolute bottom-1.5 left-1.5 ring-2 ring-white rounded-full hover:scale-110 transition-transform shadow-md"
+                title={`${shop.owner.display_name}のマイページ`}
+                aria-label={`${shop.owner.display_name}のマイページへ`}
+              >
+                <Avatar
+                  src={shop.owner.avatar_url}
+                  alt={shop.owner.display_name}
+                  size="md"
+                />
+              </button>
+            )}
+          </div>
+
+          {/* Tatefuda body — name on top "板", price strip below */}
+          <div className="flex-1 flex flex-col">
+            <div
+              className="px-2.5 py-1.5 border-b border-dashed border-border/60 min-h-[2.6rem] flex items-center"
+              style={{
+                background:
+                  "repeating-linear-gradient(180deg, rgba(201,77,58,0.025) 0 2px, transparent 2px 4px)",
+              }}
+            >
+              <h3
+                className="text-[13px] font-bold text-text line-clamp-2 leading-tight"
+                style={{ letterSpacing: "0.02em" }}
+              >
+                {shop.name}
+              </h3>
+            </div>
+            <div className="px-2.5 py-1.5 flex items-center justify-between gap-1">
+              <div className="flex-1 min-w-0">
+                {shop.owner && (
+                  <div className="text-[10px] text-text-mute truncate">
+                    {shop.owner.display_name}
+                  </div>
+                )}
+                <div className="text-xs font-bold text-accent truncate">
+                  {shop.is_trial
+                    ? "0円〜"
+                    : shop.price_jpy != null
+                    ? `¥${shop.price_jpy.toLocaleString()}`
+                    : shop.price_text ?? ""}
+                </div>
+              </div>
+              <div className="flex gap-0.5 text-[11px] flex-shrink-0">
+                {shop.accepts_barter && <span title="物々交換可">🔄</span>}
+                {shop.accepts_tip && <span title="投げ銭可">🪙</span>}
+              </div>
+            </div>
           </div>
         </div>
       </div>
