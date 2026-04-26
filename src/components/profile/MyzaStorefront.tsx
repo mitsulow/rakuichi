@@ -19,6 +19,7 @@ import {
   fetchFollowCounts,
 } from "@/lib/data";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useToast } from "@/components/ui/Toast";
 import type { Profile, Badge, ExternalLink, Shop } from "@/lib/types";
 
 interface MyzaStorefrontProps {
@@ -37,6 +38,7 @@ export function MyzaStorefront({
   isOwner = false,
 }: MyzaStorefrontProps) {
   const { user } = useAuth();
+  const toast = useToast();
   const [showContact, setShowContact] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [showAllShops, setShowAllShops] = useState(false);
@@ -67,10 +69,15 @@ export function MyzaStorefront({
       await unfollowUser(user.id, profile.id);
       setFollowing(false);
       setCounts((c) => ({ ...c, followers: Math.max(0, c.followers - 1) }));
+      toast.show("のれんから一旦出ました", "info");
     } else {
       await followUser(user.id, profile.id);
       setFollowing(true);
       setCounts((c) => ({ ...c, followers: c.followers + 1 }));
+      toast.show(
+        `🏮 ${profile.display_name} ののれんをくぐりました`,
+        "success"
+      );
     }
     setFollowBusy(false);
   };
