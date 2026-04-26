@@ -10,6 +10,7 @@ import { WeeklyMarket } from "@/components/feed/WeeklyMarket";
 import { WelcomeBanner } from "@/components/feed/WelcomeBanner";
 import { AhouDansu } from "@/components/feed/AhouDansu";
 import { ProfileSuggestions } from "@/components/feed/ProfileSuggestions";
+import { DailyGreeting } from "@/components/feed/DailyGreeting";
 import {
   RegionFilter,
   regionToPrefectures,
@@ -141,6 +142,7 @@ export default function FeedPage() {
     <div className="space-y-4">
       <AhouDansu />
       <WelcomeBanner />
+      <DailyGreeting />
       <WeeklyMarket />
 
       {/* Village functions — quick links discoverable on mobile */}
