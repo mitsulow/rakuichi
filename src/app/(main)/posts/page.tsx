@@ -199,31 +199,59 @@ export default function PostsPage() {
           </div>
         ) : (
           <>
-            {posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                currentUserId={user?.id ?? null}
-                isLiked={likedPostIds.has(post.id)}
-                onDelete={handleDelete}
-                onLikeToggled={(postId, liked) => {
-                  setLikedPostIds((prev) => {
-                    const next = new Set(prev);
-                    if (liked) next.add(postId);
-                    else next.delete(postId);
-                    return next;
-                  });
-                  setPosts((prev) =>
-                    prev.map((p) =>
-                      p.id === postId
-                        ? { ...p, likes_count: p.likes_count + (liked ? 1 : -1) }
-                        : p
-                    )
+            {(() => {
+              const items: React.ReactNode[] = [];
+              let prevBucket = "";
+              for (const post of posts) {
+                const bucket = bucketLabel(post.created_at);
+                if (bucket !== prevBucket && !random) {
+                  items.push(
+                    <div
+                      key={`divider-${bucket}-${post.id}`}
+                      className="flex items-center gap-2 py-1 px-1"
+                    >
+                      <span
+                        className="text-[10px] font-bold tracking-widest uppercase"
+                        style={{ color: "#c94d3a" }}
+                      >
+                        {bucket}
+                      </span>
+                      <span className="flex-1 h-px bg-border" />
+                    </div>
                   );
-                }}
-              />
-            ))}
-
+                  prevBucket = bucket;
+                }
+                items.push(
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    currentUserId={user?.id ?? null}
+                    isLiked={likedPostIds.has(post.id)}
+                    onDelete={handleDelete}
+                    onLikeToggled={(postId, liked) => {
+                      setLikedPostIds((prev) => {
+                        const next = new Set(prev);
+                        if (liked) next.add(postId);
+                        else next.delete(postId);
+                        return next;
+                      });
+                      setPosts((prev) =>
+                        prev.map((p) =>
+                          p.id === postId
+                            ? {
+                                ...p,
+                                likes_count:
+                                  p.likes_count + (liked ? 1 : -1),
+                              }
+                            : p
+                        )
+                      );
+                    }}
+                  />
+                );
+              }
+              return items;
+            })()}
             {canLoadMore && (
               <div ref={sentinelRef} className="py-4 flex justify-center">
                 {loadingMore ? (
@@ -251,6 +279,27 @@ export default function PostsPage() {
       </div>
     </div>
   );
+}
+
+/**
+ * Group posts into time buckets for date dividers.
+ * Returns 今日 / 昨日 / 今週 / 今月 / 過去
+ */
+function bucketLabel(iso: string): string {
+  const now = new Date();
+  const d = new Date(iso);
+  const oneDay = 24 * 60 * 60 * 1000;
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diff = startOfToday.getTime() - d.getTime();
+  if (d >= startOfToday) return "今日";
+  if (diff < oneDay) return "昨日";
+  if (diff < 7 * oneDay) return "今週";
+  if (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth()
+  )
+    return "今月";
+  return "過去";
 }
 
 function PostsSkeleton() {
