@@ -494,6 +494,197 @@ export async function fetchWishes(userId: string) {
 }
 
 // ============================================================
+// この指とまれ (callouts) — open call to gather hands
+// ============================================================
+
+export interface CalloutInput {
+  title: string;
+  body?: string | null;
+  needed_skills?: string[];
+  prefecture?: string | null;
+  closes_at?: string | null;
+}
+
+export async function fetchCallouts(options?: {
+  status?: "open" | "closed" | "completed" | "all";
+  limit?: number;
+  prefecture?: string | null;
+  skill?: string | null;
+}) {
+  const supabase = createClient();
+  let query = supabase
+    .from("callouts")
+    .select(
+      "*, author:profiles!callouts_user_id_fkey(*), participants:callout_participants(user_id)"
+    )
+    .order("created_at", { ascending: false });
+  const status = options?.status ?? "open";
+  if (status !== "all") query = query.eq("status", status);
+  if (options?.prefecture) query = query.eq("prefecture", options.prefecture);
+  if (options?.skill) query = query.contains("needed_skills", [options.skill]);
+  if (options?.limit) query = query.limit(options.limit);
+  const { data, error } = await query;
+  if (error) {
+    console.error("fetchCallouts error:", error.message);
+    return [];
+  }
+  // Reshape participants → participant_count
+  return (data ?? []).map((row) => {
+    const participants = (row as { participants?: Array<{ user_id: string }> })
+      .participants;
+    return {
+      ...(row as Record<string, unknown>),
+      participant_count: participants?.length ?? 0,
+    };
+  });
+}
+
+export async function fetchCalloutById(id: string, currentUserId?: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("callouts")
+    .select(
+      "*, author:profiles!callouts_user_id_fkey(*), participants:callout_participants(user_id, comment, joined_at, profile:profiles!callout_participants_user_id_fkey(*))"
+    )
+    .eq("id", id)
+    .maybeSingle();
+  if (error) {
+    console.error("fetchCalloutById error:", error.message);
+    return null;
+  }
+  if (!data) return null;
+  const participants = (data as { participants?: Array<{ user_id: string }> })
+    .participants ?? [];
+  return {
+    ...(data as Record<string, unknown>),
+    participant_count: participants.length,
+    user_has_joined: currentUserId
+      ? participants.some((p) => p.user_id === currentUserId)
+      : false,
+  };
+}
+
+export async function createCallout(userId: string, input: CalloutInput) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("callouts")
+    .insert({
+      user_id: userId,
+      title: input.title.trim(),
+      body: input.body?.trim() || null,
+      needed_skills: input.needed_skills ?? [],
+      prefecture: input.prefecture ?? null,
+      closes_at: input.closes_at ?? null,
+    })
+    .select()
+    .single();
+  if (error) {
+    console.error("createCallout error:", error.message);
+    return { data: null, error: error.message };
+  }
+  return { data, error: null };
+}
+
+export async function deleteCallout(id: string) {
+  const supabase = createClient();
+  const { error } = await supabase.from("callouts").delete().eq("id", id);
+  if (error) return { error: error.message };
+  return { error: null };
+}
+
+export async function joinCallout(
+  calloutId: string,
+  userId: string,
+  comment?: string
+) {
+  const supabase = createClient();
+  const { error } = await supabase.from("callout_participants").insert({
+    callout_id: calloutId,
+    user_id: userId,
+    comment: comment ?? null,
+  });
+  if (error) return { error: error.message };
+  return { error: null };
+}
+
+export async function leaveCallout(calloutId: string, userId: string) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("callout_participants")
+    .delete()
+    .eq("callout_id", calloutId)
+    .eq("user_id", userId);
+  if (error) return { error: error.message };
+  return { error: null };
+}
+
+export async function setCalloutStatus(
+  id: string,
+  status: "open" | "closed" | "completed"
+) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("callouts")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) return { error: error.message };
+  return { error: null };
+}
+
+// ============================================================
+// Skill search — find people by what they can do
+// ============================================================
+
+/**
+ * Profiles whose `skills` array contains the given skill (exact match,
+ * case-insensitive). Returns up to `limit` rows ordered by recency.
+ */
+export async function searchProfilesBySkill(skill: string, limit = 50) {
+  const supabase = createClient();
+  const trimmed = skill.trim();
+  if (!trimmed) return [];
+  // Try exact array contains first (fast, GIN-indexed)
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .contains("skills", [trimmed])
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) {
+    console.error("searchProfilesBySkill error:", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
+/**
+ * Pull every profile.skills array, flatten, count occurrences, and return
+ * the top N most-registered skills with their counts. Used to power the
+ * "popular skills" suggestions on the search page.
+ */
+export async function fetchPopularSkills(topN = 24) {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("skills")
+    .not("skills", "is", null);
+  if (!data) return [];
+  const counts = new Map<string, number>();
+  for (const row of data) {
+    const arr = (row as { skills: string[] | null }).skills ?? [];
+    for (const s of arr) {
+      const key = s.trim();
+      if (!key) continue;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+  }
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topN)
+    .map(([skill, count]) => ({ skill, count }));
+}
+
+// ============================================================
 // Shops CRUD
 // ============================================================
 

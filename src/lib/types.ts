@@ -73,6 +73,31 @@ export interface TradeRecord {
   partner?: Profile;
 }
 
+export interface Callout {
+  id: string;
+  user_id: string;
+  title: string;
+  body: string | null;
+  needed_skills: string[];
+  prefecture: string | null;
+  status: "open" | "closed" | "completed";
+  closes_at: string | null;
+  created_at: string;
+  updated_at: string;
+  // joined fields
+  author?: Profile | null;
+  participant_count?: number;
+  user_has_joined?: boolean;
+}
+
+export interface CalloutParticipant {
+  callout_id: string;
+  user_id: string;
+  comment: string | null;
+  joined_at: string;
+  profile?: Profile | null;
+}
+
 export interface Mentorship {
   id: string;
   mentor_id: string;

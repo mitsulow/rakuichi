@@ -26,6 +26,36 @@ const SUGGESTED = [
   "陶芸",
   "DTP",
   "イラスト",
+  "縫物",
+  "編み物",
+  "DIY",
+  "農業指導",
+  "猟",
+  "釣り",
+  "発酵",
+  "薬草",
+  "アロマ",
+  "ハーブ",
+  "瞑想",
+  "ボディワーク",
+  "占い",
+  "ホロスコープ",
+  "音楽",
+  "歌",
+  "ダンス",
+  "ギター",
+  "三味線",
+  "和太鼓",
+  "書道",
+  "茶道",
+  "華道",
+  "華道",
+  "保育",
+  "助産",
+  "看護",
+  "鍼灸",
+  "気功",
+  "整骨",
 ];
 
 /**
@@ -34,8 +64,8 @@ const SUGGESTED = [
 export function SkillInput({
   value,
   onChange,
-  placeholder = "例：パソコン、ピアノ、料理...",
-  maxCount = 30,
+  placeholder = "例：パソコン、ピアノ、料理、釣り、整体...",
+  maxCount = 100,
 }: SkillInputProps) {
   const [draft, setDraft] = useState("");
 
@@ -99,7 +129,7 @@ export function SkillInput({
           {SUGGESTED.filter(
             (s) => !value.some((v) => v.toLowerCase() === s.toLowerCase())
           )
-            .slice(0, 8)
+            .slice(0, 16)
             .map((s) => (
               <button
                 key={s}

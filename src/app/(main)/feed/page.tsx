@@ -142,6 +142,34 @@ export default function FeedPage() {
       <WelcomeBanner />
       <WeeklyMarket />
 
+      {/* Village functions — quick links discoverable on mobile */}
+      <div className="grid grid-cols-2 gap-2">
+        <Link
+          href="/skills"
+          className="rounded-xl border border-border hover:border-accent transition-colors px-3 py-2 flex items-center gap-2 no-underline bg-card"
+        >
+          <span className="text-lg">🛠</span>
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-bold leading-tight">SKILL検索</div>
+            <div className="text-[10px] text-text-mute leading-tight">
+              特技で人を探す
+            </div>
+          </div>
+        </Link>
+        <Link
+          href="/callouts"
+          className="rounded-xl border border-border hover:border-accent transition-colors px-3 py-2 flex items-center gap-2 no-underline bg-card"
+        >
+          <span className="text-lg">🤚</span>
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-bold leading-tight">この指とまれ</div>
+            <div className="text-[10px] text-text-mute leading-tight">
+              仲間を集める
+            </div>
+          </div>
+        </Link>
+      </div>
+
       {/* 本日のパワープッシュ楽座 — auto-rotating carousel, swipeable */}
       {!loading && featured.length > 0 && (
         <FeaturedCarousel shops={featured} />
