@@ -25,6 +25,8 @@ export default function PostsPage() {
   const { user, profile } = useAuth();
   const [scope, setScope] = useState<RegionScope>({ kind: "world" });
   const [random, setRandom] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   // Start empty — older cached data may have been filtered. Always fetch fresh.
   const [posts, setPosts] = useState<Post[]>([]);
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
@@ -54,7 +56,8 @@ export default function PostsPage() {
           0,
           POSTS_PAGE_SIZE,
           prefectures,
-          random
+          random,
+          searchTerm
         );
         if (cancelled) return;
         setPosts(list as Post[]);
@@ -75,7 +78,7 @@ export default function PostsPage() {
       cancelled = true;
       clearTimeout(failsafe);
     };
-  }, [scope, random, user]);
+  }, [scope, random, user, searchTerm]);
 
   const canLoadMore = !random && posts.length < total;
 
@@ -88,12 +91,13 @@ export default function PostsPage() {
       nextPage,
       POSTS_PAGE_SIZE,
       prefectures,
-      false
+      false,
+      searchTerm
     );
     setPosts((prev) => [...prev, ...(more as Post[])]);
     setPage(nextPage);
     setLoadingMore(false);
-  }, [loadingMore, canLoadMore, page, scope]);
+  }, [loadingMore, canLoadMore, page, scope, searchTerm]);
 
   useEffect(() => {
     if (!sentinelRef.current || !canLoadMore) return;
@@ -142,6 +146,40 @@ export default function PostsPage() {
 
       {/* Filter strip + meta — visually unified, separates composer from feed */}
       <div className="pt-3 border-t border-border space-y-2">
+        {/* Search input */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSearchTerm(searchInput.trim());
+            setRandom(false);
+          }}
+          className="relative"
+        >
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-mute text-sm pointer-events-none">
+            🔍
+          </span>
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="情緒を キーワードで検索..."
+            className="w-full bg-card border border-border rounded-xl pl-9 pr-9 py-2.5 text-sm focus:border-accent focus:outline-none"
+          />
+          {searchInput && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchInput("");
+                setSearchTerm("");
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-text-mute hover:bg-bg flex items-center justify-center text-xs"
+              aria-label="クリア"
+            >
+              ✕
+            </button>
+          )}
+        </form>
+
         <div className="flex items-center gap-2">
           <div className="flex-1">
             <RegionFilter
@@ -168,7 +206,11 @@ export default function PostsPage() {
 
         <div className="flex items-center gap-2 text-[11px] text-text-mute px-1">
           <span className="font-medium">
-            {random ? "🎲 ランダム" : "🆕 新しい順"}
+            {searchTerm
+              ? `🔍 "${searchTerm}"`
+              : random
+              ? "🎲 ランダム"
+              : "🆕 新しい順"}
           </span>
           <span className="text-text-mute/40">／</span>
           <span>{scopeLabel(scope)}</span>

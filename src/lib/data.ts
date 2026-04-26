@@ -1061,7 +1061,8 @@ export async function fetchPostsPaged(
   page = 0,
   pageSize = POSTS_PAGE_SIZE,
   prefectures?: string[] | null,
-  random = false
+  random = false,
+  searchTerm?: string | null
 ) {
   const supabase = createClient();
   const from = page * pageSize;
@@ -1072,6 +1073,12 @@ export async function fetchPostsPaged(
   let postsQuery = supabase
     .from("posts")
     .select("*", { count: "estimated" });
+
+  // Free-text search on body
+  const term = searchTerm?.trim();
+  if (term) {
+    postsQuery = postsQuery.ilike("body", `%${term}%`);
+  }
 
   if (!random) {
     postsQuery = postsQuery.order("created_at", { ascending: false }).range(from, to);
