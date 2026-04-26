@@ -66,12 +66,21 @@ function LoginInner() {
         </div>
 
         {/* Browse without login — primary CTA for first-time visitors */}
-        <a
-          href="/feed"
-          className="block text-sm text-accent font-medium underline"
-        >
-          👀 まず市場を眺めてみる →
-        </a>
+        <div className="flex items-center justify-center gap-3 text-sm">
+          <a
+            href="/feed"
+            className="text-accent font-medium underline"
+          >
+            👀 まず市場を眺める
+          </a>
+          <span className="text-text-mute">／</span>
+          <a
+            href="/about"
+            className="text-accent font-medium underline"
+          >
+            📖 楽市楽座とは
+          </a>
+        </div>
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700 break-all text-left">
