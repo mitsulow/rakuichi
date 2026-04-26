@@ -137,14 +137,11 @@ export default function PostsPage() {
             "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 50%, #fdf6e9 100%)",
         }}
       >
-        <h1
-          className="text-xl font-bold tracking-wide leading-tight"
+        <p
+          className="text-sm font-bold leading-snug"
           style={{ color: "#c94d3a" }}
         >
-          💭 情 緒
-        </h1>
-        <p className="text-[11px] text-text-sub mt-1 leading-snug">
-          店主たちのつぶやき ・ 今日のこと ・ シェアしたいもの
+          店主たちのつぶやきです
         </p>
       </div>
 
