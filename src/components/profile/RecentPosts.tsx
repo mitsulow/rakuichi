@@ -23,7 +23,7 @@ export function RecentPosts({ posts, username: _username }: RecentPostsProps) {
         {visible.map((post) => (
           <Link
             key={post.id}
-            href={`/post/${post.id}`}
+            href={`/posts/${post.id}`}
             className="block no-underline border-l-2 border-border pl-3 py-1.5 hover:border-accent hover:bg-bg-card/50 transition-colors rounded-r-lg"
           >
             <p className="text-sm whitespace-pre-wrap leading-relaxed text-text">
