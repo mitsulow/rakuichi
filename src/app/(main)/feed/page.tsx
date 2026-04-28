@@ -10,7 +10,6 @@ import { WeeklyMarket } from "@/components/feed/WeeklyMarket";
 import { WelcomeBanner } from "@/components/feed/WelcomeBanner";
 import { AhouDansu } from "@/components/feed/AhouDansu";
 import { ProfileSuggestions } from "@/components/feed/ProfileSuggestions";
-import { DailyGreeting } from "@/components/feed/DailyGreeting";
 import { CalloutsSection } from "@/components/feed/CalloutsSection";
 import {
   RegionFilter,
@@ -152,54 +151,7 @@ export default function FeedPage() {
       {/* おすすめのむらびと */}
       <ProfileSuggestions />
 
-      <DailyGreeting />
       <WeeklyMarket />
-
-      {/* Village functions — quick links (この指 は下のセクションへ移動) */}
-      <div className="grid grid-cols-4 gap-1.5">
-        <Link
-          href="/skills"
-          className="rounded-xl border border-border hover:border-accent transition-colors px-2 py-2.5 flex flex-col items-center gap-0.5 no-underline bg-card text-center"
-        >
-          <span className="text-lg">🛠</span>
-          <span className="text-[10px] font-bold leading-tight">
-            SKILL
-          </span>
-        </Link>
-        <Link
-          href="/kome"
-          className="rounded-xl border-2 hover:shadow-md transition-shadow px-2 py-2.5 flex flex-col items-center gap-0.5 no-underline text-center"
-          style={{
-            borderColor: "#5a7d4a40",
-            background:
-              "linear-gradient(135deg, #f5e8d5 0%, #e8e6c8 100%)",
-          }}
-        >
-          <span className="text-lg">🌾</span>
-          <span
-            className="text-[10px] font-bold leading-tight"
-            style={{ color: "#5a7d4a" }}
-          >
-            米部
-          </span>
-        </Link>
-        <Link
-          href="/search"
-          className="rounded-xl border border-border hover:border-accent transition-colors px-2 py-2.5 flex flex-col items-center gap-0.5 no-underline bg-card text-center"
-        >
-          <span className="text-lg">🔍</span>
-          <span className="text-[10px] font-bold leading-tight">検索</span>
-        </Link>
-        <Link
-          href="/rankings"
-          className="rounded-xl border border-border hover:border-accent transition-colors px-2 py-2.5 flex flex-col items-center gap-0.5 no-underline bg-card text-center"
-        >
-          <span className="text-lg">🏮</span>
-          <span className="text-[10px] font-bold leading-tight">
-            ランキング
-          </span>
-        </Link>
-      </div>
 
       {/* Subcategory quick-chips — お米とやさい・お魚とお肉 etc. front and center */}
       <div className="flex gap-1.5 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-1">
