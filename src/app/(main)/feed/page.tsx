@@ -470,8 +470,8 @@ function FeaturedShopBody({ shop }: { shop: ShopWithOwner }) {
 
   return (
     <Link href={`/shop/${shop.id}`} className="no-underline block">
-      <div className="flex items-stretch">
-        <div className="relative w-28 flex-shrink-0 overflow-hidden bg-bg self-stretch">
+      <div className="flex h-24">
+        <div className="relative w-24 flex-shrink-0 overflow-hidden bg-bg">
           {image ? (
             <img
               src={image}
