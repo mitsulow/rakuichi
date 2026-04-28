@@ -490,7 +490,7 @@ function FeaturedShopBody({ shop }: { shop: ShopWithOwner }) {
             </div>
           )}
         </div>
-        <div className="flex-1 min-w-0 p-2 flex flex-col justify-between">
+        <div className="flex-1 min-w-0 p-2 flex flex-col justify-between overflow-hidden">
           <div className="min-w-0">
             <div className="flex items-center gap-1 mb-0.5">
               {shop.is_trial && (
@@ -504,11 +504,11 @@ function FeaturedShopBody({ shop }: { shop: ShopWithOwner }) {
                 </span>
               )}
             </div>
-            <h2 className="text-sm font-bold text-text leading-snug line-clamp-2">
+            <h2 className="text-sm font-bold text-text leading-tight line-clamp-1">
               {shop.name}
             </h2>
           </div>
-          <div className="flex items-end justify-between gap-2 mt-1">
+          <div className="flex items-center justify-between gap-2 mt-1">
             {shop.owner && (
               <button
                 type="button"
@@ -517,7 +517,7 @@ function FeaturedShopBody({ shop }: { shop: ShopWithOwner }) {
                   e.stopPropagation();
                   router.push(`/u/${shop.owner!.username}`);
                 }}
-                className="flex items-center gap-1 min-w-0 hover:opacity-80 transition"
+                className="flex items-center gap-1 min-w-0 flex-1 hover:opacity-80 transition"
               >
                 <Avatar
                   src={shop.owner.avatar_url}
