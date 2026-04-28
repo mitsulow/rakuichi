@@ -14,12 +14,13 @@ interface MeishiTransitionProps {
 /**
  * Full-screen "your name card is being presented" transition.
  *
- * Sequence (~2.4s total):
+ * Sequence (~5.5s total):
  *   - Fade-in dim backdrop                 (200ms)
  *   - Washi card slides up + fades in      (400ms)
  *   - Card content fades in 1 by 1         (avatar → name → life work → city)
- *   - Hold for ~900ms
- *   - Whole thing fades out                (450ms)
+ *   - Full fade-in complete                ~1300ms
+ *   - Hold for ~3.0s (read time)           1500 → 4500ms
+ *   - Whole thing fades out                (800ms)
  *   - router.push(destination)
  */
 export function MeishiTransition({
@@ -43,13 +44,13 @@ export function MeishiTransition({
   const city = [profile?.prefecture, profile?.city].filter(Boolean).join(" ");
 
   useEffect(() => {
-    // Animate through phases
-    const t1 = setTimeout(() => setPhase("hold"), 1200);
-    const t2 = setTimeout(() => setPhase("out"), 2100);
+    // Animate through phases — give plenty of time to read
+    const t1 = setTimeout(() => setPhase("hold"), 1500);
+    const t2 = setTimeout(() => setPhase("out"), 4500);
     const t3 = setTimeout(() => {
       router.push(destination);
       onClose?.();
-    }, 2550);
+    }, 5300);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -67,7 +68,7 @@ export function MeishiTransition({
             : "rgba(26, 20, 16, 0.55)",
         backdropFilter: phase === "out" ? "blur(0)" : "blur(2px)",
         WebkitBackdropFilter: phase === "out" ? "blur(0)" : "blur(2px)",
-        transition: "background 450ms ease, backdrop-filter 450ms ease",
+        transition: "background 800ms ease, backdrop-filter 800ms ease",
       }}
       onClick={() => {
         // Tap to skip
@@ -75,7 +76,7 @@ export function MeishiTransition({
         setTimeout(() => {
           router.push(destination);
           onClose?.();
-        }, 250);
+        }, 400);
       }}
     >
       <div
@@ -87,7 +88,7 @@ export function MeishiTransition({
               ? "translateY(20px) scale(0.92)"
               : "translateY(0) scale(1)",
           transition:
-            "opacity 450ms ease, transform 700ms cubic-bezier(.34,1.56,.64,1)",
+            "opacity 800ms ease, transform 700ms cubic-bezier(.34,1.56,.64,1)",
         }}
       >
         {/* Washi card background */}
