@@ -366,32 +366,11 @@ export function MyzaStorefront({
             </div>
           )}
 
-          {/* My Skill — 私が役に立てること */}
-          {profile.skills && profile.skills.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-border">
-              <div className="text-xs font-medium text-text-sub mb-2">
-                🛠 私が役に立てること（{profile.skills.length}個）
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {profile.skills.map((s, i) => (
-                  <Link
-                    key={`${s}-${i}`}
-                    href={`/skills?q=${encodeURIComponent(s)}`}
-                    className="inline-flex items-center bg-accent/10 text-accent text-[11px] font-medium rounded-full px-2.5 py-1 no-underline hover:bg-accent/20"
-                    title={`「${s}」を持つ他の人を探す`}
-                  >
-                    {s}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* やりたいこと — pre-skill aspirations */}
+          {/* やりたいこと（DDP）— pre-skill aspirations */}
           {profile.wants_to_do && profile.wants_to_do.length > 0 && (
             <div className="mt-4 pt-4 border-t border-border">
               <div className="text-xs font-medium text-text-sub mb-2">
-                🌱 私がやりたいこと（{profile.wants_to_do.length}個）
+                🌱 やりたいこと（DDP）・{profile.wants_to_do.length}個
               </div>
               <div className="flex flex-wrap gap-1">
                 {profile.wants_to_do.map((s, i) => (
@@ -405,6 +384,27 @@ export function MyzaStorefront({
                   >
                     {s}
                   </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* やれること（SKILL） */}
+          {profile.skills && profile.skills.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <div className="text-xs font-medium text-text-sub mb-2">
+                🛠 やれること（SKILL）・{profile.skills.length}個
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {profile.skills.map((s, i) => (
+                  <Link
+                    key={`${s}-${i}`}
+                    href={`/skills?q=${encodeURIComponent(s)}`}
+                    className="inline-flex items-center bg-accent/10 text-accent text-[11px] font-medium rounded-full px-2.5 py-1 no-underline hover:bg-accent/20"
+                    title={`「${s}」を持つ他の人を探す`}
+                  >
+                    {s}
+                  </Link>
                 ))}
               </div>
             </div>

@@ -11,6 +11,10 @@ interface SkillInputProps {
   suggestions?: string[];
   /** Tag color theme: "accent" (default 朱) or "indigo". */
   variant?: "accent" | "indigo";
+  /** When true, show milestone celebration messages. */
+  celebrate?: boolean;
+  /** Noun shown in celebration: "やりたいこと" / "やれること" etc. */
+  celebrateNoun?: string;
 }
 
 const DEFAULT_SUGGESTED = [
@@ -67,6 +71,16 @@ const DEFAULT_SUGGESTED = [
  * row. Comma is treated as a literal character so phrases like "野菜、お米"
  * stay as one tag. Built around the joy of watching the row fill up.
  */
+function celebrationFor(count: number, noun: string): string | null {
+  if (count >= 50) return `🌟 ${count}個！${noun}の達人。`;
+  if (count >= 25) return `🎉 ${count}個！自分の輪郭が見えてきた。`;
+  if (count >= 15) return `✨ ${count}個！止まらないで。`;
+  if (count >= 10) return `🌸 ${count}個！もう十分なくらい。`;
+  if (count >= 5) return `🌱 ${count}個！どんどん出てくる。`;
+  if (count >= 1) return `あと少しで芽が出る...`;
+  return null;
+}
+
 export function SkillInput({
   value,
   onChange,
@@ -74,6 +88,8 @@ export function SkillInput({
   maxCount = 100,
   suggestions = DEFAULT_SUGGESTED,
   variant = "accent",
+  celebrate = false,
+  celebrateNoun = "個",
 }: SkillInputProps) {
   const [draft, setDraft] = useState("");
   const [recentlyAdded, setRecentlyAdded] = useState<string | null>(null);
@@ -119,7 +135,7 @@ export function SkillInput({
   return (
     <div className="space-y-2">
       {/* Counter row */}
-      <div className="flex items-baseline gap-1.5">
+      <div className="flex items-baseline gap-1.5 flex-wrap">
         <span
           className="text-2xl font-bold leading-none transition-colors"
           style={{ color: themeColor }}
@@ -136,6 +152,14 @@ export function SkillInput({
             style={{ color: themeColor }}
           >
             ↓ Enter で 1 個ずつ追加
+          </span>
+        )}
+        {celebrate && value.length > 0 && (
+          <span
+            className="text-[10px] ml-auto font-bold"
+            style={{ color: themeColor }}
+          >
+            {celebrationFor(value.length, celebrateNoun)}
           </span>
         )}
       </div>

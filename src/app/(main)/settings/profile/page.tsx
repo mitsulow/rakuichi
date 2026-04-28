@@ -480,69 +480,156 @@ function ProfileSettingsInner() {
             </div>
 
             <div>
-              <label className="text-xs text-text-mute block mb-1">
-                🛠 My Skill（私が役に立てること）
-                <span className="block text-[10px] text-text-mute mt-0.5">
-                  Enter で 1 個ずつ追加していこう。誰かが「料理できる人いない？」
-                  と探した時、SKILL検索であなたが見つかります。
-                </span>
-              </label>
-              <SkillInput
-                value={formData.skills}
-                onChange={(skills) => setField("skills", skills)}
-                placeholder="例: 料理（Enter で追加）"
-              />
-            </div>
-
-            <div className="pt-2 border-t border-dashed border-border">
-              <label className="text-xs text-text-mute block mb-1">
-                🌱 私がやりたいこと（まだできなくてもOK）
-                <span className="block text-[10px] text-text-mute mt-0.5">
-                  ライフワークの「たまご」。誰かが教えたり、仲間が集まる
-                  きっかけになります。
+              <label className="text-sm font-bold text-text block mb-1">
+                🌱 やりたいこと（DDP）
+                <span className="block text-[10px] text-text-mute font-normal mt-0.5">
+                  まだできなくてもOK。ライフワークの「たまご」を1個ずつ
+                  並べよう。書くほど、自分の方向が見えてくる。
                 </span>
               </label>
               <SkillInput
                 value={formData.wants_to_do}
                 onChange={(list) => setField("wants_to_do", list)}
-                placeholder="例: 釣り（Enter で追加）"
+                placeholder="1個目のやりたいことを入れて Enter"
                 variant="indigo"
+                celebrate
+                celebrateNoun="やりたいこと"
                 suggestions={[
+                  "自然栽培",
                   "農業",
-                  "釣り",
-                  "猟",
-                  "発酵",
-                  "陶芸",
-                  "木工",
-                  "建築",
-                  "DIY",
-                  "薬草",
-                  "アロマ",
-                  "ヨガ",
-                  "瞑想",
-                  "整体",
-                  "助産",
-                  "鍼灸",
-                  "気功",
-                  "茶道",
-                  "華道",
-                  "書道",
+                  "山に住む",
+                  "海外移住",
+                  "自然食レストラン",
+                  "ゲストハウス",
+                  "カフェ開く",
+                  "本を出す",
+                  "ブログ書く",
+                  "YouTube",
+                  "ライブ配信",
+                  "個展開く",
+                  "音楽家",
+                  "歌手",
+                  "DJ",
                   "三味線",
                   "和太鼓",
                   "ギター",
-                  "歌",
                   "ダンス",
-                  "音楽制作",
+                  "ヨガ講師",
+                  "瞑想",
+                  "整体師",
+                  "鍼灸師",
+                  "助産師",
+                  "保育",
+                  "子育て",
+                  "占い師",
+                  "ホロスコープ",
+                  "釣り",
+                  "猟",
+                  "山菜採り",
+                  "漁師",
+                  "養鶏",
+                  "養蜂",
+                  "発酵",
+                  "薬草",
+                  "アロマ",
+                  "ハーブ",
+                  "陶芸",
+                  "木工",
+                  "DIY",
+                  "建築",
+                  "茶道",
+                  "華道",
+                  "書道",
                   "イラスト",
                   "写真",
                   "動画編集",
                   "デザイン",
                   "プログラミング",
                   "翻訳",
+                  "独立",
+                  "フリーランス",
+                ]}
+              />
+            </div>
+
+            <div className="pt-3 border-t border-dashed border-border">
+              <label className="text-sm font-bold text-text block mb-1">
+                🛠 やれること（SKILL）
+                <span className="block text-[10px] text-text-mute font-normal mt-0.5">
+                  「こんなことでもいいの？」レベルでOK。
+                  パソコン・運転・人付き合い・英検…なんでも。
+                  誰かが「○○できる人いない？」と探した時に見つかります。
+                </span>
+              </label>
+              <SkillInput
+                value={formData.skills}
+                onChange={(skills) => setField("skills", skills)}
+                placeholder="1個目のやれることを入れて Enter"
+                celebrate
+                celebrateNoun="やれること"
+                suggestions={[
+                  "パソコン",
+                  "エクセル",
+                  "ワード",
+                  "パワポ",
+                  "メール",
+                  "事務作業",
                   "経理",
+                  "電卓",
+                  "そろばん",
+                  "英語",
+                  "英検",
+                  "翻訳",
+                  "通訳",
+                  "運転",
+                  "バイク",
+                  "人付き合い",
+                  "話を聞く",
+                  "カウンセリング",
                   "営業",
+                  "接客",
+                  "電話対応",
+                  "プレゼン",
+                  "司会",
+                  "ライティング",
+                  "ブログ",
+                  "SEO",
+                  "SNS運用",
+                  "イラスト",
+                  "デザイン",
+                  "写真",
+                  "動画編集",
+                  "音楽制作",
+                  "プログラミング",
+                  "HTML",
+                  "Excel関数",
+                  "料理",
+                  "お弁当作り",
+                  "パン作り",
+                  "発酵食品",
+                  "整体",
+                  "マッサージ",
+                  "ヨガ",
+                  "気功",
+                  "鍼灸",
+                  "助産",
+                  "看護",
+                  "介護",
                   "保育",
                   "子育て",
+                  "縫物",
+                  "編み物",
+                  "DIY",
+                  "木工",
+                  "陶芸",
+                  "農業",
+                  "釣り",
+                  "野草",
+                  "ピアノ",
+                  "ギター",
+                  "歌",
+                  "踊り",
+                  "占い",
                 ]}
               />
             </div>
