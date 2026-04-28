@@ -86,8 +86,10 @@ export function MeishiTransition({
       }}
     >
       <div
-        className="relative w-full max-w-[300px] aspect-[55/91]"
+        className="relative aspect-[55/91]"
         style={{
+          width: "min(88vw, 420px)",
+          maxHeight: "88vh",
           opacity: phase === "out" ? 0 : 1,
           transform:
             phase === "in"
@@ -105,30 +107,30 @@ export function MeishiTransition({
         />
 
         {/* Content overlay — vertical layout inside the red border */}
-        <div className="absolute inset-0 flex flex-col items-center text-center px-7 py-9">
+        <div className="absolute inset-0 flex flex-col items-center text-center px-8 py-10">
           {/* Avatar */}
           <div style={fadeFor(200)}>
-            <div className="ring-2 ring-white rounded-full">
-              <Avatar src={avatarUrl} alt={displayName} size="lg" />
+            <div className="ring-2 ring-white rounded-full shadow-md">
+              <Avatar src={avatarUrl} alt={displayName} size="xl" />
             </div>
           </div>
 
           {/* Name + username */}
-          <div className="mt-2.5" style={fadeFor(450)}>
+          <div className="mt-3" style={fadeFor(450)}>
             <div
-              className="text-base font-bold text-text leading-tight"
+              className="text-xl font-bold text-text leading-tight"
               style={{ fontFamily: "serif" }}
             >
               {displayName}
             </div>
             {username && (
-              <div className="text-[10px] text-text-mute mt-0.5">
+              <div className="text-xs text-text-mute mt-0.5">
                 @{username}
               </div>
             )}
             {lifeWorkLevel && (
               <div
-                className="inline-block mt-1.5 text-[9px] font-bold px-2 py-0.5 rounded-full"
+                className="inline-block mt-2 text-[10px] font-bold px-2.5 py-0.5 rounded-full"
                 style={{
                   background: "#c94d3a",
                   color: "white",
@@ -141,18 +143,18 @@ export function MeishiTransition({
 
           {/* Decorative line */}
           <div
-            className="my-3 w-12 h-px"
+            className="my-4 w-14 h-px"
             style={{ background: "#c94d3a40" }}
           />
 
           {/* Life work */}
           {lifeWork && (
-            <div className="mb-2.5 px-2" style={fadeFor(700)}>
-              <div className="text-[8px] tracking-widest text-text-mute mb-0.5">
+            <div className="mb-3 px-2" style={fadeFor(700)}>
+              <div className="text-[9px] tracking-widest text-text-mute mb-0.5">
                 ライフワーク
               </div>
               <div
-                className="text-sm font-bold leading-snug"
+                className="text-base font-bold leading-snug"
                 style={{ color: "#c94d3a" }}
               >
                 🌱 {lifeWork}
@@ -162,15 +164,15 @@ export function MeishiTransition({
 
           {/* Skills (やれること) */}
           {skills.length > 0 && (
-            <div className="mb-2 px-2 w-full" style={fadeFor(900)}>
-              <div className="text-[8px] tracking-widest text-text-mute mb-1">
+            <div className="mb-2.5 px-1 w-full" style={fadeFor(900)}>
+              <div className="text-[9px] tracking-widest text-text-mute mb-1">
                 🛠 やれること
               </div>
               <div className="flex flex-wrap gap-1 justify-center">
-                {skills.slice(0, 5).map((s) => (
+                {skills.slice(0, 6).map((s) => (
                   <span
                     key={s}
-                    className="text-[9px] font-medium rounded-full px-1.5 py-0.5"
+                    className="text-[11px] font-medium rounded-full px-2 py-0.5"
                     style={{
                       background: "#c94d3a15",
                       color: "#c94d3a",
@@ -185,15 +187,15 @@ export function MeishiTransition({
 
           {/* Wants to do (やりたいこと) */}
           {wantsToDo.length > 0 && (
-            <div className="mb-2 px-2 w-full" style={fadeFor(1100)}>
-              <div className="text-[8px] tracking-widest text-text-mute mb-1">
+            <div className="mb-2.5 px-1 w-full" style={fadeFor(1100)}>
+              <div className="text-[9px] tracking-widest text-text-mute mb-1">
                 ✨ やりたいこと
               </div>
               <div className="flex flex-wrap gap-1 justify-center">
-                {wantsToDo.slice(0, 4).map((s) => (
+                {wantsToDo.slice(0, 5).map((s) => (
                   <span
                     key={s}
-                    className="text-[9px] font-medium rounded-full px-1.5 py-0.5"
+                    className="text-[11px] font-medium rounded-full px-2 py-0.5"
                     style={{
                       background: "#2b3a6715",
                       color: "#2b3a67",
@@ -212,10 +214,10 @@ export function MeishiTransition({
           {/* City */}
           {city && (
             <div style={fadeFor(1300)}>
-              <div className="text-[8px] tracking-widest text-text-mute">
+              <div className="text-[9px] tracking-widest text-text-mute">
                 住んでいる場所
               </div>
-              <div className="text-[11px] font-medium text-text-sub mt-0.5">
+              <div className="text-sm font-medium text-text-sub mt-0.5">
                 📍 {city}
               </div>
             </div>
