@@ -46,10 +46,23 @@ export function ContactModal({
     router.push(`/chat/${chatId}`);
   };
 
-  // Pull LINE out of external links so it can be a primary CTA
+  // Pull LINE / Instagram out so they can be primary CTAs
   const lineLink = externalLinks.find((l) => l.platform === "line");
-  const otherLinks = externalLinks.filter((l) => l.platform !== "line");
+  const instaLink = externalLinks.find((l) => l.platform === "instagram");
+  const otherLinks = externalLinks.filter(
+    (l) => l.platform !== "line" && l.platform !== "instagram"
+  );
   const hasLine = !!profile.line_qr_url || !!lineLink;
+
+  // Extract Instagram username and build a DM-compose URL (ig.me/m/{user}).
+  // Falls back to the profile URL if extraction fails.
+  const instaUsername = instaLink
+    ? (instaLink.url.match(/instagram\.com\/([^/?#]+)/i)?.[1] ?? null)
+    : null;
+  const instaDmUrl = instaUsername
+    ? `https://ig.me/m/${instaUsername}`
+    : instaLink?.url ?? null;
+
   const [showQR, setShowQR] = useState(false);
 
   return (
@@ -76,7 +89,35 @@ export function ContactModal({
           </div>
         </button>
 
-        {/* Email — Google auth email, low-commitment alternative */}
+        {/* Instagram DM — most casual external option */}
+        {instaDmUrl && (
+          <a
+            href={instaDmUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onClose}
+            className="w-full flex items-center gap-3 p-3 rounded-xl no-underline text-left text-white hover:opacity-90 transition-opacity"
+            style={{
+              background:
+                "linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)",
+            }}
+          >
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+              <SnsIcon platform="instagram" size={20} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-bold text-sm">
+                📷 InstagramのDMで連絡
+              </div>
+              <div className="text-[11px] opacity-90 truncate">
+                {instaUsername ? `@${instaUsername}` : instaLink?.url}
+              </div>
+            </div>
+            <span className="text-base flex-shrink-0">→</span>
+          </a>
+        )}
+
+        {/* Email — Google auth email */}
         {profile.email ? (
           <a
             href={`mailto:${profile.email}?subject=${encodeURIComponent(
