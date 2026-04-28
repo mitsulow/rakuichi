@@ -128,6 +128,7 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
           show_on_map: true,
           skills: [],
           wants_to_do: [],
+          line_qr_url: null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },

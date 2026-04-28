@@ -49,6 +49,8 @@ export function ContactModal({
   // Pull LINE out of external links so it can be a primary CTA
   const lineLink = externalLinks.find((l) => l.platform === "line");
   const otherLinks = externalLinks.filter((l) => l.platform !== "line");
+  const hasLine = !!profile.line_qr_url || !!lineLink;
+  const [showQR, setShowQR] = useState(false);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="連絡を取る">
@@ -71,26 +73,71 @@ export function ContactModal({
         </button>
 
         {/* LINE — primary external (when available) */}
-        {lineLink ? (
-          <a
-            href={lineLink.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={onClose}
-            className="w-full flex items-center gap-3 p-3 rounded-xl no-underline text-left text-white hover:opacity-90 transition-opacity"
+        {hasLine ? (
+          <div
+            className="rounded-xl overflow-hidden"
             style={{ background: "#06C755" }}
           >
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-              <SnsIcon platform="line" size={20} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-bold text-sm">LINEで連絡する</div>
-              <div className="text-xs opacity-90 truncate">
-                {lineLink.url}
+            {profile.line_qr_url ? (
+              <button
+                type="button"
+                onClick={() => setShowQR(!showQR)}
+                className="w-full flex items-center gap-3 p-3 text-left text-white hover:opacity-90 transition-opacity"
+              >
+                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                  <SnsIcon platform="line" size={20} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-sm">
+                    📱 LINEのQRコードを見せる
+                  </div>
+                  <div className="text-[11px] opacity-90">
+                    自分のスマホでスキャンして友だち追加
+                  </div>
+                </div>
+                <span className="text-base flex-shrink-0">
+                  {showQR ? "▲" : "▼"}
+                </span>
+              </button>
+            ) : null}
+            {showQR && profile.line_qr_url && (
+              <div className="bg-white p-4 flex flex-col items-center gap-2">
+                <img
+                  src={profile.line_qr_url}
+                  alt={`${profile.display_name}のLINE QRコード`}
+                  className="w-56 h-56 object-contain"
+                />
+                <p className="text-[11px] text-text-sub text-center">
+                  📷 自分のスマホのカメラで このQR を写してください<br />
+                  「LINE で開く」が出たらタップ → 友だち追加
+                </p>
               </div>
-            </div>
-            <span className="text-base flex-shrink-0">→</span>
-          </a>
+            )}
+            {lineLink && (
+              <a
+                href={lineLink.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={onClose}
+                className={`w-full flex items-center gap-3 p-3 no-underline text-left text-white hover:opacity-90 transition-opacity ${
+                  profile.line_qr_url ? "border-t border-white/20" : ""
+                }`}
+              >
+                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                  🔗
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-sm">
+                    LINE のリンクで開く
+                  </div>
+                  <div className="text-xs opacity-90 truncate">
+                    {lineLink.url}
+                  </div>
+                </div>
+                <span className="text-base flex-shrink-0">→</span>
+              </a>
+            )}
+          </div>
         ) : (
           <div className="w-full flex items-center gap-3 p-3 rounded-xl bg-bg/50 border border-dashed border-border text-left">
             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0 opacity-50">
@@ -101,7 +148,7 @@ export function ContactModal({
                 LINEは未登録
               </div>
               <div className="text-[11px] text-text-mute/80">
-                {profile.display_name} さんが LINE のリンクを登録すると、
+                {profile.display_name} さんが LINE のQRや リンクを登録すると、
                 ここから直接トークできるようになります
               </div>
             </div>

@@ -48,6 +48,7 @@ function ProfileSettingsInner() {
     show_on_map: true,
     skills: [] as string[],
     wants_to_do: [] as string[],
+    line_qr_url: null as string | null,
   });
   const [snsLinks, setSnsLinks] = useState<Array<{ platform: string; url: string }>>([]);
 
@@ -121,6 +122,9 @@ function ProfileSettingsInner() {
             )
               ? (profile as { wants_to_do: string[] }).wants_to_do
               : [],
+            line_qr_url:
+              (profile as { line_qr_url?: string | null }).line_qr_url ??
+              null,
           });
         }
 
@@ -164,6 +168,7 @@ function ProfileSettingsInner() {
       show_on_map: formData.show_on_map,
       skills: formData.skills,
       wants_to_do: formData.wants_to_do,
+      line_qr_url: formData.line_qr_url,
     });
 
     // Save SNS links
@@ -691,36 +696,76 @@ function ProfileSettingsInner() {
           </div>
         </Card>
 
+        {/* LINE 連絡 — QR がいちばん簡単 */}
+        <Card>
+          <div className="space-y-3">
+            <h3
+              className="text-sm font-bold flex items-center gap-1.5"
+              style={{ color: "#06C755" }}
+            >
+              <SnsIcon platform="line" size={18} />
+              LINEで連絡できるようにする
+            </h3>
+            <p className="text-xs text-text-mute leading-relaxed">
+              他のむらびとが「💬連絡」を押した時、LINEに直接
+              つなげるようになります。
+            </p>
+
+            <div className="rounded-xl border-2 border-dashed border-border bg-bg/40 p-3 space-y-3">
+              <div className="text-xs font-bold text-text-sub">
+                📱 一番カンタン: LINEのQRコードをそのままアップ
+              </div>
+              <ol className="text-[11px] text-text-sub space-y-1 list-decimal pl-5">
+                <li>LINEアプリ → 「ホーム」 → 自分の名前 → 「QRコード」</li>
+                <li>そのQR画面の <strong>スクショ</strong> を撮る</li>
+                <li>下のボタンからアップロード（写真フォルダから選ぶだけ）</li>
+              </ol>
+              <ImageUpload
+                bucket="avatars"
+                userId={userId!}
+                value={formData.line_qr_url}
+                onChange={(url) => setField("line_qr_url", url)}
+                placeholder="📷 LINEのQR画像を選ぶ"
+                aspect="square"
+              />
+              {formData.line_qr_url && (
+                <p className="text-[11px] font-bold" style={{ color: "#06C755" }}>
+                  ✓ LINE のQRが登録できました
+                </p>
+              )}
+            </div>
+
+            <details className="text-xs text-text-mute">
+              <summary className="cursor-pointer py-1 font-medium">
+                URLでも登録できます（パソコン慣れてる人向け）
+              </summary>
+              {!snsLinks.some((l) => l.platform === "line") && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSnsLinks((prev) => [
+                      ...prev,
+                      { platform: "line", url: "" },
+                    ])
+                  }
+                  className="mt-2 w-full flex items-center gap-2 p-2.5 rounded-xl text-white text-sm font-bold hover:opacity-90 transition shadow-sm"
+                  style={{ background: "#06C755" }}
+                >
+                  <SnsIcon platform="line" size={18} />
+                  <span>＋ LINE のリンクを追加</span>
+                </button>
+              )}
+            </details>
+          </div>
+        </Card>
+
         {/* SNS Links */}
         <Card>
           <div className="space-y-3">
-            <h3 className="text-sm font-bold text-text-sub">🔗 外部SNSリンク</h3>
+            <h3 className="text-sm font-bold text-text-sub">🔗 その他のSNSリンク</h3>
             <p className="text-xs text-text-mute">
-              他のむらびとが連絡しやすいよう、LINE・Instagram・X など
-              貼っておきたい外部リンクを追加。
-              <span className="block mt-1 text-text-sub font-medium">
-                📱 LINEを登録すると、名刺の「連絡」ボタンから直接トークが
-                できるようになります。
-              </span>
+              Instagram・X・note・YouTube など、貼っておきたい外部リンクを追加
             </p>
-
-            {/* LINE quick-add: only when LINE not already in the list */}
-            {!snsLinks.some((l) => l.platform === "line") && (
-              <button
-                type="button"
-                onClick={() =>
-                  setSnsLinks((prev) => [
-                    ...prev,
-                    { platform: "line", url: "" },
-                  ])
-                }
-                className="w-full flex items-center gap-2 p-2.5 rounded-xl text-white text-sm font-bold hover:opacity-90 transition shadow-sm"
-                style={{ background: "#06C755" }}
-              >
-                <SnsIcon platform="line" size={18} />
-                <span>＋ LINE のリンクを登録</span>
-              </button>
-            )}
 
             <div className="space-y-2">
               {snsLinks.map((link, i) => (

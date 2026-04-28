@@ -24,6 +24,7 @@ export interface Profile {
   show_on_map: boolean;
   skills: string[];
   wants_to_do: string[];
+  line_qr_url: string | null;
   created_at: string;
   updated_at: string;
 }
