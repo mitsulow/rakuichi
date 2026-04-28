@@ -16,6 +16,7 @@ const tabs: Array<{ href: string; label: string; icon: EdoIconName | null; emoji
   { href: "/posts", label: "情緒", icon: null, emoji: "💭" },
   { href: "/skills", label: "SKILL", icon: null, emoji: "🛠" },
   { href: "/callouts", label: "この指", icon: null, emoji: "🤚" },
+  { href: "/kome", label: "米部", icon: null, emoji: "🌾" },
   { href: "/rankings", label: "ランキング", icon: null, emoji: "🏮" },
   { href: "/notifications", label: "お知らせ", icon: null, emoji: "🔔" },
 ];

@@ -502,6 +502,156 @@ export async function fetchWishes(userId: string) {
 }
 
 // ============================================================
+// 米部 (kome-bu) — match farmers w/ rice fields and city helpers
+// ============================================================
+
+export interface KomeFieldInput {
+  name: string;
+  description?: string | null;
+  prefecture: string;
+  city?: string | null;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  image_urls?: string[];
+  season_info?: string | null;
+  max_helpers?: number | null;
+}
+
+export async function fetchKomeFields(options?: {
+  prefecture?: string | null;
+  status?: "open" | "closed" | "completed" | "all";
+  limit?: number;
+}) {
+  const supabase = createClient();
+  let query = supabase
+    .from("kome_fields")
+    .select(
+      "*, owner:profiles!kome_fields_owner_user_id_fkey(*), helpers:kome_helpers(user_id)"
+    )
+    .order("created_at", { ascending: false });
+  const status = options?.status ?? "open";
+  if (status !== "all") query = query.eq("status", status);
+  if (options?.prefecture) query = query.eq("prefecture", options.prefecture);
+  if (options?.limit) query = query.limit(options.limit);
+  const { data, error } = await query;
+  if (error) {
+    console.error("fetchKomeFields error:", error.message);
+    return [];
+  }
+  return (data ?? []).map((row) => {
+    const helpers = (row as { helpers?: Array<{ user_id: string }> }).helpers;
+    return {
+      ...(row as Record<string, unknown>),
+      helper_count: helpers?.length ?? 0,
+    };
+  });
+}
+
+export async function fetchKomeFieldById(
+  id: string,
+  currentUserId?: string
+) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("kome_fields")
+    .select(
+      "*, owner:profiles!kome_fields_owner_user_id_fkey(*), helpers:kome_helpers(user_id, comment, joined_at, profile:profiles!kome_helpers_user_id_fkey(*))"
+    )
+    .eq("id", id)
+    .maybeSingle();
+  if (error) {
+    console.error("fetchKomeFieldById error:", error.message);
+    return null;
+  }
+  if (!data) return null;
+  const helpers =
+    (data as { helpers?: Array<{ user_id: string }> }).helpers ?? [];
+  return {
+    ...(data as Record<string, unknown>),
+    helper_count: helpers.length,
+    user_has_joined: currentUserId
+      ? helpers.some((h) => h.user_id === currentUserId)
+      : false,
+  };
+}
+
+export async function createKomeField(
+  ownerUserId: string,
+  input: KomeFieldInput
+) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("kome_fields")
+    .insert({
+      owner_user_id: ownerUserId,
+      name: input.name.trim(),
+      description: input.description?.trim() || null,
+      prefecture: input.prefecture,
+      city: input.city ?? null,
+      address: input.address ?? null,
+      latitude: input.latitude ?? null,
+      longitude: input.longitude ?? null,
+      image_urls: input.image_urls ?? [],
+      season_info: input.season_info?.trim() || null,
+      max_helpers: input.max_helpers ?? null,
+    })
+    .select()
+    .single();
+  if (error) {
+    console.error("createKomeField error:", error.message);
+    return { data: null, error: error.message };
+  }
+  return { data, error: null };
+}
+
+export async function deleteKomeField(id: string) {
+  const supabase = createClient();
+  const { error } = await supabase.from("kome_fields").delete().eq("id", id);
+  if (error) return { error: error.message };
+  return { error: null };
+}
+
+export async function setKomeFieldStatus(
+  id: string,
+  status: "open" | "closed" | "completed"
+) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("kome_fields")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) return { error: error.message };
+  return { error: null };
+}
+
+export async function joinKomeField(
+  fieldId: string,
+  userId: string,
+  comment?: string
+) {
+  const supabase = createClient();
+  const { error } = await supabase.from("kome_helpers").insert({
+    kome_field_id: fieldId,
+    user_id: userId,
+    comment: comment ?? null,
+  });
+  if (error) return { error: error.message };
+  return { error: null };
+}
+
+export async function leaveKomeField(fieldId: string, userId: string) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("kome_helpers")
+    .delete()
+    .eq("kome_field_id", fieldId)
+    .eq("user_id", userId);
+  if (error) return { error: error.message };
+  return { error: null };
+}
+
+// ============================================================
 // この指とまれ (callouts) — open call to gather hands
 // ============================================================
 

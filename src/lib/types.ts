@@ -77,6 +77,35 @@ export interface TradeRecord {
   partner?: Profile;
 }
 
+export interface KomeField {
+  id: string;
+  owner_user_id: string;
+  name: string;
+  description: string | null;
+  prefecture: string;
+  city: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  image_urls: string[];
+  season_info: string | null;
+  max_helpers: number | null;
+  status: "open" | "closed" | "completed";
+  created_at: string;
+  updated_at: string;
+  owner?: Profile | null;
+  helper_count?: number;
+  user_has_joined?: boolean;
+}
+
+export interface KomeHelper {
+  kome_field_id: string;
+  user_id: string;
+  comment: string | null;
+  joined_at: string;
+  profile?: Profile | null;
+}
+
 export interface Notification {
   id: string;
   user_id: string;

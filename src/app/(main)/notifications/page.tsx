@@ -42,6 +42,12 @@ const TYPE_META: Record<
     verb: "あなたをフォローしました",
     targetPath: (n) => (n.actor ? `/u/${n.actor.username}` : "/feed"),
   },
+  kome_join: {
+    emoji: "🌾",
+    verb: "あなたの田んぼのMY農家になりました",
+    targetPath: (n) =>
+      n.target_id ? `/kome/${n.target_id}` : "/kome",
+  },
   announcement: {
     emoji: "📢",
     verb: "",
