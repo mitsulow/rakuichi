@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { fetchUnreadMessageCount } from "@/lib/data";
 import { EdoIcon, type EdoIconName } from "@/components/ui/EdoIcon";
+import { MeishiTransition } from "./MeishiTransition";
 
 type Tab = {
   href: string;
@@ -27,6 +28,7 @@ export function BottomNav() {
   const { user } = useAuth();
   const [myHref, setMyHref] = useState<string>("/login");
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showMeishiTransition, setShowMeishiTransition] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -101,59 +103,90 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border">
-      <div className="flex items-center justify-around h-14">
-        {tabs.map((tab) => {
-          const isActive =
-            pathname === tab.href ||
-            (tab.href !== "/login" && pathname.startsWith(tab.href + "/"));
-          const showBadge =
-            tab.href === "/chat" && unreadCount > 0 && !!user;
-          return (
-            <Link
-              key={tab.label}
-              href={tab.href}
-              className={`flex flex-col items-center gap-0.5 py-1 px-2 no-underline transition-all min-w-[56px] relative ${
-                isActive ? "text-accent" : "text-text-mute hover:text-text-sub"
-              }`}
-            >
-              {/* Active indicator: small dot above */}
-              {isActive && (
-                <span
-                  className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[3px] rounded-b-full"
-                  style={{ background: "#c94d3a" }}
-                />
-              )}
-              <span
-                className={`relative inline-flex items-center justify-center transition-transform ${
-                  isActive ? "scale-110" : ""
-                }`}
-              >
-                {tab.icon ? (
-                  <EdoIcon name={tab.icon} size={22} />
-                ) : (
-                  <span className="text-lg">{tab.emoji}</span>
-                )}
-                {showBadge && (
+    <>
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border">
+        <div className="flex items-center justify-around h-14">
+          {tabs.map((tab) => {
+            const isActive =
+              pathname === tab.href ||
+              (tab.href !== "/login" && pathname.startsWith(tab.href + "/"));
+            const showBadge =
+              tab.href === "/chat" && unreadCount > 0 && !!user;
+            const isMeishi = tab.label === "名刺";
+            // Tap on 名刺 (when logged in & not already on own page) → fancy
+            // washi-card transition before navigation
+            const handleClick = (e: React.MouseEvent) => {
+              if (
+                isMeishi &&
+                user &&
+                myHref.startsWith("/u/") &&
+                pathname !== myHref
+              ) {
+                e.preventDefault();
+                setShowMeishiTransition(true);
+              }
+            };
+
+            const tabContent = (
+              <>
+                {isActive && (
                   <span
-                    className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-md"
-                    style={{ lineHeight: 1 }}
-                  >
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[3px] rounded-b-full"
+                    style={{ background: "#c94d3a" }}
+                  />
                 )}
-              </span>
-              <span
-                className={`text-[10px] transition-all ${
-                  isActive ? "font-bold" : "font-medium"
-                }`}
+                <span
+                  className={`relative inline-flex items-center justify-center transition-transform ${
+                    isActive ? "scale-110" : ""
+                  }`}
+                >
+                  {tab.icon ? (
+                    <EdoIcon name={tab.icon} size={22} />
+                  ) : (
+                    <span className="text-lg">{tab.emoji}</span>
+                  )}
+                  {showBadge && (
+                    <span
+                      className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-md"
+                      style={{ lineHeight: 1 }}
+                    >
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </span>
+                <span
+                  className={`text-[10px] transition-all ${
+                    isActive ? "font-bold" : "font-medium"
+                  }`}
+                >
+                  {tab.label}
+                </span>
+              </>
+            );
+
+            const className = `flex flex-col items-center gap-0.5 py-1 px-2 no-underline transition-all min-w-[56px] relative ${
+              isActive ? "text-accent" : "text-text-mute hover:text-text-sub"
+            }`;
+
+            return (
+              <Link
+                key={tab.label}
+                href={tab.href}
+                onClick={handleClick}
+                className={className}
               >
-                {tab.label}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+                {tabContent}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+      {showMeishiTransition && (
+        <MeishiTransition
+          destination={myHref}
+          onClose={() => setShowMeishiTransition(false)}
+        />
+      )}
+    </>
   );
 }

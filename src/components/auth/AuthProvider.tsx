@@ -10,6 +10,9 @@ interface MiniProfile {
   display_name: string | null;
   avatar_url: string | null;
   prefecture: string | null;
+  city: string | null;
+  life_work: string | null;
+  wants_to_do: string[] | null;
 }
 
 interface AuthContextValue {
@@ -58,7 +61,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, prefecture")
+      .select(
+        "id, username, display_name, avatar_url, prefecture, city, life_work, wants_to_do"
+      )
       .eq("id", u.id)
       .single();
     if (data) {

@@ -11,6 +11,7 @@ import { WelcomeBanner } from "@/components/feed/WelcomeBanner";
 import { AhouDansu } from "@/components/feed/AhouDansu";
 import { ProfileSuggestions } from "@/components/feed/ProfileSuggestions";
 import { DailyGreeting } from "@/components/feed/DailyGreeting";
+import { CalloutsSection } from "@/components/feed/CalloutsSection";
 import {
   RegionFilter,
   regionToPrefectures,
@@ -142,11 +143,20 @@ export default function FeedPage() {
     <div className="space-y-4">
       <AhouDansu />
       <WelcomeBanner />
+
+      {/* 本日のパワープッシュ楽座 — TOP, auto-rotating carousel, swipeable */}
+      {!loading && featured.length > 0 && (
+        <FeaturedCarousel shops={featured} />
+      )}
+
+      {/* おすすめのむらびと */}
+      <ProfileSuggestions />
+
       <DailyGreeting />
       <WeeklyMarket />
 
-      {/* Village functions — quick links discoverable on mobile */}
-      <div className="grid grid-cols-4 gap-1.5">
+      {/* Village functions — quick links (この指 は下のセクションへ移動) */}
+      <div className="grid grid-cols-3 gap-1.5">
         <Link
           href="/skills"
           className="rounded-xl border border-border hover:border-accent transition-colors px-2 py-2.5 flex flex-col items-center gap-0.5 no-underline bg-card text-center"
@@ -154,15 +164,6 @@ export default function FeedPage() {
           <span className="text-lg">🛠</span>
           <span className="text-[10px] font-bold leading-tight">
             SKILL
-          </span>
-        </Link>
-        <Link
-          href="/callouts"
-          className="rounded-xl border border-border hover:border-accent transition-colors px-2 py-2.5 flex flex-col items-center gap-0.5 no-underline bg-card text-center"
-        >
-          <span className="text-lg">🤚</span>
-          <span className="text-[10px] font-bold leading-tight">
-            この指
           </span>
         </Link>
         <Link
@@ -182,14 +183,6 @@ export default function FeedPage() {
           </span>
         </Link>
       </div>
-
-      {/* 本日のパワープッシュ楽座 — auto-rotating carousel, swipeable */}
-      {!loading && featured.length > 0 && (
-        <FeaturedCarousel shops={featured} />
-      )}
-
-      {/* おすすめのむらびと — discover new villagers to follow */}
-      <ProfileSuggestions />
 
       {/* Subcategory quick-chips — お米とやさい・お魚とお肉 etc. front and center */}
       <div className="flex gap-1.5 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-1">
@@ -359,6 +352,9 @@ export default function FeedPage() {
           )}
         </>
       )}
+
+      {/* この指とまれ — moved to bottom of feed */}
+      <CalloutsSection />
     </div>
   );
 }
