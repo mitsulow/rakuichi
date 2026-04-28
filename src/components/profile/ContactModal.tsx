@@ -117,8 +117,8 @@ export function ContactModal({
           </a>
         )}
 
-        {/* Email — Google auth email */}
-        {profile.email ? (
+        {/* Email — only when the recipient has consented to share it */}
+        {profile.email && profile.email_share_consent === true ? (
           <a
             href={`mailto:${profile.email}?subject=${encodeURIComponent(
               `楽市楽座より：${profile.display_name}さんへ`

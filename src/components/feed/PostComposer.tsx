@@ -129,6 +129,7 @@ export function PostComposer({ user, onPostCreated }: PostComposerProps) {
           skills: [],
           wants_to_do: [],
           line_qr_url: null,
+          email_share_consent: null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },

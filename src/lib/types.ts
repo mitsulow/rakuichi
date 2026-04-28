@@ -25,6 +25,7 @@ export interface Profile {
   skills: string[];
   wants_to_do: string[];
   line_qr_url: string | null;
+  email_share_consent: boolean | null;
   created_at: string;
   updated_at: string;
 }

@@ -49,6 +49,7 @@ function ProfileSettingsInner() {
     skills: [] as string[],
     wants_to_do: [] as string[],
     line_qr_url: null as string | null,
+    email_share_consent: false,
   });
   const [snsLinks, setSnsLinks] = useState<Array<{ platform: string; url: string }>>([]);
 
@@ -125,6 +126,9 @@ function ProfileSettingsInner() {
             line_qr_url:
               (profile as { line_qr_url?: string | null }).line_qr_url ??
               null,
+            email_share_consent:
+              (profile as { email_share_consent?: boolean | null })
+                .email_share_consent === true,
           });
         }
 
@@ -169,6 +173,7 @@ function ProfileSettingsInner() {
       skills: formData.skills,
       wants_to_do: formData.wants_to_do,
       line_qr_url: formData.line_qr_url,
+      email_share_consent: formData.email_share_consent,
     });
 
     // Save SNS links
@@ -756,6 +761,35 @@ function ProfileSettingsInner() {
                 </button>
               )}
             </details>
+          </div>
+        </Card>
+
+        {/* Email share consent */}
+        <Card>
+          <div className="space-y-2">
+            <h3 className="text-sm font-bold text-text-sub">
+              ✉ メールでの連絡
+            </h3>
+            <label className="flex items-start gap-2.5 cursor-pointer p-2.5 rounded-xl hover:bg-bg/40 transition">
+              <input
+                type="checkbox"
+                checked={formData.email_share_consent}
+                onChange={(e) =>
+                  setField("email_share_consent", e.target.checked)
+                }
+                className="mt-1"
+              />
+              <div className="flex-1 text-xs">
+                <div className="font-medium text-text">
+                  メールでの連絡を受け取る
+                </div>
+                <div className="text-text-mute mt-0.5">
+                  チェックを入れると、他のむらびとがあなたの名刺の「連絡」
+                  からメール（Google認証で取れている宛先）であなたに連絡
+                  できるようになります。
+                </div>
+              </div>
+            </label>
           </div>
         </Card>
 

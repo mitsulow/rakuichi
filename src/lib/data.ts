@@ -323,6 +323,7 @@ export async function updateProfile(userId: string, fields: {
   skills?: string[];
   wants_to_do?: string[];
   line_qr_url?: string | null;
+  email_share_consent?: boolean | null;
 }) {
   const supabase = createClient();
 
@@ -354,6 +355,7 @@ export async function updateProfile(userId: string, fields: {
       "skills",
       "wants_to_do",
       "line_qr_url",
+      "email_share_consent",
     ];
     let dropped = false;
     for (const col of missingColumnPatterns) {
