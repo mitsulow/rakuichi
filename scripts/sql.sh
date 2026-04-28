@@ -31,8 +31,14 @@ else
   exit 1
 fi
 
-# JSON-encode the query string safely (use python — jq not installed on Win)
-JSON_PAYLOAD=$(python -c "import json,sys; print(json.dumps({'query': sys.stdin.read()}))" <<< "$SQL")
+# JSON-encode the query string safely (use python — jq not installed on Win).
+# Force UTF-8 stdin/stdout so Python doesn't default to cp932 on Windows and
+# garble non-ASCII characters (Japanese, etc.).
+JSON_PAYLOAD=$(PYTHONIOENCODING=utf-8 PYTHONUTF8=1 python -c "
+import json, sys
+data = sys.stdin.buffer.read().decode('utf-8')
+print(json.dumps({'query': data}))
+" <<< "$SQL")
 
 curl -sS -f \
   -X POST \
