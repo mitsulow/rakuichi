@@ -42,6 +42,14 @@ const TYPE_META: Record<
     verb: "あなたをフォローしました",
     targetPath: (n) => (n.actor ? `/u/${n.actor.username}` : "/feed"),
   },
+  announcement: {
+    emoji: "📢",
+    verb: "",
+    targetPath: (n) => {
+      const link = (n.payload as { link_url?: string } | null)?.link_url;
+      return link || "/notifications";
+    },
+  },
 };
 
 export default function NotificationsPage() {
@@ -129,6 +137,70 @@ export default function NotificationsPage() {
             };
             const isUnread = !n.read_at;
             const href = meta.targetPath(n);
+
+            // Announcements get a richer card with title + body + CTA
+            if (n.type === "announcement") {
+              const p = (n.payload as {
+                title?: string;
+                body?: string;
+                link_url?: string;
+                link_label?: string;
+              } | null) ?? {};
+              return (
+                <div
+                  key={n.id}
+                  className="rounded-xl border-2 p-4 transition-shadow"
+                  style={{
+                    borderColor: "#c94d3a40",
+                    background:
+                      "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 100%)",
+                  }}
+                >
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-base">📢</span>
+                    <span
+                      className="text-[10px] font-bold tracking-widest text-white px-2 py-0.5 rounded-full"
+                      style={{ background: "#c94d3a" }}
+                    >
+                      運営からのお知らせ
+                    </span>
+                    {isUnread && (
+                      <span
+                        className="ml-auto w-2 h-2 rounded-full"
+                        style={{ background: "#c94d3a" }}
+                      />
+                    )}
+                  </div>
+                  {p.title && (
+                    <h3
+                      className="text-sm font-bold leading-snug"
+                      style={{ color: "#c94d3a" }}
+                    >
+                      {p.title}
+                    </h3>
+                  )}
+                  {p.body && (
+                    <p className="text-xs text-text-sub mt-1.5 leading-relaxed whitespace-pre-wrap">
+                      {p.body}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-between mt-3 gap-2">
+                    <span className="text-[10px] text-text-mute">
+                      {formatRelativeTime(n.created_at)}
+                    </span>
+                    {p.link_url && (
+                      <Link
+                        href={p.link_url}
+                        className="inline-block bg-accent text-white text-xs font-bold px-3 py-1.5 rounded-full no-underline hover:opacity-90"
+                      >
+                        {p.link_label || "確認する →"}
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              );
+            }
+
             return (
               <Link
                 key={n.id}
