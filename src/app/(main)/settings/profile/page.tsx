@@ -50,6 +50,7 @@ function ProfileSettingsInner() {
     wants_to_do: [] as string[],
     line_qr_url: null as string | null,
     email_share_consent: false,
+    contact_email: "",
   });
   const [snsLinks, setSnsLinks] = useState<Array<{ platform: string; url: string }>>([]);
 
@@ -129,6 +130,9 @@ function ProfileSettingsInner() {
             email_share_consent:
               (profile as { email_share_consent?: boolean | null })
                 .email_share_consent === true,
+            contact_email:
+              (profile as { contact_email?: string | null }).contact_email ??
+              "",
           });
         }
 
@@ -174,6 +178,7 @@ function ProfileSettingsInner() {
       wants_to_do: formData.wants_to_do,
       line_qr_url: formData.line_qr_url,
       email_share_consent: formData.email_share_consent,
+      contact_email: formData.contact_email.trim() || null,
     });
 
     // Save SNS links
@@ -764,12 +769,13 @@ function ProfileSettingsInner() {
           </div>
         </Card>
 
-        {/* Email share consent */}
+        {/* Email contact — Google email consent or custom address */}
         <Card>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <h3 className="text-sm font-bold text-text-sub">
               ✉ メールでの連絡
             </h3>
+
             <label className="flex items-start gap-2.5 cursor-pointer p-2.5 rounded-xl hover:bg-bg/40 transition">
               <input
                 type="checkbox"
@@ -781,15 +787,34 @@ function ProfileSettingsInner() {
               />
               <div className="flex-1 text-xs">
                 <div className="font-medium text-text">
-                  メールでの連絡を受け取る
+                  Googleアカウントのメールで受け取る
                 </div>
                 <div className="text-text-mute mt-0.5">
-                  チェックを入れると、他のむらびとがあなたの名刺の「連絡」
-                  からメール（Google認証で取れている宛先）であなたに連絡
-                  できるようになります。
+                  チェックを入れると、ログインに使った Google のメール
+                  アドレスが名刺の「連絡」に表示されます。
                 </div>
               </div>
             </label>
+
+            <div className="pt-2 border-t border-dashed border-border">
+              <label className="text-xs text-text-mute block mb-1">
+                または「別のメールアドレス」を使う（任意）
+                <span className="block text-[10px] text-text-mute/80 mt-0.5">
+                  Google のメールを公開したくない人は、こちらに連絡用の
+                  メールを書けます。書いた場合は <strong>こちらが優先</strong>
+                  され、Google のメールは公開されません。
+                </span>
+              </label>
+              <input
+                type="email"
+                value={formData.contact_email}
+                onChange={(e) =>
+                  setField("contact_email", e.target.value)
+                }
+                placeholder="例: contact@example.com"
+                className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm focus:border-accent focus:outline-none"
+              />
+            </div>
           </div>
         </Card>
 

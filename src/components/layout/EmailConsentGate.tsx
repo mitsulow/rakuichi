@@ -103,8 +103,10 @@ export function EmailConsentGate() {
             </p>
             <p>
               <strong>了承しない場合</strong>：
-              メールでの連絡は表示されません（楽市楽座内チャット・LINE QR・
-              Instagram DM などの別経路は利用できます）。
+              Googleのメールは表示されません。
+              <br />
+              「別のメールアドレス」を使いたい人は、設定 → プロフィール
+              から任意のアドレスを登録できます。
             </p>
             <p className="text-text-mute pt-1">
               ※ あとから「設定」でいつでも変更できます。
