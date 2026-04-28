@@ -211,7 +211,7 @@ export default function PostsPage() {
 
       {/* Filter strip + meta — visually unified, separates composer from feed */}
       <div className="pt-3 border-t border-border space-y-2">
-        {/* Tab switch: 全部 / のれん中 */}
+        {/* Tab switch: 全部 / フォロー中 */}
         {user && (
           <div className="flex gap-1 p-1 bg-bg rounded-full">
             <button
@@ -236,7 +236,7 @@ export default function PostsPage() {
                 filterMode === "following" ? { color: "#c94d3a" } : undefined
               }
             >
-              🏮 のれん中
+              🏮 フォロー中
             </button>
           </div>
         )}

@@ -64,7 +64,7 @@ export function WeeklyMarket() {
       {!collapsed && (
         <>
           <p className="text-[10px] text-text-mute mt-1">
-            毎週水曜20時、今週のピックアップ座の民をご紹介
+            毎週水曜20時、今週のピックアップむらびとをご紹介
           </p>
 
           <div className="mt-3 space-y-2">

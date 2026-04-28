@@ -15,7 +15,7 @@ interface PopularSkill {
 }
 
 /**
- * SKILL検索 — find座の民 by what they can do.
+ * SKILL検索 — findむらびと by what they can do.
  * Tap a popular chip or type a skill, see everyone who has it.
  */
 export default function SkillsSearchPage() {
@@ -78,7 +78,7 @@ export default function SkillsSearchPage() {
           🛠 SKILL 検 索
         </h1>
         <p className="text-[11px] text-text-sub mt-1 leading-snug">
-          できること・特技で座の民を見つける
+          できること・特技でむらびとを見つける
         </p>
       </div>
 

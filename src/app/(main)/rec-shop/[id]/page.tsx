@@ -218,7 +218,7 @@ export default function RecommendedShopDetailPage({
         {recs.length > 0 && (
           <Card>
             <h3 className="text-sm font-bold text-text-sub mb-2">
-              🌟 推薦してる座の民（{recs.length}人）
+              🌟 推薦してるむらびと（{recs.length}人）
             </h3>
             <div className="space-y-2">
               {recs.map((r) => (

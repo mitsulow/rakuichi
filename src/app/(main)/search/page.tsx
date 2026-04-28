@@ -101,7 +101,7 @@ function SearchInner() {
           🔍 検 索
         </h1>
         <p className="text-[11px] text-text-sub mt-1 leading-snug">
-          座の民 ・ 楽座 ・ 情緒 ・ 呼びかけ をキーワードで横断
+          むらびと ・ 楽座 ・ 情緒 ・ 呼びかけ をキーワードで横断
         </p>
       </div>
 
@@ -141,7 +141,7 @@ function SearchInner() {
           <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pb-1">
             {(
               [
-                { id: "people", label: "座の民", emoji: "👥" },
+                { id: "people", label: "むらびと", emoji: "👥" },
                 { id: "shops", label: "楽座", emoji: "🏮" },
                 { id: "posts", label: "情緒", emoji: "💭" },
                 { id: "callouts", label: "呼びかけ", emoji: "🤚" },
@@ -204,7 +204,7 @@ function SearchInner() {
 }
 
 function PeopleResults({ people }: { people: Profile[] }) {
-  if (people.length === 0) return <Empty kind="座の民" />;
+  if (people.length === 0) return <Empty kind="むらびと" />;
   return (
     <>
       {people.map((p) => (

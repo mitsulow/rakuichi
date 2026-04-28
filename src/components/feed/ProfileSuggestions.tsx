@@ -50,7 +50,7 @@ export function ProfileSuggestions() {
   return (
     <div>
       <p className="text-xs font-medium text-text-sub mb-2 px-1">
-        ✨ おすすめの座の民
+        ✨ おすすめのむらびと
       </p>
       <div className="flex gap-2 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-1">
         {profiles.map((p) => {
@@ -99,7 +99,7 @@ export function ProfileSuggestions() {
                       : "bg-accent text-white hover:opacity-90"
                   }`}
                 >
-                  {isFollowed ? "🏮 のれん中" : "🏮 のれんをくぐる"}
+                  {isFollowed ? "🏮 フォロー中" : "🏮 フォローする"}
                 </button>
               )}
             </div>

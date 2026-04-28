@@ -26,7 +26,7 @@ function WelcomeBannerInner() {
             <h2 className="text-sm font-bold mb-1">マイページが整いました！</h2>
             <p className="text-xs text-text-sub leading-relaxed">
               これで楽座を出したり、情緒を投げたり、
-              他の座の民と交流できます。
+              他のむらびとと交流できます。
               <br />
               まずは最初の楽座を出してみよう。
             </p>

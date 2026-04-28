@@ -96,7 +96,7 @@ export default function RankingsPage() {
       {stats && (
         <Card>
           <div className="text-xs text-text-mute mb-1">
-            座の民 {stats.total.toLocaleString()}人
+            むらびと {stats.total.toLocaleString()}人
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-accent">{stats.avg}</span>

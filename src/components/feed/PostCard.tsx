@@ -35,7 +35,7 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled, 
   const displayProfile = profile ?? {
     id: post.user_id,
     username: post.user_id.slice(0, 8),
-    display_name: "座の民",
+    display_name: "むらびと",
     avatar_url: null,
   };
 
@@ -204,7 +204,7 @@ export function PostCard({ post, currentUserId, isLiked = false, onLikeToggled, 
           <button
             onClick={handleLikeClick}
             disabled={!currentUserId || likeLoading}
-            title={isLiked ? "種をまいた" : "種をまく"}
+            title={isLiked ? "いいねした" : "いいね"}
             className={`flex items-center gap-1 text-sm px-2.5 py-1 rounded-full transition-colors ${
               isLiked
                 ? "bg-accent/15 text-accent font-bold"

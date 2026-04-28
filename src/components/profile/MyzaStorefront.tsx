@@ -69,13 +69,13 @@ export function MyzaStorefront({
       await unfollowUser(user.id, profile.id);
       setFollowing(false);
       setCounts((c) => ({ ...c, followers: Math.max(0, c.followers - 1) }));
-      toast.show("のれんから一旦出ました", "info");
+      toast.show("フォロー解除しました", "info");
     } else {
       await followUser(user.id, profile.id);
       setFollowing(true);
       setCounts((c) => ({ ...c, followers: c.followers + 1 }));
       toast.show(
-        `🏮 ${profile.display_name} ののれんをくぐりました`,
+        `🏮 ${profile.display_name} をフォローしました`,
         "success"
       );
     }
@@ -190,11 +190,11 @@ export function MyzaStorefront({
           {/* Follow counts */}
           <div className="flex items-center gap-3 mt-2 text-[11px] text-text-mute">
             <span>
-              <strong className="text-text">{counts.followers}</strong> 人がのれんをくぐっている
+              <strong className="text-text">{counts.followers}</strong> 人にフォローされている
             </span>
             <span className="text-text-mute/40">／</span>
             <span>
-              <strong className="text-text">{counts.following}</strong> 人をくぐっている
+              <strong className="text-text">{counts.following}</strong> 人をフォローしている
             </span>
           </div>
 
@@ -218,7 +218,7 @@ export function MyzaStorefront({
                   } ${!user ? "opacity-50" : ""}`}
                   title={!user ? "ログインが必要" : undefined}
                 >
-                  {following ? "🏮 のれん中" : "🏮 のれんをくぐる"}
+                  {following ? "🏮 フォロー中" : "🏮 フォローする"}
                 </button>
               </>
             )}

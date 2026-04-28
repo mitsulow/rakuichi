@@ -68,7 +68,7 @@ export function AspireButton({ profile, isOwner }: AspireButtonProps) {
       <div className="flex items-center gap-2 mb-2">
         <span className="text-base">🌱</span>
         <span className="text-xs text-text-mute">
-          このライフワークに憧れる座の民
+          このライフワークに憧れるむらびと
         </span>
         {count > 0 && (
           <span className="text-xs font-bold text-accent ml-auto">{count}人</span>

@@ -9,7 +9,7 @@ export default function ProfileNotFound() {
         className="w-40 h-40 mx-auto mb-4"
       />
       <h1 className="text-xl font-bold mb-2" style={{ color: "#c94d3a" }}>
-        座の民が見つかりません
+        むらびとが見つかりません
       </h1>
       <p className="text-sm text-text-sub mb-1">
         この人の名刺はありませんでした。

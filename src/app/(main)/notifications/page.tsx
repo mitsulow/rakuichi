@@ -18,7 +18,7 @@ const TYPE_META: Record<
 > = {
   like: {
     emoji: "🌱",
-    verb: "あなたの情緒に種をまきました",
+    verb: "あなたの情緒にいいねしました",
     targetPath: (n) => (n.target_id ? `/posts/${n.target_id}` : "/posts"),
   },
   comment: {
@@ -39,7 +39,7 @@ const TYPE_META: Record<
   },
   follow: {
     emoji: "🏮",
-    verb: "あなたののれんをくぐりました",
+    verb: "あなたをフォローしました",
     targetPath: (n) => (n.actor ? `/u/${n.actor.username}` : "/feed"),
   },
 };
@@ -89,7 +89,7 @@ export default function NotificationsPage() {
           🔔 お知らせ
         </h1>
         <p className="text-[11px] text-text-sub mt-1 leading-snug">
-          種をまかれたとき・文をもらったとき・指をあげられたとき
+          いいねされたとき・文をもらったとき・指をあげられたとき
         </p>
       </div>
 
@@ -116,7 +116,7 @@ export default function NotificationsPage() {
             まだお知らせはありません
           </p>
           <p className="text-xs text-text-sub mt-1.5">
-            誰かに種をまかれたり、文をもらうとここに表示されます
+            誰かにいいねされたり、文をもらうとここに表示されます
           </p>
         </div>
       ) : (

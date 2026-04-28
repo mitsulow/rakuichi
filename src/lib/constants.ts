@@ -205,13 +205,13 @@ export function getNaturalCategory(id: string) {
 // ============================================================
 export const WORDS = {
   // アクション
-  like: { label: "種をまく", past: "種をまいた", emoji: "🌱" },
-  follow: { label: "のれんをくぐる", past: "のれんをくぐった", emoji: "🏮" },
+  like: { label: "いいね", past: "いいねした", emoji: "🌱" },
+  follow: { label: "フォロー", past: "フォローした", emoji: "🏮" },
   post: { label: "情緒を投げる", item: "情緒", emoji: "💭" },
   message: { label: "文を送る", item: "文（ふみ）", emoji: "📜" },
   trade: { label: "交換する", item: "交換", emoji: "🔄" },
   // モノ
-  user: "座の民",
+  user: "むらびと",
   profile: "マイページ",
   shop: "屋台",
   chat: "文（ふみ）",

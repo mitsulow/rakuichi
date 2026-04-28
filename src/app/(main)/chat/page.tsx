@@ -86,7 +86,7 @@ export default function ChatListPage() {
           ✉ 手 紙
         </h1>
         <p className="text-[11px] text-text-sub mt-1 leading-snug">
-          座の民との 文（ふみ）のやり取り
+          むらびととの 文（ふみ）のやり取り
         </p>
       </div>
 

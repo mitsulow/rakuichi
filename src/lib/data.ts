@@ -634,7 +634,7 @@ export async function setCalloutStatus(
 }
 
 // ============================================================
-// Profile suggestions — "おすすめの座の民"
+// Profile suggestions — "おすすめのむらびと"
 // ============================================================
 
 export async function fetchProfileSuggestions(
@@ -664,7 +664,7 @@ export async function fetchProfileSuggestions(
 }
 
 // ============================================================
-// のれんをくぐる (follow)
+// follow (フォロー)
 // ============================================================
 
 export async function followUser(followerId: string, followingId: string) {
@@ -1715,7 +1715,7 @@ export async function fetchCurrentWeekPickups() {
     seen.add(p.user_id);
     fallback.push({
       user: p.profile,
-      reason: "今週の活発な座の民",
+      reason: "今週の活発なむらびと",
       sort_order: fallback.length,
     });
   }

@@ -188,7 +188,7 @@ export default function FeedPage() {
         <FeaturedCarousel shops={featured} />
       )}
 
-      {/* おすすめの座の民 — discover new villagers to follow */}
+      {/* おすすめのむらびと — discover new villagers to follow */}
       <ProfileSuggestions />
 
       {/* Subcategory quick-chips — お米とやさい・お魚とお肉 etc. front and center */}
