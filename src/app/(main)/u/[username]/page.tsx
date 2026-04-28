@@ -94,7 +94,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-[680px] mx-auto px-4 py-4 space-y-4">
+    <div className="space-y-4">
       {/* マイページ — 1画面ストアフロント */}
       <MyzaStorefront
         profile={profile}
