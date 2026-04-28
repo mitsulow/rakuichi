@@ -696,8 +696,31 @@ function ProfileSettingsInner() {
           <div className="space-y-3">
             <h3 className="text-sm font-bold text-text-sub">🔗 外部SNSリンク</h3>
             <p className="text-xs text-text-mute">
-              Instagram・X・note・YouTubeなど、マイページに貼っておきたい外部リンクを追加
+              他のむらびとが連絡しやすいよう、LINE・Instagram・X など
+              貼っておきたい外部リンクを追加。
+              <span className="block mt-1 text-text-sub font-medium">
+                📱 LINEを登録すると、名刺の「連絡」ボタンから直接トークが
+                できるようになります。
+              </span>
             </p>
+
+            {/* LINE quick-add: only when LINE not already in the list */}
+            {!snsLinks.some((l) => l.platform === "line") && (
+              <button
+                type="button"
+                onClick={() =>
+                  setSnsLinks((prev) => [
+                    ...prev,
+                    { platform: "line", url: "" },
+                  ])
+                }
+                className="w-full flex items-center gap-2 p-2.5 rounded-xl text-white text-sm font-bold hover:opacity-90 transition shadow-sm"
+                style={{ background: "#06C755" }}
+              >
+                <SnsIcon platform="line" size={18} />
+                <span>＋ LINE のリンクを登録</span>
+              </button>
+            )}
 
             <div className="space-y-2">
               {snsLinks.map((link, i) => (
