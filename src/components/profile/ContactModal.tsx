@@ -55,6 +55,10 @@ export function ContactModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="連絡を取る">
       <div className="space-y-3">
+        <p className="text-[11px] text-text-mute -mt-1">
+          一番気軽な方法から好きなものを選んでね
+        </p>
+
         {/* Internal chat — primary */}
         <button
           onClick={handleStartChat}
@@ -71,6 +75,33 @@ export function ContactModal({
             </div>
           </div>
         </button>
+
+        {/* Email — Google auth email, low-commitment alternative */}
+        {profile.email ? (
+          <a
+            href={`mailto:${profile.email}?subject=${encodeURIComponent(
+              `楽市楽座より：${profile.display_name}さんへ`
+            )}`}
+            onClick={onClose}
+            className="w-full flex items-center gap-3 p-3 rounded-xl no-underline text-left hover:opacity-90 transition-opacity"
+            style={{
+              background:
+                "linear-gradient(135deg, #fdf6e9 0%, #f5e8d5 100%)",
+              border: "2px solid #c94d3a40",
+            }}
+          >
+            <span className="text-xl">✉</span>
+            <div className="flex-1 min-w-0">
+              <div className="font-bold text-sm text-text">
+                メールで連絡
+              </div>
+              <div className="text-xs text-text-sub truncate">
+                {profile.email}
+              </div>
+            </div>
+            <span className="text-base flex-shrink-0 text-accent">→</span>
+          </a>
+        ) : null}
 
         {/* LINE — primary external (when available) */}
         {hasLine ? (
