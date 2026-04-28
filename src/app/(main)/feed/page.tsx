@@ -375,18 +375,75 @@ function FeaturedCarousel({ shops }: { shops: ShopWithOwner[] }) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Top ribbon — labels the section */}
+      {/* Top ribbon — title in the middle, pagination dots split to either side */}
       <div
-        className="text-center py-1 px-3 text-[11px] font-bold text-white tracking-widest"
+        className="flex items-center justify-center gap-2 py-1 px-3"
         style={{
           background:
             "linear-gradient(90deg, #c94d3a 0%, #d4612e 50%, #c94d3a 100%)",
         }}
       >
-        🌟 本日のパワープッシュ楽座 🌟
+        {/* Left dots */}
+        {shops.length > 1 && (
+          <div className="flex gap-1 flex-shrink-0">
+            {shops.slice(0, Math.ceil(shops.length / 2)).map((_, i) => (
+              <button
+                key={`l-${i}`}
+                onClick={() => {
+                  setIndex(i);
+                  setPaused(true);
+                  setTimeout(() => setPaused(false), 4000);
+                }}
+                aria-label={`楽座 ${i + 1} を表示`}
+                className="rounded-full transition-all"
+                style={{
+                  width: i === index ? 14 : 5,
+                  height: 5,
+                  background:
+                    i === index ? "white" : "rgba(255,255,255,0.5)",
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        <span className="text-[11px] font-bold text-white tracking-widest whitespace-nowrap">
+          🌟 本日のパワープッシュ楽座 🌟
+        </span>
+
+        {/* Right dots */}
+        {shops.length > 1 && (
+          <div className="flex gap-1 flex-shrink-0">
+            {shops
+              .slice(Math.ceil(shops.length / 2))
+              .map((_, i) => {
+                const realIndex = Math.ceil(shops.length / 2) + i;
+                return (
+                  <button
+                    key={`r-${i}`}
+                    onClick={() => {
+                      setIndex(realIndex);
+                      setPaused(true);
+                      setTimeout(() => setPaused(false), 4000);
+                    }}
+                    aria-label={`楽座 ${realIndex + 1} を表示`}
+                    className="rounded-full transition-all"
+                    style={{
+                      width: realIndex === index ? 14 : 5,
+                      height: 5,
+                      background:
+                        realIndex === index
+                          ? "white"
+                          : "rgba(255,255,255,0.5)",
+                    }}
+                  />
+                );
+              })}
+          </div>
+        )}
       </div>
 
-      {/* Sliding track */}
+      {/* Sliding track — body starts right under the ribbon */}
       <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div
           className="flex transition-transform duration-500 ease-in-out"
@@ -399,29 +456,6 @@ function FeaturedCarousel({ shops }: { shops: ShopWithOwner[] }) {
           ))}
         </div>
       </div>
-
-      {/* Dots */}
-      {shops.length > 1 && (
-        <div className="flex justify-center gap-1.5 pb-1.5">
-          {shops.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                setIndex(i);
-                setPaused(true);
-                setTimeout(() => setPaused(false), 4000);
-              }}
-              aria-label={`楽座 ${i + 1} を表示`}
-              className="rounded-full transition-all"
-              style={{
-                width: i === index ? 14 : 5,
-                height: 5,
-                background: i === index ? "#c94d3a" : "#c94d3a40",
-              }}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
