@@ -20,6 +20,7 @@ const staticTabs: Tab[] = [
   { href: "/feed", label: "楽座", icon: "rakuza" },
   { href: "/map", label: "地図", icon: "map" },
   { href: "/posts", label: "情緒", emoji: "💭" },
+  { href: "/kome", label: "米部", emoji: "🌾" },
   { href: "/chat", label: "手紙", emoji: "💬" },
 ];
 
@@ -164,7 +165,7 @@ export function BottomNav() {
               </>
             );
 
-            const className = `flex flex-col items-center gap-0.5 py-1 px-2 no-underline transition-all min-w-[56px] relative ${
+            const className = `flex flex-col items-center gap-0.5 py-1 px-1.5 no-underline transition-all min-w-[48px] flex-1 relative ${
               isActive ? "text-accent" : "text-text-mute hover:text-text-sub"
             }`;
 
